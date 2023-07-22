@@ -31,7 +31,7 @@ defmodule VampWeb.HelloLive do
   # as a prop.
   def render(assigns) do
     ~H"""
-    <.Hello number={@number} />
+    <.Clip />
     """
   end
 end
