@@ -1,8 +1,8 @@
-async function toByteArray(file) {
-  return new Uint8Array(await readFile(file));
+async function fileToByteArray(file) {
+  return new Uint8Array(await fileToArrayBuffer(file));
 }
 
-function readFile(file) {
+function fileToArrayBuffer(file) {
   return new Promise((resolve, reject) => {
     let reader = new FileReader();
 
@@ -12,20 +12,26 @@ function readFile(file) {
   });
 }
 
-export async function fileToBase64(file) {
+export async function fileToB64(file) {
+  const bytes = await fileToByteArray(file);
+  const len = bytes.byteLength;
   let binary = "";
-  let bytes = await toByteArray(file);
-  let len = bytes.byteLength;
+
   for (let i = 0; i < len; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
   return btoa(binary);
 }
 
-export function base64ToFile(b64, type) {
+export function b64ToHTMLAudioElement(b64, type) {
   const arr = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
   const blob = new Blob([arr], { type: type });
   const url = URL.createObjectURL(blob);
-  const audio = new Audio(url);
-  return audio;
+  return new Audio(url);
+}
+
+export function b64ToAudioSrc(b64, type) {
+  const arr = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+  const blob = new Blob([arr], { type: type });
+  return URL.createObjectURL(blob);
 }
