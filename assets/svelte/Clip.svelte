@@ -1,7 +1,7 @@
 <script>
   import Button from "./Button.svelte";
   import { afterUpdate } from "svelte";
-  import { fileToBase64, base64ToFile} from "js/utils";
+  import { fileToBase64, base64ToFile } from "js/utils";
 
   export let audioFile;
   export let channel;
@@ -10,13 +10,11 @@
   $: audio = base64ToFile(audioFile.data, audioFile.type);
 
   function playAudio() {
-    if (!audio) return;
-    audio.play();
+    audio?.play();
   }
 
   function stopAudio() {
-    if (!audio) return;
-    audio.pause();
+    audio?.pause();
   }
 
   function listenToStopped(audioElement) {
