@@ -7,9 +7,9 @@
 <button
   {disabled}
   on:click={onClick}
-  class="text-4xl w-32 h-16 my-2 text-white rounded "
-  class:bg-sky-500={!negative}
-  class:hover:bg-sky-700={!negative}
+  class="text-base w-48 h-16 text-white rounded-l-lg"
+  class:bg-green-500={!negative}
+  class:hover:bg-green-700={!negative}
   class:bg-red-500={negative}
   class:hover:bg-red-700={negative}
   class:bg-slate-200={disabled}

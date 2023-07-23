@@ -28,17 +28,25 @@
   }
 </script>
 
-<div class="flex flex-row items-center justify-center">
+<div class="flex flex-row mb-2">
   <audio {src} bind:paused />
-  <input type="file" on:change={handleFileChange} />
-  <div>
-    {audioFile.name}
-  </div>
-  <div>
-    {#if paused}
-      <Button onClick={playAudio}>Play</Button>
-    {:else}
-      <Button onClick={stopAudio} negative={true}>Stop</Button>
-    {/if}
+  <input
+    id="clipchange-{audioFile.id}"
+    type="file"
+    on:change={handleFileChange}
+    class="hidden"
+  />
+  {#if paused}
+    <Button onClick={playAudio}>{audioFile.name}</Button>
+  {:else}
+    <Button onClick={stopAudio} negative={true}>{audioFile.name}</Button>
+  {/if}
+  <div
+    class="text-center text-base w-24 h-16 align-middle text-white rounded-r-lg bg-sky-500 hover:bg-sky-700"
+  >
+    <label
+      for="clipchange-{audioFile.id}"
+      class="inline-block py-5 min-h-full min-w-full">change file</label
+    >
   </div>
 </div>
