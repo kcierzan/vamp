@@ -23,13 +23,6 @@ export async function fileToB64(file) {
   return btoa(binary);
 }
 
-export function b64ToHTMLAudioElement(b64, type) {
-  const arr = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-  const blob = new Blob([arr], { type: type });
-  const url = URL.createObjectURL(blob);
-  return new Audio(url);
-}
-
 export function b64ToAudioSrc(b64, type) {
   const arr = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
   const blob = new Blob([arr], { type: type });
