@@ -1,14 +1,22 @@
 <script>
   import Button from "./Button.svelte";
+  import { afterUpdate } from "svelte";
+  import { fileToBase64, base64ToFile} from "js/utils";
 
-  let audio;
+  export let audioFile;
+  export let channel;
   let playing = false;
 
-  function handleFileChange() {
-    const file = this.files[0];
-    audio = new Audio(URL.createObjectURL(file));
-    listenToStopped(audio);
-    listenToStarted(audio);
+  $: audio = base64ToFile(audioFile.data, audioFile.type);
+
+  function playAudio() {
+    if (!audio) return;
+    audio.play();
+  }
+
+  function stopAudio() {
+    if (!audio) return;
+    audio.pause();
   }
 
   function listenToStopped(audioElement) {
@@ -33,23 +41,33 @@
     );
   }
 
-  function playAudio() {
-    if (!audio) return;
-    audio.play();
+  async function handleFileChange() {
+    const file = this.files[0];
+    const data = await fileToBase64(file);
+    channel.push("new_clip", {
+      id: audioFile.id,
+      name: file.name,
+      type: file.type,
+      data: data,
+    });
   }
 
-  function stopAudio() {
-    if (!audio) return;
-    audio.pause();
-  }
+  afterUpdate(async () => {
+    listenToStarted(audio);
+    listenToStopped(audio);
+  });
 </script>
 
-<input type="file" on:change={handleFileChange} />
-<div>
-  {#if playing}
-    <Button onClick={stopAudio} negative={true}>Stop</Button>
-  {:else}
-    <Button onClick={playAudio}>Play</Button>
-  {/if}
+<div class="flex flex-row items-center justify-center">
+  <input type="file" on:change={handleFileChange} />
+  <div>
+    {audioFile.name}
+  </div>
+  <div>
+    {#if playing}
+      <Button onClick={stopAudio} negative={true}>Stop</Button>
+    {:else}
+      <Button onClick={playAudio}>Play</Button>
+    {/if}
+  </div>
 </div>
-

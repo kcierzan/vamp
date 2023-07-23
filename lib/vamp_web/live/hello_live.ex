@@ -30,8 +30,9 @@ defmodule VampWeb.HelloLive do
   # we are passing in `assigns.number` to the Hello.svelete component
   # as a prop.
   def render(assigns) do
+    # FIXME: turning SSR off due to reference to `window` in track component
     ~H"""
-    <.Clip />
+    <.Track ssr={false}/>
     """
   end
 end
