@@ -13,4 +13,14 @@ defmodule VampWeb.RoomChannel do
     broadcast!(socket, "new_clip", clip)
     {:noreply, socket}
   end
+
+  def handle_in("play_clip", %{"id" => id}, socket) do
+    broadcast!(socket, "play_clip", %{id: id})
+    {:noreply, socket}
+  end
+
+  def handle_in("stop_clip", %{"id" => id}, socket) do
+    broadcast!(socket, "stop_clip", %{id: id})
+    {:noreply, socket}
+  end
 end

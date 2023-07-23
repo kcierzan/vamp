@@ -1,6 +1,7 @@
 <script>
   import Button from "./Button.svelte";
   import { fileToB64, b64ToAudioSrc } from "js/utils";
+  import { onMount } from "svelte";
 
   export let clip;
   export let channel;
@@ -9,14 +10,14 @@
   $: src = b64ToAudioSrc(clip.data, clip.type);
 
   function playAudio() {
-    paused = false;
+    channel.push("play_clip", { id: clip.id });
   }
 
   function stopAudio() {
-    paused = true;
+    channel.push("stop_clip", { id: clip.id });
   }
 
-  async function handleFileChange() {
+  async function changeClip() {
     const file = this.files[0];
     const data = await fileToB64(file);
     channel.push("new_clip", {
@@ -26,6 +27,20 @@
       data: data,
     });
   }
+
+  onMount(async () => {
+    channel.on("play_clip", ({ id }) => {
+      if (id === clip.id) {
+        paused = false;
+      }
+    });
+
+    channel.on("stop_clip", ({ id }) => {
+      if (id === clip.id) {
+        paused = true;
+      }
+    });
+  });
 </script>
 
 <div class="flex flex-row mb-2">
@@ -34,7 +49,7 @@
     id="clipchange-{clip.id}"
     type="file"
     class="hidden"
-    on:change={handleFileChange}
+    on:change={changeClip}
   />
   {#if paused}
     <Button onClick={playAudio}>{clip.name}</Button>
