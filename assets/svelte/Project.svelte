@@ -5,7 +5,6 @@
   import Track from "./Track.svelte";
 
   let channel;
-  let h2Height;
   let tracks = [];
 
   function addTrack() {
@@ -36,11 +35,11 @@
 </script>
 
 <div class="flex flex-col items-center">
-  <h1 class="text-4xl underline semibold">Welcome to Vamp</h1>
+  <h1 class="text-6xl underline bold">Welcome to Vamp</h1>
   {#if !tracks.length}
-    <h2 bind:clientHeight={h2Height}>Why don't you start by adding some tracks?</h2>
+    <h2 class="text-2xl">Why don't you start by adding some tracks?</h2>
   {:else}
-    <div class="min-h-[{h2Height}px]">&nbsp</div>
+    <div class="text-2xl">&nbsp</div>
   {/if}
 </div>
 
