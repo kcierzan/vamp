@@ -1,7 +1,7 @@
 <script>
-  import Button from "./Button.svelte";
-  import { fileToB64, b64ToAudioSrc } from "js/utils";
   import { onMount } from "svelte";
+  import { fileToB64, b64ToAudioSrc } from "js/utils";
+  import Button from "./Button.svelte";
 
   export let clip;
   export let channel;
@@ -30,15 +30,11 @@
 
   onMount(async () => {
     channel.on("play_clip", ({ id }) => {
-      if (id === clip.id) {
-        paused = false;
-      }
+      if (id === clip.id) paused = false;
     });
 
     channel.on("stop_clip", ({ id }) => {
-      if (id === clip.id) {
-        paused = true;
-      }
+      if (id === clip.id) paused = true;
     });
   });
 </script>
