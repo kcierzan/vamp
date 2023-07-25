@@ -9,18 +9,18 @@ defmodule VampWeb.RoomChannel do
     {:error, %{reason: "unauthorized"}}
   end
 
-  def handle_in("new_clip", clip, socket) do
-    broadcast!(socket, "new_clip", clip)
+  def handle_in("new_clip", msg, socket) do
+    broadcast!(socket, "new_clip", msg)
     {:noreply, socket}
   end
 
-  def handle_in("play_clip", %{"clipId" => clip_id, "trackId" => track_id}, socket) do
-    broadcast!(socket, "play_clip", %{clipId: clip_id, trackId: track_id})
+  def handle_in("play_clip", msg, socket) do
+    broadcast!(socket, "play_clip", msg)
     {:noreply, socket}
   end
 
-  def handle_in("stop_clip", %{"id" => id}, socket) do
-    broadcast!(socket, "stop_clip", %{id: id})
+  def handle_in("stop_clip", msg, socket) do
+    broadcast!(socket, "stop_clip", msg)
     {:noreply, socket}
   end
 end

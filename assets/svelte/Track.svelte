@@ -18,10 +18,15 @@
       name: file.name,
       data: data,
       type: file.type,
+      trackId: currentTrackId,
     });
   }
 
   function updateClips(new_clip) {
+    if (new_clip.trackId !== currentTrackId) {
+      return;
+    }
+
     const index = clips.findIndex(({ id }) => id === new_clip.id);
     if (index === -1) {
       clips = [...clips, new_clip];

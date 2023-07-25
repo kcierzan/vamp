@@ -6,9 +6,12 @@
   export let clip;
   export let channel;
   export let currentTrackId;
-  export let paused = true;
+  let paused = true;
+  let playbackRate = 100;
+  let currentTime = 0.0;
 
   $: src = b64ToAudioSrc(clip.data, clip.type);
+  $: scaledPlaybackRate = playbackRate / 100;
 
   function playAudio() {
     channel.push("play_clip", { clipId: clip.id, trackId: currentTrackId });
@@ -35,17 +38,26 @@
         paused = false;
       } else if (trackId === currentTrackId) {
         paused = true;
+        currentTime = 0.0;
       }
     });
 
     channel.on("stop_clip", ({ id }) => {
-      if (id === clip.id) paused = true;
+      if (id === clip.id) {
+        paused = true;
+        currentTime = 0.0;
+      }
     });
   });
 </script>
 
 <div class="flex flex-row mb-2">
-  <audio {src} bind:paused />
+  <audio
+    {src}
+    bind:paused
+    bind:currentTime
+    bind:playbackRate={scaledPlaybackRate}
+  />
   <input
     id="clipchange-{clip.id}"
     type="file"
@@ -66,3 +78,4 @@
     >
   </div>
 </div>
+<input class="mb-2 w-64" type="range" min="0" max="200" bind:value={playbackRate} />
