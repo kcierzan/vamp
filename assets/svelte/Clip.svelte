@@ -5,12 +5,13 @@
 
   export let clip;
   export let channel;
-  let paused = true;
+  export let currentTrackId;
+  export let paused = true;
 
   $: src = b64ToAudioSrc(clip.data, clip.type);
 
   function playAudio() {
-    channel.push("play_clip", { id: clip.id });
+    channel.push("play_clip", { clipId: clip.id, trackId: currentTrackId });
   }
 
   function stopAudio() {
@@ -29,8 +30,12 @@
   }
 
   onMount(async () => {
-    channel.on("play_clip", ({ id }) => {
-      if (id === clip.id) paused = false;
+    channel.on("play_clip", ({ clipId, trackId }) => {
+      if (clipId === clip.id) {
+        paused = false;
+      } else if (trackId === currentTrackId) {
+        paused = true;
+      }
     });
 
     channel.on("stop_clip", ({ id }) => {

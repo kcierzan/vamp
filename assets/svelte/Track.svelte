@@ -5,7 +5,7 @@
 
   export let channel;
   let clips = [];
-  const trackID = crypto.randomUUID();
+  const currentTrackId = crypto.randomUUID();
 
   async function addClip() {
     const file = this.files[0];
@@ -23,10 +23,10 @@
 
   function updateClips(new_clip) {
     const index = clips.findIndex(({ id }) => id === new_clip.id);
-    if (index >= 0) {
-      clips[index] = new_clip;
-    } else {
+    if (index === -1) {
       clips = [...clips, new_clip];
+    } else {
+      clips[index] = new_clip;
     }
   }
 
@@ -37,10 +37,10 @@
 
 <div class="flex flex-col items-center justify-center">
   {#each clips as clip (clip.id)}
-    <Clip {clip} {channel} />
+    <Clip {clip} {channel} {currentTrackId} />
   {/each}
   <input
-    id="addclip-{trackID}"
+    id="addclip-{currentTrackId}"
     type="file"
     on:change={addClip}
     class="hidden"
@@ -49,7 +49,7 @@
     class="text-center text-base w-72 h-16 align-middle text-white rounded bg-sky-500 hover:bg-sky-700"
   >
     <label
-      for="addclip-{trackID}"
+      for="addclip-{currentTrackId}"
       class="inline-block py-5 min-h-full min-w-full">Add clip</label
     >
   </div>

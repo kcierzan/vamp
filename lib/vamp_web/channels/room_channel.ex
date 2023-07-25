@@ -6,7 +6,7 @@ defmodule VampWeb.RoomChannel do
   end
 
   def join("room:" <> _private_room_id, _params, _socket) do
-      {:error, %{reason: "unauthorized"}}
+    {:error, %{reason: "unauthorized"}}
   end
 
   def handle_in("new_clip", clip, socket) do
@@ -14,8 +14,8 @@ defmodule VampWeb.RoomChannel do
     {:noreply, socket}
   end
 
-  def handle_in("play_clip", %{"id" => id}, socket) do
-    broadcast!(socket, "play_clip", %{id: id})
+  def handle_in("play_clip", %{"clipId" => clip_id, "trackId" => track_id}, socket) do
+    broadcast!(socket, "play_clip", %{clipId: clip_id, trackId: track_id})
     {:noreply, socket}
   end
 
