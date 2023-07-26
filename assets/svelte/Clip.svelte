@@ -29,6 +29,7 @@
       name: file.name,
       type: file.type,
       data: data,
+      trackId: currentTrackId,
     });
   }
 
@@ -78,4 +79,10 @@
     >
   </div>
 </div>
-<input class="mb-2 w-64" type="range" min="0" max="200" bind:value={playbackRate} />
+<input
+  class="mb-2 w-64"
+  type="range"
+  min="0"
+  max="200"
+  bind:value={playbackRate}
+/>
