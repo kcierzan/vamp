@@ -4,8 +4,8 @@
   import Clip from "./Clip.svelte";
 
   export let channel;
-  let clips = [];
-  const currentTrackId = crypto.randomUUID();
+  export let currentTrackId;
+  let clips = {};
 
   async function addClip() {
     const file = this.files[0];
@@ -23,16 +23,9 @@
   }
 
   function updateClips(new_clip) {
-    if (new_clip.trackId !== currentTrackId) {
-      return;
-    }
-
-    const index = clips.findIndex(({ id }) => id === new_clip.id);
-    if (index === -1) {
-      clips = [...clips, new_clip];
-    } else {
-      clips[index] = new_clip;
-    }
+    if (new_clip.trackId !== currentTrackId) return;
+    const { id } = new_clip
+    clips[id] = new_clip;
   }
 
   onMount(async () => {
@@ -41,7 +34,7 @@
 </script>
 
 <div class="flex flex-col items-center justify-center">
-  {#each clips as clip (clip.id)}
+  {#each Object.values(clips) as clip (clip.id)}
     <Clip {clip} {channel} {currentTrackId} />
   {/each}
   <input

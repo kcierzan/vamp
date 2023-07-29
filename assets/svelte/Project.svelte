@@ -1,23 +1,33 @@
 <script>
   import { onMount } from "svelte";
   import { Socket } from "phoenix";
-
   import Track from "./Track.svelte";
 
   let channel;
-  let tracks = [];
+  let tracks = {};
 
   function addTrack() {
-    tracks = [...tracks, Track];
+    channel.push("new_track", {
+      id: crypto.randomUUID(),
+    });
   }
 
-  function removeTrack(index) {
+  function removeTrack(id) {
     return () => {
-      tracks = [...tracks.slice(0, index), ...tracks.slice(index + 1)];
+      channel.push("remove_track", { id });
     };
   }
 
-  onMount(async () => {
+  function onNewTrack({ id }) {
+    tracks[id] = Track;
+  }
+
+  function onRemoveTrack({ id }) {
+    const { [id]: _, ...otherTracks } = tracks;
+    tracks = otherTracks;
+  }
+
+  function joinChannel() {
     const socket = new Socket("/socket", {
       params: { token: window.userToken },
     });
@@ -31,6 +41,12 @@
       .receive("error", (resp) => {
         console.log("Unable to join", resp);
       });
+  }
+
+  onMount(async () => {
+    joinChannel();
+    channel.on("new_track", onNewTrack);
+    channel.on("remove_track", onRemoveTrack);
   });
 </script>
 
@@ -48,14 +64,14 @@
   on:click={addTrack}>Add track</button
 >
 <div class="flex flex-row w-full space-x-4">
-  {#each tracks as track, index}
+  {#each Object.entries(tracks) as [id, track] (id)}
     <div class="flex flex-col items-center">
       <div class="mb-2">
-        <svelte:component this={track} {channel} />
+        <svelte:component this={track} {channel} currentTrackId={id} />
       </div>
       <button
         class="rounded class bg-red-500 hover:bg-red-700 text-white w-24 h-16"
-        on:click={removeTrack(index)}>Remove track</button
+        on:click={removeTrack(id)}>Remove track</button
       >
     </div>
   {/each}

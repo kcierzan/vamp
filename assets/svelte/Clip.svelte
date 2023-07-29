@@ -33,22 +33,25 @@
     });
   }
 
-  onMount(async () => {
-    channel.on("play_clip", ({ clipId, trackId }) => {
-      if (clipId === clip.id) {
-        paused = false;
-      } else if (trackId === currentTrackId) {
-        paused = true;
-        currentTime = 0.0;
-      }
-    });
+  function playTrackExclusive({ clipId, trackId }) {
+    if (clipId === clip.id) {
+      paused = false;
+    } else if (trackId === currentTrackId) {
+      paused = true;
+      currentTime = 0.0;
+    }
+  }
 
-    channel.on("stop_clip", ({ id }) => {
-      if (id === clip.id) {
-        paused = true;
-        currentTime = 0.0;
-      }
-    });
+  function stopClipPlayback({ id }) {
+    if (id === clip.id) {
+      paused = true;
+      currentTime = 0.0;
+    }
+  }
+
+  onMount(async () => {
+    channel.on("play_clip", playTrackExclusive);
+    channel.on("stop_clip", stopClipPlayback);
   });
 </script>
 
