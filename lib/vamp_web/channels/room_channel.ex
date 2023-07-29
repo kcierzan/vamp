@@ -9,18 +9,8 @@ defmodule VampWeb.RoomChannel do
     {:error, %{reason: "unauthorized"}}
   end
 
-  def handle_in("new_clip", msg, socket) do
-    broadcast!(socket, "new_clip", msg)
-    {:noreply, socket}
-  end
-
-  def handle_in("play_clip", msg, socket) do
-    broadcast!(socket, "play_clip", msg)
-    {:noreply, socket}
-  end
-
-  def handle_in("stop_clip", msg, socket) do
-    broadcast!(socket, "stop_clip", msg)
+  def handle_in(message, data, socket) do
+    broadcast!(socket, message, data)
     {:noreply, socket}
   end
 end
