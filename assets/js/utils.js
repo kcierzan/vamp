@@ -1,3 +1,5 @@
+import { Socket } from "phoenix";
+
 export async function fileToB64(file) {
   const bytes = await fileToByteArray(file);
   const len = bytes.byteLength;
@@ -13,6 +15,23 @@ export function b64ToAudioSrc(b64, type) {
   const arr = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
   const blob = new Blob([arr], { type: type });
   return URL.createObjectURL(blob);
+}
+
+export function joinChannel(socketPath, channelRoom) {
+  const socket = new Socket(socketPath, {
+    params: { token: window.userToken },
+  });
+  socket.connect();
+  const channel = socket.channel(channelRoom, {});
+  channel
+    .join()
+    .receive("ok", (resp) => {
+      console.log("Joined successfully", resp);
+    })
+    .receive("error", (resp) => {
+      console.log("Unable to join", resp);
+    });
+  return channel;
 }
 
 async function fileToByteArray(file) {

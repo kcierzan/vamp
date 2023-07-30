@@ -1,34 +1,19 @@
 <script>
   import { onMount } from "svelte";
-  import { Socket } from "phoenix";
-  import Track from "./Track.svelte";
+  import { joinChannel } from "../js/utils";
   import { createSessionStore } from "../js/store";
+  import Track from "./Track.svelte";
 
-  let channel;
+  const socketPath = "/socket"
+  const channelRoom = "room:session"
   const session = createSessionStore();
   const { setChannel, addTrack, removeTrack, addClip, playClip, stopClip } =
     session;
   $: trackEntries = Object.entries($session.tracks)
   $: sessionNotEmpty = !!Object.keys($session).length;
 
-  function joinChannel() {
-    const socket = new Socket("/socket", {
-      params: { token: window.userToken },
-    });
-    socket.connect();
-    channel = socket.channel("room:session", {});
-    channel
-      .join()
-      .receive("ok", (resp) => {
-        console.log("Joined successfully", resp);
-      })
-      .receive("error", (resp) => {
-        console.log("Unable to join", resp);
-      });
-  }
-
   onMount(async () => {
-    joinChannel();
+    const channel = joinChannel(socketPath, channelRoom);
     setChannel(channel);
   });
 </script>
