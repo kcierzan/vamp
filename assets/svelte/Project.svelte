@@ -1,16 +1,15 @@
 <script>
   import { onMount } from "svelte";
   import { joinChannel } from "../js/utils";
-  import { createSessionStore } from "../js/store";
+  import { sessionStore } from "../js/store";
   import Track from "./Track.svelte";
 
-  const socketPath = "/socket"
-  const channelRoom = "room:session"
-  const session = createSessionStore();
+  const socketPath = "/socket";
+  const channelRoom = "room:session";
   const { setChannel, addTrack, removeTrack, addClip, playClip, stopClip } =
-    session;
-  $: trackEntries = Object.entries($session.tracks)
-  $: sessionNotEmpty = !!Object.keys($session).length;
+    sessionStore;
+  $: trackEntries = Object.entries($sessionStore.tracks);
+  $: sessionNotEmpty = !!Object.keys($sessionStore).length;
 
   onMount(async () => {
     const channel = joinChannel(socketPath, channelRoom);

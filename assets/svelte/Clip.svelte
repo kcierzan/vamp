@@ -10,7 +10,7 @@
   export let paused = true;
   export let playbackRate = 100;
   export let currentTime = 0.0;
-  export let addClip
+  export let addClip;
   export let playClip;
   export let stopClip;
 

@@ -1,16 +1,18 @@
 import { writable } from "svelte/store";
 import { fileToB64 } from "./utils";
 
-export function createSessionStore() {
-  const { subscribe, update } = writable({ tracks: {} });
+function createSessionStore() {
+  const intialState = {
+    tracks: {},
+    channel: null,
+  };
+  const { subscribe, update } = writable(intialState);
 
   // Store mutators - e2e reactive functions should not modify the store directly!
   function setChannel(channel) {
     update((store) => {
       store.channel = channel;
-      for (const [message, handler] of Object.entries(
-        msgCallbacks,
-      )) {
+      for (const [message, handler] of Object.entries(msgCallbacks)) {
         store.channel.on(message, handler);
       }
       return store;
@@ -121,3 +123,5 @@ export function createSessionStore() {
     stopClip,
   };
 }
+
+export const sessionStore = createSessionStore();
