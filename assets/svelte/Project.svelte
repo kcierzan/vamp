@@ -6,8 +6,8 @@
 
   const socketPath = "/socket";
   const channelRoom = "room:session";
-  const { setChannel, addTrack, removeTrack, addClip, playClip, stopClip } =
-    sessionStore;
+  const { setChannel, addTrack, removeTrack } = sessionStore;
+
   $: trackEntries = Object.entries($sessionStore.tracks);
   $: sessionNotEmpty = !!Object.keys($sessionStore).length;
 
@@ -34,7 +34,7 @@
   {#each trackEntries as [id, track] (id)}
     <div class="flex flex-col items-center">
       <div class="mb-2">
-        <Track {addClip} {playClip} {stopClip} {...track} />
+        <Track {...track} />
       </div>
       <button
         class="rounded class bg-red-500 hover:bg-red-700 text-white w-24 h-16"

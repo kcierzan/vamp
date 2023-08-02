@@ -69,6 +69,13 @@ function createSessionStore() {
     });
   }
 
+  function changePlaybackRate(id, trackId, playbackRate) {
+    update((store) => {
+      store.channel.push("change_playback_rate", { id, trackId, playbackRate });
+      return store;
+    });
+  }
+
   // handle incoming messages on the `Socket`
   const msgCallbacks = {
     new_track: ({ id }) => {
@@ -111,6 +118,12 @@ function createSessionStore() {
         return store;
       });
     },
+    change_playback_rate: ({ id, trackId, playbackRate }) => {
+      update((store) => {
+        store.tracks[trackId].clips[id].playbackRate = playbackRate;
+        return store;
+      });
+    },
   };
 
   return {
@@ -121,6 +134,7 @@ function createSessionStore() {
     removeTrack,
     playClip,
     stopClip,
+    changePlaybackRate,
   };
 }
 

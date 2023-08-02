@@ -1,20 +1,20 @@
 <script>
   import Clip from "./Clip.svelte";
+  import { sessionStore } from "js/store";
 
   export let id;
   export let clips = {};
-  export let addClip;
-  export let playClip;
-  export let stopClip;
+
+  const { addClip } = sessionStore;
 
   function newClip() {
-    addClip(this.files[0], id)
+    addClip(this.files[0], id);
   }
 </script>
 
 <div class="flex flex-col items-center justify-center">
   {#each Object.values(clips) as clip (clip?.id)}
-    <Clip {...clip} {playClip} {stopClip} {addClip} trackId={id} />
+    <Clip {...clip} trackId={id} />
   {/each}
   <input id="addclip-{id}" type="file" on:change={newClip} class="hidden" />
   <div
