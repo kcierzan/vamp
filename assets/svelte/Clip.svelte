@@ -18,8 +18,7 @@
   $: scaledPlaybackRate = playbackRate / 100;
 
   function changeClip() {
-    const file = this.files[0];
-    addClip(file, trackId, id);
+    addClip(this.files[0], trackId, id);
   }
 
   function changeTempo() {
@@ -42,12 +41,14 @@
   />
   {#if paused}
     <Button
+      classes={"rounded-l-lg"}
       onClick={() => {
         playClip(id, trackId);
       }}>{name}</Button
     >
   {:else}
     <Button
+      classes={"rounded-l-lg"}
       onClick={() => {
         stopClip(id, trackId);
       }}
