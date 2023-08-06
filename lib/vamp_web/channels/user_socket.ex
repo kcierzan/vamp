@@ -1,4 +1,4 @@
-defmodule VampWeb.ClipSocket do
+defmodule VampWeb.UserSocket do
   use Phoenix.Socket
 
   # A Socket handler
@@ -18,7 +18,6 @@ defmodule VampWeb.ClipSocket do
   #
   # See the [`Channels guide`](https://hexdocs.pm/phoenix/channels.html)
   # for further details.
-
 
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After

@@ -5,6 +5,8 @@
   import Track from "./Track.svelte";
   import Transport from "./Transport.svelte";
 
+  export let currentEmail;
+
   const socketPath = "/socket";
   const channelRoom = "room:session";
   const { setChannel, addTrack, removeTrack } = sessionStore;
@@ -19,7 +21,7 @@
 </script>
 
 <div class="flex flex-col items-center">
-  <h1 class="text-6xl underline bold">Welcome to Vamp</h1>
+  <h1 class="text-4xl underline bold">Welcome to Vamp, {currentEmail}</h1>
   <h2 class="text-2xl" class:invisible={!sessionEmpty}>
     Why don't you start by adding some tracks?
   </h2>
