@@ -18,9 +18,11 @@ defmodule Vamp.Application do
       # Start Finch
       {Finch, name: Vamp.Finch},
       # Start the Endpoint (http/https)
-      VampWeb.Endpoint
+      VampWeb.Endpoint,
       # Start a worker by calling: Vamp.Worker.start_link(arg)
       # {Vamp.Worker, arg}
+      # Start latency measurer
+      Vamp.Latency
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
