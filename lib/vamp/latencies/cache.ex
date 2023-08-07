@@ -38,7 +38,7 @@ defmodule Vamp.Latencies.Cache do
   @impl true
   def handle_call({:get, user_id}, _from, state) do
     user_latencies = get_in(state, [Access.key(user_id, [])])
-    {:reply, average(user_latencies), state}
+    {:reply, mean(user_latencies), state}
   end
 
   defp unshift_latency(latencies, latency) do
@@ -57,23 +57,23 @@ defmodule Vamp.Latencies.Cache do
   defp outside_standard_deviation?(_, []), do: false
 
   defp outside_standard_deviation?(value, values) do
-    abs(value - average(values)) > standard_deviation(values)
+    abs(value - mean(values)) > standard_deviation(values)
   end
 
   defp standard_deviation(values) do
     values
     |> deviations()
-    |> average()
+    |> mean()
     |> :math.sqrt()
   end
 
-  defp average([]), do: nil
+  defp mean([]), do: nil
 
-  defp average(list) do
+  defp mean(list) do
     Enum.sum(list) / length(list)
   end
 
   defp deviations(list) do
-    Enum.map(list, fn elem -> (elem - average(list)) ** 2 end)
+    Enum.map(list, fn elem -> (elem - mean(list)) ** 2 end)
   end
 end
