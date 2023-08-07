@@ -1,4 +1,4 @@
-defmodule Vamp.Latency do
+defmodule Vamp.Latencies.Cache do
   use GenServer
 
   # Client API
@@ -21,8 +21,17 @@ defmodule Vamp.Latency do
   end
 
   @impl true
-  def handle_cast({:add, data}, state) do
-    {_old_state, new_state} = update_user_latencies(state, data)
+  def handle_cast({:add, %{"user_id" => user_id, "latency" => latency}}, state) do
+    {_old_state, new_state} =
+      get_and_update_in(
+        state,
+        [Access.key(user_id, [])],
+        fn latencies ->
+          new_latencies = unshift_latency(latencies, latency)
+          {latencies, new_latencies}
+        end
+      )
+
     {:noreply, new_state}
   end
 
@@ -32,20 +41,9 @@ defmodule Vamp.Latency do
     {:reply, average(user_latencies), state}
   end
 
-  defp update_user_latencies(state, %{"user_id" => user_id, "latency" => latency}) do
-    get_and_update_in(
-      state,
-      [Access.key(user_id, [])],
-      fn latencies ->
-        new_latencies = push_latency(latencies, latency)
-        {latencies, new_latencies}
-      end
-    )
-  end
-
-  defp push_latency(latencies, latency) do
+  defp unshift_latency(latencies, latency) do
     cond do
-      Enum.count(latencies) < 10 ->
+      length(latencies) < 10 ->
         [latency | latencies]
 
       outside_standard_deviation?(latency, latencies) ->
@@ -69,10 +67,10 @@ defmodule Vamp.Latency do
     |> :math.sqrt()
   end
 
-  defp average([]), do: 0
+  defp average([]), do: nil
 
   defp average(list) do
-    Enum.sum(list) / Enum.count(list)
+    Enum.sum(list) / length(list)
   end
 
   defp deviations(list) do
