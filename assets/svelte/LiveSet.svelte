@@ -12,23 +12,21 @@
   const { setChannel, addTrack, removeTrack } = sessionStore;
 
   let currentLatency = 0;
-  let pingCount = 0;
 
   $: trackEntries = Object.entries($sessionStore.tracks);
   $: sessionEmpty = Object.keys($sessionStore.tracks).length === 0;
 
-  function measureLatency(channel) {
+  function measureLatency(channel, count = 20) {
+    if (count <= 0) {
+      getLatency(channel);
+      return;
+    }
     channel
       .push("ping", { client_time: Date.now() })
       .receive("ok", ({ up, server_time }) => {
         const down = Date.now() - server_time;
         channel.push("report_latency", { latency: (up + down) / 2 });
-        pingCount += 1;
-        if (pingCount < 20) {
-          setTimeout(() => measureLatency(channel), 100);
-          return;
-        }
-        getLatency(channel);
+        setTimeout(() => measureLatency(channel, count - 1), 100);
       });
   }
 
