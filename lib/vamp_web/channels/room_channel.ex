@@ -1,7 +1,9 @@
 defmodule VampWeb.RoomChannel do
   use Phoenix.Channel
+  alias VampWeb.Presence
 
   def join("room:session", _message, socket) do
+    send(self(), :after_join)
     {:ok, socket}
   end
 
