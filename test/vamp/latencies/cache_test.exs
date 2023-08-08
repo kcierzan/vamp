@@ -59,4 +59,13 @@ defmodule Vamp.Latencies.CacheTest do
       assert Cache.get_latency(cache, 12) == nil
     end
   end
+
+  describe "clear_latency/2" do
+    test "can clear latencies for a user", %{cache: cache} do
+      Cache.add_latency(cache, %{"user_id" => 12, "latency" => 23})
+      assert Cache.get_latency(cache, 12) == 23
+      Cache.clear_latency(cache, 12)
+      assert Cache.get_latency(cache, 12) == nil
+    end
+  end
 end
