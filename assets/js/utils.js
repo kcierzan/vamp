@@ -18,8 +18,11 @@ export function b64ToAudioSrc(b64, type) {
 }
 
 export function joinChannel(socketPath, channelRoom) {
+  const channelToken = document
+    .querySelector("meta[name='channel_token']")
+    .getAttribute("content");
   const socket = new Socket(socketPath, {
-    params: { token: window.userToken },
+    params: { token: channelToken },
   });
   socket.connect();
   const channel = socket.channel(channelRoom, {});

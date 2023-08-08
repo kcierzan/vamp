@@ -92,6 +92,9 @@ defmodule VampWeb do
 
       import LiveSvelte
 
+      # generate some signed tokens?
+      import Phoenix.Token
+
       # Routes generation with the ~p sigil
       unquote(verified_routes())
     end

@@ -1,5 +1,7 @@
 defmodule VampWeb.UserSocket do
   use Phoenix.Socket
+  alias Vamp.Accounts.User
+  alias Vamp.Repo
 
   # A Socket handler
   #
@@ -34,9 +36,19 @@ defmodule VampWeb.UserSocket do
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
   @impl true
-  def connect(_params, socket, _connect_info) do
-    {:ok, socket}
+  def connect(%{"token" => token}, socket, _connect_info) do
+    case Phoenix.Token.verify(socket, "user auth", token, max_age: 86400) do
+      {:ok, user_id} ->
+        socket = assign(socket, :current_user, Repo.get!(User, user_id))
+        {:ok, socket}
+
+      {:error, _} ->
+        :error
+    end
   end
+
+  @impl true
+  def connect(_params, _socket, _connect_info), do: :error
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
   #

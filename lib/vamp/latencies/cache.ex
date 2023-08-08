@@ -10,6 +10,10 @@ defmodule Vamp.Latencies.Cache do
     GenServer.cast(server, {:add, %{"user_id" => user_id, "latency" => latency}})
   end
 
+  def clear_latency(server, user_id) do
+    GenServer.cast(server, {:clear, user_id})
+  end
+
   def get_latency(server, user_id) do
     GenServer.call(server, {:get, user_id})
   end
@@ -36,6 +40,11 @@ defmodule Vamp.Latencies.Cache do
   end
 
   @impl true
+  def handle_cast({:clear, user_id}, state) do
+    {:noreply, put_in(state, [Access.key(user_id, [])], [])}
+  end
+
+  @impl true
   def handle_call({:get, user_id}, _from, state) do
     user_latencies = get_in(state, [Access.key(user_id, [])])
     {:reply, mean(user_latencies), state}
@@ -50,7 +59,8 @@ defmodule Vamp.Latencies.Cache do
         latencies
 
       true ->
-        Enum.slice([latency | latencies], 0..20)
+        latest_twenty = Enum.slice([latency | latencies], 0..20)
+        Enum.reject(latest_twenty, fn el -> outside_standard_deviation?(el, latest_twenty) end)
     end
   end
 

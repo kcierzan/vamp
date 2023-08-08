@@ -11,12 +11,38 @@
   const channelRoom = "room:session";
   const { setChannel, addTrack, removeTrack } = sessionStore;
 
+  let currentLatency = 0;
+  let pingCount = 0;
+
   $: trackEntries = Object.entries($sessionStore.tracks);
   $: sessionEmpty = Object.keys($sessionStore.tracks).length === 0;
+
+  function measureLatency(channel) {
+    channel
+      .push("ping", { client_time: Date.now() })
+      .receive("ok", ({ up, server_time }) => {
+        const down = Date.now() - server_time;
+        channel.push("report_latency", { latency: (up + down) / 2 });
+        pingCount += 1;
+        if (pingCount < 20) {
+          setTimeout(() => measureLatency(channel), 100);
+          return;
+        }
+        getLatency(channel);
+      });
+  }
+
+  function getLatency(channel) {
+    channel.push("get_latency").receive("ok", (response) => {
+      currentLatency = response;
+    });
+  }
 
   onMount(async () => {
     const channel = joinChannel(socketPath, channelRoom);
     setChannel(channel);
+    channel.push("clear_latency");
+    measureLatency(channel);
   });
 </script>
 
@@ -25,6 +51,7 @@
   <h2 class="text-2xl" class:invisible={!sessionEmpty}>
     Why don't you start by adding some tracks?
   </h2>
+  <h3>Your latency is {currentLatency} ms!</h3>
 </div>
 
 <Transport />

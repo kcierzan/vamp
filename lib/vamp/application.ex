@@ -21,8 +21,9 @@ defmodule Vamp.Application do
       VampWeb.Endpoint,
       # Start a worker by calling: Vamp.Worker.start_link(arg)
       # {Vamp.Worker, arg}
+      VampWeb.Presence,
       # Start latency calculator
-      Vamp.Latencies.Supervisor
+      {Vamp.Latencies.Cache, name: Vamp.Latencies.Cache}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
