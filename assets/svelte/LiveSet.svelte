@@ -26,8 +26,8 @@
       .receive("ok", ({ up, server_time }) => {
         const down = Date.now() - server_time;
         channel.push("report_latency", { latency: (up + down) / 2 });
-        setTimeout(() => measureLatency(channel, count - 1), 100);
       });
+    setTimeout(() => measureLatency(channel, count - 1), 100);
   }
 
   function getLatency(channel) {
