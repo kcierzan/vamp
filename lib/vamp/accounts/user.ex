@@ -66,7 +66,7 @@ defmodule Vamp.Accounts.User do
     changeset
     |> validate_required([:display_name])
     |> validate_length(:display_name, min: 2, max: 72)
-    |> validate_format(:display_name, ~r/[^\s]/, message: "must have no spaces")
+    |> validate_format(:display_name, ~r/^[^\s]+$/, message: "must have no spaces")
     |> unsafe_validate_unique(:display_name, Vamp.Repo)
     |> unique_constraint(:display_name)
   end
