@@ -51,7 +51,7 @@ defmodule Vamp.MixProject do
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
-      {:live_svelte, "~> 0.8.0"}
+      {:live_svelte, "~> 0.11.0"}
     ]
   end
 
