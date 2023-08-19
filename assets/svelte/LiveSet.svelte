@@ -1,43 +1,29 @@
 <script>
-  import { onMount, onDestroy } from "svelte";
+  import { onMount } from "svelte";
+  import { sessionStore } from "../js/store";
   import Track from "./Track.svelte";
 
   export let currentUser;
 
+  let {
+    measureLatency,
+    addTrack,
+    removeTrack,
+    clearLatency,
+    joinUserChannel,
+    joinSharedChannel,
+  } = sessionStore;
+
   let currentLatency = 0;
-  let addTrack;
-  let removeTrack;
-  let measureLatency;
-  let clearLatency;
-  let joinUserChannel;
-  let joinSharedChannel;
-  let trackEntries;
-  let sessionEmpty = true;
-  let unsubscribe = () => {};
+  $: trackEntries = Object.entries($sessionStore.tracks)
+  $: sessionEmpty = Object.keys($sessionStore.tracks).length === 0
 
   onMount(async () => {
-    const { sessionStore } = await import("../js/store");
-    ({
-      measureLatency,
-      addTrack,
-      removeTrack,
-      clearLatency,
-      joinUserChannel,
-      joinSharedChannel,
-    } = sessionStore);
-
     joinSharedChannel();
     joinUserChannel(currentUser);
     clearLatency();
     measureLatency();
-
-    unsubscribe = sessionStore.subscribe((store) => {
-      trackEntries = Object.entries(store.tracks);
-      sessionEmpty = Object.keys(store.tracks).length === 0;
-    });
   });
-
-  onDestroy(unsubscribe);
 </script>
 
 <div class="flex flex-col items-center">

@@ -67,7 +67,7 @@ defmodule Vamp.Latencies.Cache do
 
       true ->
         latest_twenty = Enum.slice([latency | latencies], 0..20)
-        Enum.reject(latest_twenty, fn el -> outside_standard_deviation?(el, latest_twenty) end)
+        Enum.reject(latest_twenty, &outside_standard_deviation?(&1, latest_twenty))
     end
   end
 
@@ -91,6 +91,6 @@ defmodule Vamp.Latencies.Cache do
   end
 
   defp deviations(list) do
-    Enum.map(list, fn elem -> (elem - mean(list)) ** 2 end)
+    Enum.map(list, &((&1 - mean(list)) ** 2))
   end
 end
