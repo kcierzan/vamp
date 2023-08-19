@@ -17,12 +17,6 @@ defmodule VampWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", VampWeb do
-    pipe_through :browser
-
-    live "/", HelloLive, :home
-  end
-
   # Other scopes may use custom stacks.
   # scope "/api", VampWeb do
   #   pipe_through :api
@@ -52,6 +46,7 @@ defmodule VampWeb.Router do
 
     live_session :redirect_if_user_is_authenticated,
       on_mount: [{VampWeb.UserAuth, :redirect_if_user_is_authenticated}] do
+      live "/", UserRegistrationLive, :new
       live "/users/register", UserRegistrationLive, :new
       live "/users/log_in", UserLoginLive, :new
       live "/users/reset_password", UserForgotPasswordLive, :new
@@ -66,6 +61,8 @@ defmodule VampWeb.Router do
 
     live_session :require_authenticated_user,
       on_mount: [{VampWeb.UserAuth, :ensure_authenticated}] do
+      live "/dashboard", DashboardLive, :index
+      live "/liveset", LiveSetLive, :index
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
     end

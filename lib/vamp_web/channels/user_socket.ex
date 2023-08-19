@@ -1,5 +1,7 @@
-defmodule VampWeb.ClipSocket do
+defmodule VampWeb.UserSocket do
   use Phoenix.Socket
+  alias Vamp.Accounts.User
+  alias Vamp.Repo
 
   # A Socket handler
   #
@@ -10,15 +12,14 @@ defmodule VampWeb.ClipSocket do
   # Uncomment the following line to define a "room:*" topic
   # pointing to the `VampWeb.RoomChannel`:
   #
-  channel "room:*", VampWeb.RoomChannel
-  #
+  channel "liveset:*", VampWeb.LiveSetChannel
+  channel "private:*", VampWeb.LiveSetChannel
   # To create a channel file, use the mix task:
   #
   #     mix phx.gen.channel Room
   #
   # See the [`Channels guide`](https://hexdocs.pm/phoenix/channels.html)
   # for further details.
-
 
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After
@@ -35,9 +36,19 @@ defmodule VampWeb.ClipSocket do
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
   @impl true
-  def connect(_params, socket, _connect_info) do
-    {:ok, socket}
+  def connect(%{"token" => token}, socket, _connect_info) do
+    case Phoenix.Token.verify(socket, "user auth", token, max_age: 86400) do
+      {:ok, user_id} ->
+        socket = assign(socket, :current_user, Repo.get!(User, user_id))
+        {:ok, socket}
+
+      {:error, _} ->
+        :error
+    end
   end
+
+  @impl true
+  def connect(_params, _socket, _connect_info), do: :error
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
   #

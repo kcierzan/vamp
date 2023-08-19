@@ -2,8 +2,11 @@ defmodule Vamp.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @derive {Jason.Encoder, except: [:__meta__, :password, :hashed_password]}
+
   schema "users" do
     field :email, :string
+    field :display_name, :string
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :confirmed_at, :naive_datetime
@@ -36,9 +39,10 @@ defmodule Vamp.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :password])
+    |> cast(attrs, [:email, :display_name, :password])
     |> validate_email(opts)
     |> validate_password(opts)
+    |> validate_display_name()
   end
 
   defp validate_email(changeset, opts) do
@@ -58,6 +62,15 @@ defmodule Vamp.Accounts.User do
     # |> validate_format(:password, ~r/[A-Z]/, message: "at least one upper case character")
     # |> validate_format(:password, ~r/[!?@#$%^&*_0-9]/, message: "at least one digit or punctuation character")
     |> maybe_hash_password(opts)
+  end
+
+  defp validate_display_name(changeset) do
+    changeset
+    |> validate_required([:display_name])
+    |> validate_length(:display_name, min: 2, max: 72)
+    |> validate_format(:display_name, ~r/^[^\s]+$/, message: "must have no spaces")
+    |> unsafe_validate_unique(:display_name, Vamp.Repo)
+    |> unique_constraint(:display_name)
   end
 
   defp maybe_hash_password(changeset, opts) do
@@ -99,6 +112,22 @@ defmodule Vamp.Accounts.User do
     |> case do
       %{changes: %{email: _}} = changeset -> changeset
       %{} = changeset -> add_error(changeset, :email, "did not change")
+    end
+  end
+
+  @doc """
+  A user changeset for changing the display_name
+
+  It requires the display name to change otherwise an error is added.
+  """
+
+  def display_name_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:display_name])
+    |> validate_display_name()
+    |> case do
+      %{changes: %{display_name: _}} = changeset -> changeset
+      %{} = changeset -> add_error(changeset, :display_name, "did not change")
     end
   end
 

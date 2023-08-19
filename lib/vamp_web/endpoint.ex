@@ -6,13 +6,14 @@ defmodule VampWeb.Endpoint do
   # Set :encryption_salt if you would also like to encrypt it.
   @session_options [
     store: :cookie,
+    # FIXME: Change this before deployment
     key: "_vamp_key",
     signing_salt: "a/5Fzv3T",
     same_site: "Lax"
   ]
 
   socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
-  socket "/socket", VampWeb.ClipSocket, websocket: true, longpoll: false
+  socket "/socket", VampWeb.UserSocket, websocket: true, longpoll: false
 
   # Serve at "/" the static files from "priv/static" directory.
   #
