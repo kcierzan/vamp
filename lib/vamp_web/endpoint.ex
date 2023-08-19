@@ -6,6 +6,7 @@ defmodule VampWeb.Endpoint do
   # Set :encryption_salt if you would also like to encrypt it.
   @session_options [
     store: :cookie,
+    # FIXME: Change this before deployment
     key: "_vamp_key",
     signing_salt: "a/5Fzv3T",
     same_site: "Lax"

@@ -26,14 +26,11 @@ defmodule Vamp.Latencies.Cache do
 
   @impl true
   def handle_cast({:add, %{"user_id" => user_id, "latency" => latency}}, state) do
-    {_old_state, new_state} =
-      get_and_update_in(
+    new_state =
+      update_in(
         state,
         [Access.key(user_id, [])],
-        fn latencies ->
-          new_latencies = unshift_latency(latencies, latency)
-          {latencies, new_latencies}
-        end
+        &unshift_latency(&1, latency)
       )
 
     {:noreply, new_state}
@@ -41,11 +38,21 @@ defmodule Vamp.Latencies.Cache do
 
   @impl true
   def handle_cast({:clear, user_id}, state) do
-    {:noreply, put_in(state, [Access.key(user_id, [])], [])}
+    {:noreply, put_in(state, [user_id], [])}
   end
 
   @impl true
-  def handle_call({:get, user_id}, _from, state) do
+  def handle_call({:get, user_ids}, _from, state) when is_list(user_ids) do
+    user_latencies =
+      Map.take(state, user_ids)
+      |> Enum.map(fn {user_id, latencies} -> {user_id, mean(latencies)} end)
+      |> List.keysort(1, :desc)
+
+    {:reply, user_latencies, state}
+  end
+
+  @impl true
+  def handle_call({:get, user_id}, _from, state) when is_integer(user_id) do
     user_latencies = get_in(state, [Access.key(user_id, [])])
     {:reply, mean(user_latencies), state}
   end

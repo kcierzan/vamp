@@ -12,8 +12,8 @@ defmodule VampWeb.UserSocket do
   # Uncomment the following line to define a "room:*" topic
   # pointing to the `VampWeb.RoomChannel`:
   #
-  channel "room:*", VampWeb.RoomChannel
-  #
+  channel "liveset:*", VampWeb.LiveSetChannel
+  channel "private:*", VampWeb.LiveSetChannel
   # To create a channel file, use the mix task:
   #
   #     mix phx.gen.channel Room

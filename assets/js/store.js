@@ -4,16 +4,18 @@ import { fileToB64 } from "./utils";
 function createSessionStore() {
   const intialState = {
     tracks: {},
-    channel: null,
+    channels: {},
   };
   const { subscribe, update } = writable(intialState);
 
   // Store mutators - e2e reactive functions should not modify the store directly!
-  function setChannel(channel) {
+  function setChannel(channel, channelName) {
     update((store) => {
-      store.channel = channel;
-      for (const [message, handler] of Object.entries(msgCallbacks)) {
-        store.channel.on(message, handler);
+      store.channels[channelName] = channel;
+      const callbacks = getWsCallbacksForChannel(channelName);
+      for (const [message, callback] of Object.entries(callbacks)) {
+        console.log(`listening to ${message} on channel ${channelName}`)
+        store.channels[channelName].on(message, callback);
       }
       return store;
     });
@@ -21,7 +23,7 @@ function createSessionStore() {
 
   function addTrack() {
     update((store) => {
-      store.channel.push("new_track", {
+      store.channels.shared.push("new_track", {
         id: crypto.randomUUID(),
       });
       return store;
@@ -30,7 +32,7 @@ function createSessionStore() {
 
   function removeTrack(id) {
     update((store) => {
-      store.channel.push("remove_track", { id });
+      store.channels.shared.push("remove_track", { id });
       return store;
     });
   }
@@ -38,7 +40,7 @@ function createSessionStore() {
   async function addClip(file, trackId, clipId = crypto.randomUUID()) {
     const data = await fileToB64(file);
     update((store) => {
-      store.channel.push("new_clip", {
+      store.channels.shared.push("new_clip", {
         id: clipId,
         name: file.name,
         data: data,
@@ -54,7 +56,7 @@ function createSessionStore() {
 
   function playClip(id, trackId) {
     update((store) => {
-      store.channel.push("play_clip", {
+      store.channels.shared.push("play_clip", {
         trackId,
         clipId: id,
       });
@@ -64,65 +66,82 @@ function createSessionStore() {
 
   function stopClip(id, trackId) {
     update((store) => {
-      store.channel.push("stop_clip", { id, trackId });
+      store.channels.shared.push("stop_clip", { id, trackId });
       return store;
     });
   }
 
   function changePlaybackRate(id, trackId, playbackRate) {
     update((store) => {
-      store.channel.push("change_playback_rate", { id, trackId, playbackRate });
+      store.channels.shared.push("change_playback_rate", {
+        id,
+        trackId,
+        playbackRate,
+      });
       return store;
     });
   }
 
-  // handle incoming messages on the `Socket`
-  const msgCallbacks = {
-    new_track: ({ id }) => {
-      update((store) => {
-        const newTracks = { ...store.tracks, [id]: { id, clips: {} } };
-        return { ...store, tracks: newTracks };
-      });
+  function getWsCallbacksForChannel(channelName) {
+    return channelName === "shared" ? wsCallbacks.shared : wsCallbacks.private;
+  }
+
+  const wsCallbacks = {
+    shared: {
+      new_track: ({ id }) => {
+        update((store) => {
+          const newTracks = { ...store.tracks, [id]: { id, clips: {} } };
+          return { ...store, tracks: newTracks };
+        });
+      },
+      remove_track: ({ id }) => {
+        update((store) => {
+          const { [id]: _, ...remainingTracks } = store.tracks;
+          return { ...store, tracks: remainingTracks };
+        });
+      },
+      new_clip: (newClip) => {
+        const { id, trackId } = newClip;
+        update((store) => {
+          store.tracks[trackId].clips[id] = newClip;
+          return store;
+        });
+      },
+      change_playback_rate: ({ id, trackId, playbackRate }) => {
+        update((store) => {
+          store.tracks[trackId].clips[id].playbackRate = playbackRate;
+          return store;
+        });
+      },
     },
-    remove_track: ({ id }) => {
-      update((store) => {
-        const { [id]: _, ...remainingTracks } = store.tracks;
-        return { ...store, tracks: remainingTracks };
-      });
-    },
-    new_clip: (newClip) => {
-      const { id, trackId } = newClip;
-      update((store) => {
-        store.tracks[trackId].clips[id] = newClip;
-        return store;
-      });
-    },
-    play_clip: ({ clipId, trackId }) => {
-      update((store) => {
-        const clips = store.tracks[trackId].clips;
-        for (const [id, clip] of Object.entries(clips)) {
-          if (id === clipId) {
-            clip.paused = false;
-          } else {
-            clip.paused = true;
-            clip.currentTime = 0.0;
+    private: {
+      play_clip: ({ clipId, trackId, waitMilliseconds }) => {
+        update((store) => {
+          // TODO: this should interact with Tone.Transport instead
+          // and then update any visual state in a Tone.Draw callback
+          const clips = store.tracks[trackId].clips;
+          console.log(`We should have waited ${waitMilliseconds} milliseconds before playing!`)
+          // FIXME: we probably want a constant-time lookup of clips as to minimize delay
+          // with large livesets
+          for (const [id, clip] of Object.entries(clips)) {
+            if (id === clipId) {
+              clip.paused = false;
+            } else {
+              clip.paused = true;
+              clip.currentTime = 0.0;
+            }
           }
-        }
-        return store;
-      });
-    },
-    stop_clip: ({ id, trackId }) => {
-      update((store) => {
-        store.tracks[trackId].clips[id].paused = true;
-        store.tracks[trackId].clips[id].currentTime = 0.0;
-        return store;
-      });
-    },
-    change_playback_rate: ({ id, trackId, playbackRate }) => {
-      update((store) => {
-        store.tracks[trackId].clips[id].playbackRate = playbackRate;
-        return store;
-      });
+          return store;
+        });
+      },
+      stop_clip: ({ id, trackId, waitMilliseconds }) => {
+        update((store) => {
+          console.log(`We should have waited ${waitMilliseconds} milliseconds before stopping!`)
+          store.tracks[trackId].clips[id].paused = true;
+          store.tracks[trackId].clips[id].currentTime = 0.0;
+          return store;
+        });
+      },
     },
   };
 

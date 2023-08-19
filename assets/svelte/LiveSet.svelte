@@ -5,10 +5,11 @@
   import Track from "./Track.svelte";
   import Transport from "./Transport.svelte";
 
-  export let currentEmail;
+  export let currentUser;
 
   const socketPath = "/socket";
-  const channelRoom = "room:session";
+  const liveSetSharedChannel = "liveset:shared";
+  const liveSetPrivateChannel = `private:${currentUser.id}`;
   const { setChannel, addTrack, removeTrack } = sessionStore;
 
   let currentLatency = 0;
@@ -37,15 +38,17 @@
   }
 
   onMount(async () => {
-    const channel = joinChannel(socketPath, channelRoom);
-    setChannel(channel);
-    channel.push("clear_latency");
-    measureLatency(channel);
+    const sharedChannel = joinChannel(socketPath, liveSetSharedChannel);
+    const privateChannel = joinChannel(socketPath, liveSetPrivateChannel);
+    setChannel(sharedChannel, "shared");
+    setChannel(privateChannel, "private");
+    sharedChannel.push("clear_latency");
+    measureLatency(sharedChannel);
   });
 </script>
 
 <div class="flex flex-col items-center">
-  <h1 class="text-4xl underline bold">Welcome to Vamp, {currentEmail}</h1>
+  <h1 class="text-4xl underline bold">Welcome to Vamp, {currentUser.email}</h1>
   <h2 class="text-2xl" class:invisible={!sessionEmpty}>
     Why don't you start by adding some tracks?
   </h2>
