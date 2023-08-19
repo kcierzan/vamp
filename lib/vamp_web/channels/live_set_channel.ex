@@ -11,7 +11,7 @@ defmodule VampWeb.LiveSetChannel do
     {:ok, socket}
   end
 
-  # TODO: there should be a single private liveset channel per user. (users can only be in one liveset at a time)
+  # TODO: there should be a single private channel per user. (users can only be in one liveset at a time)
   # we probably want to namespace this under the liveset just to keep organized (eg. `liveset:<liveset_id>:<user_id>`)
   def join("private:" <> _private_room_id, _params, socket) do
     {:ok, socket}
@@ -77,8 +77,8 @@ defmodule VampWeb.LiveSetChannel do
     {:noreply, socket}
   end
 
-  defp broadcast_with_latency_compensation!([user_id], message, data) do
-    broadcast_to_private_channel!(message, user_id, Map.merge(data, %{"waitMilliseconds" => 0}))
+  defp broadcast_with_latency_compensation!([user_id] = _user_ids, message, data) do
+    broadcast_to_private_channel!(user_id, message, Map.merge(data, %{"waitMilliseconds" => 0}))
   end
 
   defp broadcast_with_latency_compensation!(user_ids, message, data) do
