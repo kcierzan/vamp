@@ -1,6 +1,7 @@
 import { writable } from "svelte/store";
-import { fileToB64, joinChannel } from "./utils";
-import { Transport } from "tone";
+import { fileToB64, b64ToAudioSrc, joinChannel } from "./utils";
+import * as Tone from "tone";
+import { GrainPlayer, Transport, Draw, Loop } from "tone";
 
 function createSessionStore() {
   const socketPath = "/socket";
@@ -33,9 +34,18 @@ function createSessionStore() {
         });
       },
       new_clip: (newClip) => {
-        const { id, trackId } = newClip;
+        const { id, trackId, data, type, ...rest } = newClip;
+        const url = b64ToAudioSrc(data, type);
+
         update((store) => {
-          store.tracks[trackId].clips[id] = newClip;
+          const grainPlayer = new GrainPlayer(url).toDestination();
+          store.tracks[trackId].clips[id] = {
+            id,
+            trackId,
+            grainPlayer,
+            type,
+            ...rest,
+          };
           return store;
         });
       },
@@ -49,32 +59,59 @@ function createSessionStore() {
     private: {
       play_clip: ({ clipId, trackId, waitMilliseconds }) => {
         update((store) => {
-          // TODO: this should interact with Tone.Transport instead
-          // and then update any visual state in a Tone.Draw callback
-          const clips = store.tracks[trackId].clips;
-          console.log(
-            `We should have waited ${waitMilliseconds} milliseconds before playing!`,
-          );
-          // FIXME: we probably want a constant-time lookup of clips as to minimize delay
-          // with large livesets
-          for (const [id, clip] of Object.entries(clips)) {
-            if (id === clipId) {
-              clip.paused = false;
-            } else {
-              clip.paused = true;
-              clip.currentTime = 0.0;
-            }
+          const track = store.tracks[trackId];
+          const clipToPlay = track.clips[clipId];
+          const waitSeconds = waitMilliseconds / 1000;
+
+          store.transport.bpm.value = 120;
+          store.transport.start();
+
+          if (track.loop) {
+            track.loop.stop();
+            track.loop = null;
           }
+
+          track.loop = new Loop((time) => {
+            clipToPlay.grainPlayer.start(time).stop("+1m");
+          }, "1m").start(waitSeconds);
+
+          store.transport.scheduleOnce((_time) => {
+            Draw.schedule(() => {
+              update((store) => {
+                if (
+                  track.currentlyPlaying &&
+                  track.currentlyPlaying !== clipId
+                ) {
+                  track.clips[track.currentlyPlaying].paused = true;
+                }
+                track.clips[clipId].paused = false;
+                track.currentlyPlaying = clipId;
+                return store;
+              });
+            }, "@1m");
+          }, `+${waitSeconds}`);
+
           return store;
         });
       },
       stop_clip: ({ id, trackId, waitMilliseconds }) => {
         update((store) => {
-          console.log(
-            `We should have waited ${waitMilliseconds} milliseconds before stopping!`,
-          );
-          store.tracks[trackId].clips[id].paused = true;
-          store.tracks[trackId].clips[id].currentTime = 0.0;
+          const track = store.tracks[trackId];
+          const waitSeconds = waitMilliseconds / 1000;
+
+          store.transport.scheduleOnce((_time) => {
+            if (track.loop) {
+              track.loop.stop("1m");
+              track.loop = null;
+            }
+            Draw.schedule(() => {
+              update((store) => {
+                track.clips[id].paused = true;
+                track.currentlyPlaying = null;
+                return store;
+              });
+            }, "@1m");
+          }, `+${waitSeconds}`);
           return store;
         });
       },
@@ -109,7 +146,9 @@ function createSessionStore() {
     configureChannelCallbacks("shared");
   }
 
-  function addTrack() {
+  async function addTrack() {
+    await Tone.start();
+    console.log("tone has started");
     update((store) => {
       store.channels.shared.push("new_track", {
         id: crypto.randomUUID(),
@@ -200,8 +239,8 @@ function createSessionStore() {
             latency: (up + down) / 2,
           });
         });
-        setTimeout(() => measureLatency(count - 1), 100);
-        return store;
+      setTimeout(() => measureLatency(count - 1), 100);
+      return store;
     });
   }
 

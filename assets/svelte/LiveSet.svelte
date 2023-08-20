@@ -1,6 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import { sessionStore } from "../js/store";
+  import * as Tone from "tone";
   import Track from "./Track.svelte";
 
   export let currentUser;
@@ -15,10 +16,14 @@
   } = sessionStore;
 
   let currentLatency = 0;
-  $: trackEntries = Object.entries($sessionStore.tracks)
-  $: sessionEmpty = Object.keys($sessionStore.tracks).length === 0
+  $: trackEntries = Object.entries($sessionStore.tracks);
+  $: sessionEmpty = Object.keys($sessionStore.tracks).length === 0;
 
   onMount(async () => {
+    document.querySelector("button").addEventListener("click", async () => {
+      await Tone.start();
+      console.log("starting tone");
+    });
     joinSharedChannel();
     joinUserChannel(currentUser);
     clearLatency();

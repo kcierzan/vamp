@@ -1,21 +1,14 @@
 <script>
   import Button from "./Button.svelte";
-  import { b64ToAudioSrc } from "js/utils";
   import { sessionStore } from "js/store";
 
   export let id;
-  export let data;
-  export let type;
   export let name;
   export let trackId;
   export let paused = true;
   export let playbackRate = 100;
-  export let currentTime = 0.0;
 
   const { addClip, playClip, stopClip, changePlaybackRate } = sessionStore;
-
-  $: src = b64ToAudioSrc(data, type);
-  $: scaledPlaybackRate = playbackRate / 100;
 
   function changeClip() {
     addClip(this.files[0], trackId, id);
@@ -27,12 +20,6 @@
 </script>
 
 <div class="flex flex-row mb-2">
-  <audio
-    {src}
-    bind:paused
-    bind:currentTime
-    bind:playbackRate={scaledPlaybackRate}
-  />
   <input
     id="clipchange-{id}"
     type="file"
