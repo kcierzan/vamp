@@ -26,22 +26,14 @@
     class="hidden"
     on:change={changeClip}
   />
-  {#if paused}
-    <Button
-      classes={"rounded-l-lg"}
-      onClick={() => {
-        playClip(id, trackId);
-      }}>{name}</Button
-    >
-  {:else}
-    <Button
-      classes={"rounded-l-lg"}
-      onClick={() => {
-        stopClip(id, trackId);
-      }}
-      negative={true}>{name}</Button
-    >
-  {/if}
+  <Button
+    onClick={() => {
+      paused ? playClip(id, trackId) : stopClip(id, trackId);
+    }}
+    negative={!paused}
+  >
+    {name}
+  </Button>
   <div
     class="text-center text-base w-24 h-16 align-middle text-white rounded-r-lg bg-sky-500 hover:bg-sky-700"
   >

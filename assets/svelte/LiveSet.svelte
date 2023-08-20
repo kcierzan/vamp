@@ -20,10 +20,6 @@
   $: sessionEmpty = Object.keys($sessionStore.tracks).length === 0;
 
   onMount(async () => {
-    document.querySelector("button").addEventListener("click", async () => {
-      await Tone.start();
-      console.log("starting tone");
-    });
     joinSharedChannel();
     joinUserChannel(currentUser);
     clearLatency();

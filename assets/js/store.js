@@ -60,6 +60,9 @@ function createSessionStore() {
     private: {
       play_clip: ({ clipId, trackId, waitMilliseconds }) => {
         update((store) => {
+          store.transport.bpm.value = 116;
+          store.transport.start();
+
           const track = store.tracks[trackId];
           const clipToPlay = track.clips[clipId];
           const waitSeconds = waitMilliseconds / 1000;
@@ -71,10 +74,6 @@ function createSessionStore() {
           const drift = Tone.now() - store.transport.seconds;
           const nextBarTT = nextBarAC - drift;
           const when = !!track.playEvent ? nextBarTT : waitSecondFromNow;
-
-          store.transport.bpm.value = 116;
-
-          store.transport.start();
 
           const playEvent = store.transport.scheduleRepeat(
             (time) => {
@@ -90,7 +89,10 @@ function createSessionStore() {
             }
             Draw.schedule(() => {
               update((store) => {
-                if (track.currentlyPlaying !== clipId) {
+                if (
+                  track.currentlyPlaying &&
+                  track.currentlyPlaying !== clipId
+                ) {
                   track.clips[track.currentlyPlaying].paused = true;
                 }
                 store.transport.clear(track.playEvent);
