@@ -1,13 +1,13 @@
 import { writable } from "svelte/store";
 import { fileToB64, b64ToAudioSrc, joinChannel } from "./utils";
 import * as Tone from "tone";
-import { GrainPlayer, Transport, Draw, Loop } from "tone";
+import { GrainPlayer, Transport, Draw, Time } from "tone";
 
 function createSessionStore() {
   const socketPath = "/socket";
   const liveSetSharedChannel = "liveset:shared";
 
-  const intialState = {
+  const initialState = {
     tracks: {},
     channels: {
       shared: null,
@@ -15,9 +15,10 @@ function createSessionStore() {
     },
     transport: Transport,
     latency: 0,
+    running: false,
   };
 
-  const { subscribe, update } = writable(intialState);
+  const { subscribe, update } = writable(initialState);
 
   const wsCallbacks = {
     shared: {
@@ -62,59 +63,68 @@ function createSessionStore() {
           const track = store.tracks[trackId];
           const clipToPlay = track.clips[clipId];
           const waitSeconds = waitMilliseconds / 1000;
+          const waitSecondFromNow = `+${waitSeconds}`;
 
-          store.transport.bpm.value = 120;
+          // HACK: Annoying bug in tonejs makes quantized time values
+          // in AudioContext time instead of TransportTime
+          const nextBarAC = Time("@1m").toSeconds();
+          const drift = Tone.now() - store.transport.seconds;
+          const nextBarTT = nextBarAC - drift;
+          const when = !!track.playEvent ? nextBarTT : waitSecondFromNow;
 
-          let clipAlreadyPlaying = false;
-          if (track.loop) {
-            track.loop.stop();
-            track.loop = null;
-            clipAlreadyPlaying = true;
-          }
-
-          track.loop = new Loop((time) => {
-            clipToPlay.grainPlayer.start(time).stop("+1m");
-          }, "1m").start(waitSeconds);
-
-          store.transport.scheduleOnce((time) => {
-            const drawDelay = clipAlreadyPlaying ? "@1m" : time;
-            Draw.schedule(() => {
-              update((store) => {
-                if (
-                  track.currentlyPlaying &&
-                  track.currentlyPlaying !== clipId
-                ) {
-                  track.clips[track.currentlyPlaying].paused = true;
-                }
-                track.clips[clipId].paused = false;
-                track.currentlyPlaying = clipId;
-                return store;
-              });
-            }, drawDelay);
-          }, `+${waitSeconds}`);
+          store.transport.bpm.value = 116;
 
           store.transport.start();
+
+          const playEvent = store.transport.scheduleRepeat(
+            (time) => {
+              clipToPlay.grainPlayer.start(time).stop("+1m");
+            },
+            "1m",
+            when,
+          );
+
+          store.transport.scheduleOnce((time) => {
+            if (track.playEvent) {
+              track.clips[track.currentlyPlaying].grainPlayer.stop(time);
+            }
+            Draw.schedule(() => {
+              update((store) => {
+                if (track.currentlyPlaying !== clipId) {
+                  track.clips[track.currentlyPlaying].paused = true;
+                }
+                store.transport.clear(track.playEvent);
+                track.clips[clipId].paused = false;
+                track.currentlyPlaying = clipId;
+                track.playEvent = playEvent;
+                return store;
+              });
+            }, time);
+          }, when);
+
           return store;
         });
       },
-      stop_clip: ({ id, trackId, waitMilliseconds }) => {
+      stop_clip: ({ id, trackId }) => {
         update((store) => {
           const track = store.tracks[trackId];
-          const waitSeconds = waitMilliseconds / 1000;
+          const nextBarAC = Time("@1m").toSeconds();
+          const drift = Tone.now() - store.transport.seconds;
+          const nextBarTT = nextBarAC - drift;
 
-          store.transport.scheduleOnce((_time) => {
-            if (track.loop) {
-              track.loop.stop("1m");
-              track.loop = null;
-            }
+          store.transport.scheduleOnce((time) => {
+            track.clips[id].grainPlayer.stop(time);
+            store.transport.clear(track.playEvent); // not sure about where this should go. Maybe it doesn't matter?
+
             Draw.schedule(() => {
               update((store) => {
                 track.clips[id].paused = true;
                 track.currentlyPlaying = null;
+                track.playEvent = null;
                 return store;
               });
-            }, "@1m");
-          }, `+${waitSeconds}`);
+            }, time);
+          }, nextBarTT);
           return store;
         });
       },
