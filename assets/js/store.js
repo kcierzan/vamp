@@ -64,18 +64,20 @@ function createSessionStore() {
           const waitSeconds = waitMilliseconds / 1000;
 
           store.transport.bpm.value = 120;
-          store.transport.start();
 
+          let clipAlreadyPlaying = false;
           if (track.loop) {
             track.loop.stop();
             track.loop = null;
+            clipAlreadyPlaying = true;
           }
 
           track.loop = new Loop((time) => {
             clipToPlay.grainPlayer.start(time).stop("+1m");
           }, "1m").start(waitSeconds);
 
-          store.transport.scheduleOnce((_time) => {
+          store.transport.scheduleOnce((time) => {
+            const drawDelay = clipAlreadyPlaying ? "@1m" : time;
             Draw.schedule(() => {
               update((store) => {
                 if (
@@ -88,9 +90,10 @@ function createSessionStore() {
                 track.currentlyPlaying = clipId;
                 return store;
               });
-            }, "@1m");
+            }, drawDelay);
           }, `+${waitSeconds}`);
 
+          store.transport.start();
           return store;
         });
       },
