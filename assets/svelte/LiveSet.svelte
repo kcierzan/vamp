@@ -10,7 +10,7 @@
     addTrack,
     removeTrack,
     clearLatency,
-    joinUserChannel,
+    joinPrivateChannel,
     joinSharedChannel,
   } = sessionStore;
 
@@ -20,7 +20,7 @@
 
   onMount(async () => {
     joinSharedChannel();
-    joinUserChannel(currentUser);
+    joinPrivateChannel(currentUser);
     clearLatency();
     measureLatency();
   });

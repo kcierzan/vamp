@@ -11,7 +11,7 @@ function createSessionStore() {
     tracks: {},
     channels: {
       shared: null,
-      user: null,
+      private: null,
     },
     transport: Transport,
     latency: 0,
@@ -36,7 +36,7 @@ function createSessionStore() {
     track.clips[clipId].paused = true;
     track.currentlyPlaying = null;
     track.playEvent = null;
-    return store
+    return store;
   }
 
   function drawStopClip({ clipId, track, time }) {
@@ -161,22 +161,23 @@ function createSessionStore() {
 
   // ---------------- Store mutators - e2e reactive functions should not modify the store directly! ------------------------
   function configureChannelCallbacks(channelName) {
-    const callbacks = getWsCallbacksForChannel(channelName);
     withStore((store) => {
-      for (const [message, callback] of Object.entries(callbacks)) {
+      for (const [message, callback] of Object.entries(
+        wsCallbacks[channelName],
+      )) {
         store.channels[channelName].on(message, callback);
       }
       return store;
     });
   }
 
-  function joinUserChannel(currentUser) {
+  function joinPrivateChannel(currentUser) {
     const liveSetPrivateChannel = `private:${currentUser.id}`;
     withStore((store) => {
-      store.channels.user = joinChannel(socketPath, liveSetPrivateChannel);
+      store.channels.private = joinChannel(socketPath, liveSetPrivateChannel);
       return store;
     });
-    configureChannelCallbacks("user");
+    configureChannelCallbacks("private");
   }
 
   function joinSharedChannel() {
@@ -304,10 +305,6 @@ function createSessionStore() {
     },
   };
 
-  function getWsCallbacksForChannel(channelName) {
-    return channelName === "shared" ? wsCallbacks.shared : wsCallbacks.private;
-  }
-
   return {
     subscribe,
     addTrack,
@@ -316,7 +313,7 @@ function createSessionStore() {
     playClip,
     stopClip,
     changePlaybackRate,
-    joinUserChannel,
+    joinPrivateChannel,
     joinSharedChannel,
     measureLatency,
     clearLatency,
