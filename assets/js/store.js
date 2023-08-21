@@ -20,19 +20,11 @@ function createSessionStore() {
 
   const { subscribe, update } = writable(initialState);
 
-  function setClipPlayingVisual({ clipId, playEvent, track, time }) {
-    Draw.schedule(() => {
-      update((store) => {
-        store.transport.clear(track.playEvent);
-        if (track.currentlyPlaying && track.currentlyPlaying !== clipId) {
-          track.clips[track.currentlyPlaying].paused = true;
-        }
-        track.clips[clipId].paused = false;
-        track.currentlyPlaying = clipId;
-        track.playEvent = playEvent;
-        return store;
-      });
-    }, time);
+  // ------------------- Message receiver functions ----------------------------
+  function withStore(cb, args) {
+    update((store) => {
+      return cb(store, args);
+    });
   }
 
   function stopGrainPlayer({ track, time }) {
@@ -40,15 +32,75 @@ function createSessionStore() {
       track.clips[track.currentlyPlaying].grainPlayer.stop(time);
   }
 
-  function stopClipPlayingVisual({ clipId, track, time }) {
+  function stopVisual(store, { clipId, track }) {
+    track.clips[clipId].paused = true;
+    track.currentlyPlaying = null;
+    track.playEvent = null;
+    return store
+  }
+
+  function drawStopClip({ clipId, track, time }) {
     Draw.schedule(() => {
-      update((store) => {
-        track.clips[clipId].paused = true;
-        track.currentlyPlaying = null;
-        track.playEvent = null;
-        return store;
-      });
+      withStore(stopVisual, { clipId, track });
     }, time);
+  }
+
+  function playVisual(store, { clipId, playEvent, track }) {
+    store.transport.clear(track.playEvent);
+    if (track.currentlyPlaying && track.currentlyPlaying !== clipId) {
+      track.clips[track.currentlyPlaying].paused = true;
+    }
+    track.clips[clipId].paused = false;
+    track.currentlyPlaying = clipId;
+    track.playEvent = playEvent;
+    return store;
+  }
+
+  function drawPlayClip({ clipId, playEvent, track, time }) {
+    Draw.schedule(() => {
+      withStore(playVisual, { clipId, playEvent, track });
+    }, time);
+  }
+
+  function receiveStopClip(store, { clipId, trackId }) {
+    const track = store.tracks[trackId];
+    const nextBarTT = quantizedTransportTime("@1m", store.transport);
+    once(
+      (time) => {
+        stopGrainPlayer({ track, time });
+        store.transport.clear(track.playEvent);
+        drawStopClip({ clipId, track, time });
+      },
+      { transport: store.transport, at: nextBarTT },
+    );
+    return store;
+  }
+
+  function receivePlayClip(store, { clipId, trackId, waitMilliseconds }) {
+    store.transport.bpm.value = 116;
+    store.transport.start();
+
+    const track = store.tracks[trackId];
+    const nowWithLatencyCompensation = `+${waitMilliseconds / 1000}`;
+    const nextBarTT = quantizedTransportTime("@1m", store.transport);
+    const fireAt = !!track.playEvent ? nextBarTT : nowWithLatencyCompensation;
+
+    const playEvent = loopClip({
+      clip: track.clips[clipId],
+      transport: store.transport,
+      until: "+1m",
+      frequency: "1m",
+      time: fireAt,
+    });
+
+    once(
+      (time) => {
+        stopGrainPlayer({ track, time });
+        drawPlayClip({ clipId, playEvent, track, time });
+      },
+      { at: fireAt, transport: store.transport },
+    );
+    return store;
   }
 
   // HACK: Annoying bug in tonejs makes quantized time values
@@ -75,98 +127,42 @@ function createSessionStore() {
     }, at);
   }
 
-  const wsCallbacks = {
-    shared: {
-      new_track: ({ id }) => {
-        update((store) => {
-          const newTracks = { ...store.tracks, [id]: { id, clips: {} } };
-          return { ...store, tracks: newTracks };
-        });
-      },
-      remove_track: ({ id }) => {
-        update((store) => {
-          const { [id]: _, ...remainingTracks } = store.tracks;
-          return { ...store, tracks: remainingTracks };
-        });
-      },
-      new_clip: (newClip) => {
-        const { id, trackId, data, type, ...rest } = newClip;
-        const url = b64ToAudioSrc(data, type);
+  function receiveNewTrack(store, { id }) {
+    const newTracks = {
+      ...store.tracks,
+      [id]: { id: id, clips: {} },
+    };
+    return { ...store, tracks: newTracks };
+  }
 
-        update((store) => {
-          const grainPlayer = new GrainPlayer(url).toDestination();
-          store.tracks[trackId].clips[id] = {
-            id,
-            trackId,
-            grainPlayer,
-            type,
-            ...rest,
-          };
-          return store;
-        });
-      },
-      change_playback_rate: ({ id, trackId, playbackRate }) => {
-        update((store) => {
-          store.tracks[trackId].clips[id].playbackRate = playbackRate;
-          return store;
-        });
-      },
-    },
-    private: {
-      play_clip: ({ clipId, trackId, waitMilliseconds }) => {
-        update((store) => {
-          store.transport.bpm.value = 116;
-          store.transport.start();
+  function receiveRemoveTrack(store, { trackId }) {
+    const { [trackId]: _, ...remainingTracks } = store.tracks;
+    return { ...store, tracks: remainingTracks };
+  }
 
-          const track = store.tracks[trackId];
-          const nowWithLatencyCompensation = `+${waitMilliseconds / 1000}`;
-          const nextBarTT = quantizedTransportTime("@1m", store.transport);
-          const fireAt = !!track.playEvent
-            ? nextBarTT
-            : nowWithLatencyCompensation;
+  function receiveNewClip(store, newClip) {
+    const { id, trackId, data, type, ...rest } = newClip;
+    const url = b64ToAudioSrc(data, type);
+    const grainPlayer = new GrainPlayer(url).toDestination();
+    store.tracks[trackId].clips[id] = {
+      id,
+      trackId,
+      grainPlayer,
+      type,
+      ...rest,
+    };
+    return store;
+  }
 
-          const playEvent = loopClip({
-            clip: track.clips[clipId],
-            transport: store.transport,
-            until: "+1m",
-            frequency: "1m",
-            time: fireAt,
-          });
+  function receiveChangePlaybackRate(store, { clipId, trackId, playbackRate }) {
+    store.tracks[trackId].clips[clipId].playbackRate = playbackRate;
+    return store;
+  }
 
-          once(
-            (time) => {
-              stopGrainPlayer({ track, time });
-              setClipPlayingVisual({ clipId, playEvent, track, time });
-            },
-            { at: fireAt, transport: store.transport },
-          );
-
-          return store;
-        });
-      },
-      stop_clip: ({ id, trackId }) => {
-        update((store) => {
-          const track = store.tracks[trackId];
-          const nextBarTT = quantizedTransportTime("@1m", store.transport);
-
-          once(
-            (time) => {
-              stopGrainPlayer({ track, time });
-              store.transport.clear(track.playEvent);
-              stopClipPlayingVisual({ clipId: id, track, time });
-            },
-            { transport: store.transport, at: nextBarTT },
-          );
-          return store;
-        });
-      },
-    },
-  };
-
-  // Store mutators - e2e reactive functions should not modify the store directly!
+  // ---------------- Store mutators - e2e reactive functions should not modify the store directly! ------------------------
   function configureChannelCallbacks(channelName) {
     const callbacks = getWsCallbacksForChannel(channelName);
-    update((store) => {
+    withStore((store) => {
       for (const [message, callback] of Object.entries(callbacks)) {
         store.channels[channelName].on(message, callback);
       }
@@ -176,7 +172,7 @@ function createSessionStore() {
 
   function joinUserChannel(currentUser) {
     const liveSetPrivateChannel = `private:${currentUser.id}`;
-    update((store) => {
+    withStore((store) => {
       store.channels.user = joinChannel(socketPath, liveSetPrivateChannel);
       return store;
     });
@@ -184,7 +180,7 @@ function createSessionStore() {
   }
 
   function joinSharedChannel() {
-    update((store) => {
+    withStore((store) => {
       store.channels.shared = joinChannel(socketPath, liveSetSharedChannel);
       return store;
     });
@@ -194,7 +190,7 @@ function createSessionStore() {
   async function addTrack() {
     await Tone.start();
     console.log("tone has started");
-    update((store) => {
+    withStore((store) => {
       store.channels.shared.push("new_track", {
         id: crypto.randomUUID(),
       });
@@ -203,7 +199,7 @@ function createSessionStore() {
   }
 
   function removeTrack(id) {
-    update((store) => {
+    withStore((store) => {
       store.channels.shared.push("remove_track", { id });
       return store;
     });
@@ -211,7 +207,7 @@ function createSessionStore() {
 
   async function addClip(file, trackId, clipId = crypto.randomUUID()) {
     const data = await fileToB64(file);
-    update((store) => {
+    withStore((store) => {
       store.channels.shared.push("new_clip", {
         id: clipId,
         name: file.name,
@@ -227,7 +223,7 @@ function createSessionStore() {
   }
 
   function playClip(id, trackId) {
-    update((store) => {
+    withStore((store) => {
       store.channels.shared.push("play_clip", {
         trackId,
         clipId: id,
@@ -237,14 +233,14 @@ function createSessionStore() {
   }
 
   function stopClip(id, trackId) {
-    update((store) => {
+    withStore((store) => {
       store.channels.shared.push("stop_clip", { id, trackId });
       return store;
     });
   }
 
   function changePlaybackRate(id, trackId, playbackRate) {
-    update((store) => {
+    withStore((store) => {
       store.channels.shared.push("change_playback_rate", {
         id,
         trackId,
@@ -255,14 +251,14 @@ function createSessionStore() {
   }
 
   function clearLatency() {
-    update((store) => {
+    withStore((store) => {
       store.channels.shared.push("clear_latency");
       return store;
     });
   }
 
   function getLatency() {
-    update((store) => {
+    withStore((store) => {
       store.channels.shared.push("get_latency").receive("ok", (response) => {
         store.latency = response;
       });
@@ -275,7 +271,7 @@ function createSessionStore() {
       getLatency();
       return;
     }
-    update((store) => {
+    withStore((store) => {
       store.channels.shared
         .push("ping", { client_time: Date.now() })
         .receive("ok", ({ up, server_time }) => {
@@ -288,6 +284,25 @@ function createSessionStore() {
       return store;
     });
   }
+
+  const wsCallbacks = {
+    shared: {
+      new_track: (args) => withStore(receiveNewTrack, args),
+      remove_track: ({ id }) => withStore(receiveRemoveTrack, { trackId: id }),
+      new_clip: (newClip) => withStore(receiveNewClip, newClip),
+      change_playback_rate: ({ id, trackId, playbackRate }) =>
+        withStore(receiveChangePlaybackRate, {
+          clipId: id,
+          trackId,
+          playbackRate,
+        }),
+    },
+    private: {
+      play_clip: (args) => withStore(receivePlayClip, args),
+      stop_clip: ({ id, trackId }) =>
+        withStore(receiveStopClip, { clipId: id, trackId }),
+    },
+  };
 
   function getWsCallbacksForChannel(channelName) {
     return channelName === "shared" ? wsCallbacks.shared : wsCallbacks.private;
