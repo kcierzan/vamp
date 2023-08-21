@@ -20,6 +20,61 @@ function createSessionStore() {
 
   const { subscribe, update } = writable(initialState);
 
+  function setClipPlayingVisual({ clipId, playEvent, track, time }) {
+    Draw.schedule(() => {
+      update((store) => {
+        store.transport.clear(track.playEvent);
+        if (track.currentlyPlaying && track.currentlyPlaying !== clipId) {
+          track.clips[track.currentlyPlaying].paused = true;
+        }
+        track.clips[clipId].paused = false;
+        track.currentlyPlaying = clipId;
+        track.playEvent = playEvent;
+        return store;
+      });
+    }, time);
+  }
+
+  function stopGrainPlayer({ track, time }) {
+    !!track.currentlyPlaying &&
+      track.clips[track.currentlyPlaying].grainPlayer.stop(time);
+  }
+
+  function stopClipPlayingVisual({ clipId, track, time }) {
+    Draw.schedule(() => {
+      update((store) => {
+        track.clips[clipId].paused = true;
+        track.currentlyPlaying = null;
+        track.playEvent = null;
+        return store;
+      });
+    }, time);
+  }
+
+  // HACK: Annoying bug in tonejs makes quantized time values
+  // in AudioContext time instead of TransportTime
+  function quantizedTransportTime(quantizedTime, transport) {
+    const nextBarAC = Time(quantizedTime).toSeconds();
+    const drift = Tone.now() - transport.seconds;
+    return nextBarAC - drift;
+  }
+
+  function loopClip({ clip, transport, until, frequency, time }) {
+    return transport.scheduleRepeat(
+      (audioContextTime) => {
+        clip.grainPlayer.start(audioContextTime).stop(until);
+      },
+      frequency,
+      time,
+    );
+  }
+
+  function once(cb, { at, transport }) {
+    transport.scheduleOnce((time) => {
+      cb(time);
+    }, at);
+  }
+
   const wsCallbacks = {
     shared: {
       new_track: ({ id }) => {
@@ -64,45 +119,27 @@ function createSessionStore() {
           store.transport.start();
 
           const track = store.tracks[trackId];
-          const clipToPlay = track.clips[clipId];
-          const waitSeconds = waitMilliseconds / 1000;
-          const waitSecondFromNow = `+${waitSeconds}`;
+          const nowWithLatencyCompensation = `+${waitMilliseconds / 1000}`;
+          const nextBarTT = quantizedTransportTime("@1m", store.transport);
+          const fireAt = !!track.playEvent
+            ? nextBarTT
+            : nowWithLatencyCompensation;
 
-          // HACK: Annoying bug in tonejs makes quantized time values
-          // in AudioContext time instead of TransportTime
-          const nextBarAC = Time("@1m").toSeconds();
-          const drift = Tone.now() - store.transport.seconds;
-          const nextBarTT = nextBarAC - drift;
-          const when = !!track.playEvent ? nextBarTT : waitSecondFromNow;
+          const playEvent = loopClip({
+            clip: track.clips[clipId],
+            transport: store.transport,
+            until: "+1m",
+            frequency: "1m",
+            time: fireAt,
+          });
 
-          const playEvent = store.transport.scheduleRepeat(
+          once(
             (time) => {
-              clipToPlay.grainPlayer.start(time).stop("+1m");
+              stopGrainPlayer({ track, time });
+              setClipPlayingVisual({ clipId, playEvent, track, time });
             },
-            "1m",
-            when,
+            { at: fireAt, transport: store.transport },
           );
-
-          store.transport.scheduleOnce((time) => {
-            if (track.playEvent) {
-              track.clips[track.currentlyPlaying].grainPlayer.stop(time);
-            }
-            Draw.schedule(() => {
-              update((store) => {
-                if (
-                  track.currentlyPlaying &&
-                  track.currentlyPlaying !== clipId
-                ) {
-                  track.clips[track.currentlyPlaying].paused = true;
-                }
-                store.transport.clear(track.playEvent);
-                track.clips[clipId].paused = false;
-                track.currentlyPlaying = clipId;
-                track.playEvent = playEvent;
-                return store;
-              });
-            }, time);
-          }, when);
 
           return store;
         });
@@ -110,23 +147,16 @@ function createSessionStore() {
       stop_clip: ({ id, trackId }) => {
         update((store) => {
           const track = store.tracks[trackId];
-          const nextBarAC = Time("@1m").toSeconds();
-          const drift = Tone.now() - store.transport.seconds;
-          const nextBarTT = nextBarAC - drift;
+          const nextBarTT = quantizedTransportTime("@1m", store.transport);
 
-          store.transport.scheduleOnce((time) => {
-            track.clips[id].grainPlayer.stop(time);
-            store.transport.clear(track.playEvent); // not sure about where this should go. Maybe it doesn't matter?
-
-            Draw.schedule(() => {
-              update((store) => {
-                track.clips[id].paused = true;
-                track.currentlyPlaying = null;
-                track.playEvent = null;
-                return store;
-              });
-            }, time);
-          }, nextBarTT);
+          once(
+            (time) => {
+              stopGrainPlayer({ track, time });
+              store.transport.clear(track.playEvent);
+              stopClipPlayingVisual({ clipId: id, track, time });
+            },
+            { transport: store.transport, at: nextBarTT },
+          );
           return store;
         });
       },

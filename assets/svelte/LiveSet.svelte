@@ -1,7 +1,6 @@
 <script>
   import { onMount } from "svelte";
   import { sessionStore } from "../js/store";
-  import * as Tone from "tone";
   import Track from "./Track.svelte";
 
   export let currentUser;
