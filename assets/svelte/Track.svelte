@@ -9,6 +9,7 @@
 
   function newClip() {
     addClip(this.files[0], id);
+    this.value = '';
   }
 </script>
 
@@ -22,7 +23,12 @@
       playbackRate={clip.playbackRate}
     />
   {/each}
-  <input id="addclip-{id}" type="file" on:change={newClip} class="hidden" />
+  <input
+    id="addclip-{id}"
+    type="file"
+    on:change={newClip}
+    class="hidden"
+  />
   <div
     class="text-center text-base w-72 h-16 align-middle text-white rounded bg-sky-500 hover:bg-sky-700"
   >
