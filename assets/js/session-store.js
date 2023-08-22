@@ -17,53 +17,59 @@ const initialState = {
   tracks: {},
 };
 
-const store = writable(initialState);
-const { subscribe, update } = store;
+const sessionStore = writable(initialState);
+const { subscribe, update } = sessionStore;
+
+let sessionStoreValue;
+
+sessionStore.subscribe((value) => {
+  sessionStoreValue = value.tracks;
+});
 
 // ------------------- Message receiver functions ----------------------------
-function withStore(cb, args) {
-  update((store) => {
-    return cb(store, args);
-  });
-}
-
 function stopGrainPlayer({ track, time }) {
   !!track.currentlyPlaying &&
     track.clips[track.currentlyPlaying].grainPlayer.stop(time);
 }
 
-function stopVisual(store, { clipId, track }) {
-  track.clips[clipId].paused = true;
-  track.currentlyPlaying = null;
-  track.playEvent = null;
-  return store;
+function stopVisual({ clipId, track }) {
+  update((store) => {
+    track.clips[clipId].paused = true;
+    track.currentlyPlaying = null;
+    track.playEvent = null;
+    return store;
+  });
 }
 
 function drawStopClip({ clipId, track, time }) {
-  Draw.schedule(() => {
-    withStore(stopVisual, { clipId, track });
-  }, time);
+  Draw.schedule(() => stopVisual({ clipId, track }), time);
 }
 
-function playVisual(store, { clipId, playEvent, track }) {
-  transport.clear(track.playEvent);
-  if (track.currentlyPlaying && track.currentlyPlaying !== clipId) {
-    track.clips[track.currentlyPlaying].paused = true;
-  }
-  track.clips[clipId].paused = false;
-  track.currentlyPlaying = clipId;
-  track.playEvent = playEvent;
-  return store;
+function playVisual({ clipId, playEvent, track }) {
+  update((store) => {
+
+    // cancel loops scheduled for the currently playing clip
+    transport.clear(track.playEvent);
+
+    // if there is a clip playing for this track, set it to paused
+    if (track.currentlyPlaying && track.currentlyPlaying !== clipId) {
+      store.tracks[track.id].clips[track.currentlyPlaying].paused = true
+    }
+
+    // set the clip to a playing state
+    store.tracks[track.id].clips[clipId].paused = false
+    store.tracks[track.id].currentlyPlaying = clipId
+    store.tracks[track.id].playEvent = playEvent
+    return store;
+  });
 }
 
 function drawPlayClip({ clipId, playEvent, track, time }) {
-  Draw.schedule(() => {
-    withStore(playVisual, { clipId, playEvent, track });
-  }, time);
+  Draw.schedule(() => playVisual({ clipId, playEvent, track }), time);
 }
 
-function receiveStopClip(store, { clipId, trackId }) {
-  const track = store.tracks[trackId];
+function receiveStopClip({ clipId, trackId }) {
+  const track = sessionStoreValue[trackId];
   const nextBarTT = quantizedTransportTime("@1m");
   once(
     (time) => {
@@ -73,14 +79,13 @@ function receiveStopClip(store, { clipId, trackId }) {
     },
     { at: nextBarTT },
   );
-  return store;
 }
 
-function receivePlayClip(store, { clipId, trackId, waitMilliseconds }) {
+function receivePlayClip({ clipId, trackId, waitMilliseconds }) {
   transport.bpm.value = 116;
   transport.start();
 
-  const track = store.tracks[trackId];
+  const track = sessionStoreValue[trackId];
   const nowWithLatencyCompensation = `+${waitMilliseconds / 1000}`;
   const nextBarTT = quantizedTransportTime("@1m");
   const fireAt = !!track.playEvent ? nextBarTT : nowWithLatencyCompensation;
@@ -99,7 +104,6 @@ function receivePlayClip(store, { clipId, trackId, waitMilliseconds }) {
     },
     { at: fireAt },
   );
-  return store;
 }
 
 // HACK: Annoying bug in tonejs makes quantized time values
@@ -126,36 +130,43 @@ function once(cb, { at }) {
   }, at);
 }
 
-function receiveNewTrack(store, { id }) {
-  const newTracks = {
-    ...store.tracks,
-    [id]: { id: id, clips: {} },
-  };
-  return { ...store, tracks: newTracks };
+function receiveNewTrack({ id }) {
+  update((store) => {
+    const newTracks = {
+      ...store.tracks,
+      [id]: { id: id, clips: {} },
+    };
+    return { ...store, tracks: newTracks };
+  });
 }
 
-function receiveRemoveTrack(store, { trackId }) {
-  const { [trackId]: _, ...remainingTracks } = store.tracks;
-  return { ...store, tracks: remainingTracks };
+function receiveRemoveTrack({ trackId }) {
+  update((store) => {
+    const { [trackId]: _, ...remainingTracks } = store.tracks;
+    return { ...store, tracks: remainingTracks };
+  });
 }
 
-function receiveNewClip(store, newClip) {
-  const { id, trackId, data, type, ...rest } = newClip;
+function receiveNewClip({ id, trackId, data, type, ...rest }) {
   const url = b64ToAudioSrc(data, type);
   const grainPlayer = new GrainPlayer(url).toDestination();
-  store.tracks[trackId].clips[id] = {
-    id,
-    trackId,
-    grainPlayer,
-    type,
-    ...rest,
-  };
-  return store;
+  update((store) => {
+    store.tracks[trackId].clips[id] = {
+      id,
+      trackId,
+      grainPlayer,
+      type,
+      ...rest,
+    };
+    return store;
+  });
 }
 
-function receiveChangePlaybackRate(store, { clipId, trackId, playbackRate }) {
-  store.tracks[trackId].clips[clipId].playbackRate = playbackRate;
-  return store;
+function receiveChangePlaybackRate({ clipId, trackId, playbackRate }) {
+  update((store) => {
+    store.tracks[trackId].clips[clipId].playbackRate = playbackRate;
+    return store;
+  });
 }
 
 // ---------------- Store mutators - e2e reactive functions should not modify the store directly! ------------------------
@@ -169,13 +180,13 @@ function configureChannelCallbacks(channelName) {
   }
 }
 
-function joinPrivateChannel(currentUser) {
-  channelStore.joinPrivateChannel(currentUser);
+function joinPrivateChannel(token, currentUser) {
+  channelStore.joinPrivateChannel(token, currentUser);
   configureChannelCallbacks("private");
 }
 
-function joinSharedChannel() {
-  channelStore.joinSharedChannel();
+function joinSharedChannel(token) {
+  channelStore.joinSharedChannel(token);
   configureChannelCallbacks("shared");
 }
 
@@ -226,20 +237,15 @@ function changePlaybackRate(id, trackId, playbackRate) {
 
 const wsCallbacks = {
   shared: {
-    new_track: (args) => withStore(receiveNewTrack, args),
-    remove_track: ({ id }) => withStore(receiveRemoveTrack, { trackId: id }),
-    new_clip: (newClip) => withStore(receiveNewClip, newClip),
+    new_track: ({ id }) => receiveNewTrack({ id }),
+    remove_track: ({ id }) => receiveRemoveTrack({ trackId: id }),
+    new_clip: (newClip) => receiveNewClip(newClip),
     change_playback_rate: ({ id, trackId, playbackRate }) =>
-      withStore(receiveChangePlaybackRate, {
-        clipId: id,
-        trackId,
-        playbackRate,
-      }),
+      receiveChangePlaybackRate({ clipId: id, trackId, playbackRate }),
   },
   private: {
-    play_clip: (args) => withStore(receivePlayClip, args),
-    stop_clip: ({ id, trackId }) =>
-      withStore(receiveStopClip, { clipId: id, trackId }),
+    play_clip: (args) => receivePlayClip(args),
+    stop_clip: ({ id, trackId }) => receiveStopClip({ clipId: id, trackId }),
   },
 };
 

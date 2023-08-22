@@ -2,27 +2,35 @@ import { writable } from "svelte/store";
 import { joinChannel } from "./utils";
 
 const socketPath = "/socket";
-const liveSetSharedChannel = "liveset:shared";
+const livesetTopic = "liveset:shared";
 
 const initialState = {
   shared: null,
   private: null,
 };
 
-const channelStore = writable(initialState)
-const { subscribe, update } = channelStore;
+const channelStore = writable(initialState);
+const { update } = channelStore;
 
-function joinPrivateChannel(currentUser) {
-  const liveSetPrivateChannel = `private:${currentUser.id}`;
+function joinPrivateChannel(token, currentUser) {
+  const livesetPrivateTopic = `private:${currentUser.id}`;
   update((store) => {
-    store.private = joinChannel(socketPath, liveSetPrivateChannel);
+    store.private = joinChannel({
+      path: socketPath,
+      topic: livesetPrivateTopic,
+      token: token,
+    });
     return store;
   });
 }
 
-function joinSharedChannel() {
+function joinSharedChannel(token) {
   update((store) => {
-    store.shared = joinChannel(socketPath, liveSetSharedChannel);
+    store.shared = joinChannel({
+      path: socketPath,
+      topic: livesetTopic,
+      token: token,
+    });
     return store;
   });
 }

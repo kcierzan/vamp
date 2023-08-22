@@ -17,15 +17,12 @@ export function b64ToAudioSrc(b64, type) {
   return URL.createObjectURL(blob);
 }
 
-export function joinChannel(socketPath, channelRoom) {
-  const channelToken = document
-    .querySelector("meta[name='channel_token']")
-    .getAttribute("content");
-  const socket = new Socket(socketPath, {
-    params: { token: channelToken },
+export function joinChannel({ path, topic, token }) {
+  const socket = new Socket(path, {
+    params: { token: token },
   });
   socket.connect();
-  const channel = socket.channel(channelRoom, {});
+  const channel = socket.channel(topic, {});
   channel
     .join()
     .receive("ok", (resp) => {
