@@ -35,7 +35,6 @@ function measureLatency(count = 20) {
 
 export default {
   subscribe,
-  // getLatency,
   clearLatency,
   measureLatency,
 };

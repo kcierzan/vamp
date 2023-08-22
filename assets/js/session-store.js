@@ -2,16 +2,16 @@ import { writable } from "svelte/store";
 import { fileToB64, b64ToAudioSrc } from "./utils";
 import * as Tone from "tone";
 import { GrainPlayer, Transport, Draw, Time } from "tone";
-import channelStore from "./channel-store"
+import channelStore from "./channel-store";
 
-const transport = Transport
-let sharedChannel
-let privateChannel
+const transport = Transport;
+let sharedChannel;
+let privateChannel;
 
 channelStore.subscribe((value) => {
-  sharedChannel = value.shared
-  privateChannel = value.private
-})
+  sharedChannel = value.shared;
+  privateChannel = value.private;
+});
 
 const initialState = {
   tracks: {},
@@ -160,13 +160,11 @@ function receiveChangePlaybackRate(store, { clipId, trackId, playbackRate }) {
 
 // ---------------- Store mutators - e2e reactive functions should not modify the store directly! ------------------------
 function configureChannelCallbacks(channelName) {
-  for (const [message, callback] of Object.entries(
-    wsCallbacks[channelName],
-  )) {
+  for (const [message, callback] of Object.entries(wsCallbacks[channelName])) {
     if (channelName === "private") {
-      privateChannel.on(message, callback)
+      privateChannel.on(message, callback);
     } else if (channelName === "shared") {
-      sharedChannel.on(message, callback)
+      sharedChannel.on(message, callback);
     }
   }
 }

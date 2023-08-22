@@ -1,6 +1,6 @@
 <script>
   import Button from "./Button.svelte";
-  import sessionStore from "js/store";
+  import session from "js/session-store";
 
   export let id;
   export let name;
@@ -8,7 +8,7 @@
   export let paused = true;
   export let playbackRate = 100;
 
-  const { addClip, playClip, stopClip, changePlaybackRate } = sessionStore;
+  const { addClip, playClip, stopClip, changePlaybackRate } = session;
 
   function changeClip() {
     addClip(this.files[0], trackId, id);
