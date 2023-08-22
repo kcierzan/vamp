@@ -1,6 +1,6 @@
 <script>
   import Button from "./Button.svelte";
-  import { sessionStore } from "js/store";
+  import sessionStore from "js/store";
 
   export let id;
   export let name;

@@ -1,20 +1,20 @@
 <script>
   import { onMount } from "svelte";
-  import { sessionStore } from "../js/store";
+  import sessionStore from "../js/store";
+  import latency from "../js/latency-store"
   import Track from "./Track.svelte";
 
   export let currentUser;
 
-  let {
-    measureLatency,
+  const {
     addTrack,
     removeTrack,
-    clearLatency,
     joinPrivateChannel,
     joinSharedChannel,
   } = sessionStore;
 
-  let currentLatency = 0;
+  const { clearLatency, measureLatency } = latency;
+
   $: trackEntries = Object.entries($sessionStore.tracks);
   $: sessionEmpty = Object.keys($sessionStore.tracks).length === 0;
 
@@ -31,7 +31,7 @@
   <h2 class="text-2xl" class:invisible={!sessionEmpty}>
     Why don't you start by adding some tracks?
   </h2>
-  <h3>Your latency is {currentLatency} ms!</h3>
+  <h3>Your latency is {$latency} ms!</h3>
 </div>
 
 <button

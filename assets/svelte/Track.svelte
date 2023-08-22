@@ -1,6 +1,6 @@
 <script>
   import Clip from "./Clip.svelte";
-  import { sessionStore } from "js/store";
+  import sessionStore from "js/store";
 
   export let id;
   export let clips = {};
