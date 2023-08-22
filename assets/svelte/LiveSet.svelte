@@ -12,8 +12,8 @@
 
   const { clearLatency, measureLatency } = latency;
 
-  $: trackEntries = Object.entries($tracks.tracks);
-  $: sessionEmpty = Object.keys($tracks.tracks).length === 0;
+  $: trackEntries = Object.entries($tracks);
+  $: sessionEmpty = Object.keys($tracks).length === 0;
 
   onMount(async () => {
     joinSharedChannel(token);

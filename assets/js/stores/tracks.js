@@ -5,13 +5,12 @@ import { GrainPlayer, Transport, Draw, Time } from "tone";
 import channels from "./channels";
 
 const transport = Transport;
-const sessionStore = writable({tracks: {}});
+const sessionStore = writable({});
 let sessionStoreValue;
 const { subscribe, update } = sessionStore;
 sessionStore.subscribe((value) => {
-  sessionStoreValue = value.tracks;
+  sessionStoreValue = value;
 });
-
 
 let sharedChannel;
 let privateChannel;
@@ -19,7 +18,6 @@ channels.subscribe((value) => {
   sharedChannel = value.shared;
   privateChannel = value.private;
 });
-
 
 // ------------------- Message receiver functions ----------------------------
 function stopGrainPlayer({ track, time }) {
@@ -42,19 +40,18 @@ function drawStopClip({ clipId, track, time }) {
 
 function playVisual({ clipId, playEvent, track }) {
   update((store) => {
-
     // cancel loops scheduled for the currently playing clip
     transport.clear(track.playEvent);
 
     // if there is a clip playing for this track, set it to paused
     if (track.currentlyPlaying && track.currentlyPlaying !== clipId) {
-      store.tracks[track.id].clips[track.currentlyPlaying].paused = true
+      store[track.id].clips[track.currentlyPlaying].paused = true;
     }
 
     // set the clip to a playing state
-    store.tracks[track.id].clips[clipId].paused = false
-    store.tracks[track.id].currentlyPlaying = clipId
-    store.tracks[track.id].playEvent = playEvent
+    store[track.id].clips[clipId].paused = false;
+    store[track.id].currentlyPlaying = clipId;
+    store[track.id].playEvent = playEvent;
     return store;
   });
 }
@@ -127,18 +124,17 @@ function once(cb, { at }) {
 
 function receiveNewTrack({ id }) {
   update((store) => {
-    const newTracks = {
-      ...store.tracks,
+    return {
+      ...store,
       [id]: { id: id, clips: {} },
     };
-    return { ...store, tracks: newTracks };
   });
 }
 
 function receiveRemoveTrack({ trackId }) {
   update((store) => {
-    const { [trackId]: _, ...remainingTracks } = store.tracks;
-    return { ...store, tracks: remainingTracks };
+    const { [trackId]: _, ...remainingTracks } = store;
+    return remainingTracks;
   });
 }
 
@@ -146,7 +142,7 @@ function receiveNewClip({ id, trackId, data, type, ...rest }) {
   const url = b64ToAudioSrc(data, type);
   const grainPlayer = new GrainPlayer(url).toDestination();
   update((store) => {
-    store.tracks[trackId].clips[id] = {
+    store[trackId].clips[id] = {
       id,
       trackId,
       grainPlayer,
@@ -159,7 +155,7 @@ function receiveNewClip({ id, trackId, data, type, ...rest }) {
 
 function receiveChangePlaybackRate({ clipId, trackId, playbackRate }) {
   update((store) => {
-    store.tracks[trackId].clips[clipId].playbackRate = playbackRate;
+    store[trackId].clips[clipId].playbackRate = playbackRate;
     return store;
   });
 }
