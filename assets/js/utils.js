@@ -44,6 +44,6 @@ function fileToArrayBuffer(file) {
 
     reader.addEventListener("loadend", (e) => resolve(e.target.result));
     reader.addEventListener("error", reject);
-    reader.readAsArrayBuffer(file);
+    !!file && reader.readAsArrayBuffer(file);
   });
 }
