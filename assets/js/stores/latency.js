@@ -1,10 +1,12 @@
 import { writable } from "svelte/store";
-import channelStore from "./channel-store";
+import channels from "./channels";
 
 const latencyStore = writable(0);
 const { subscribe, set } = latencyStore;
+let sharedChannel;
+let privateChannel;
 
-channelStore.subscribe((value) => {
+channels.subscribe((value) => {
   sharedChannel = value.shared;
   privateChannel = value.private;
 });

@@ -2,29 +2,24 @@ import { writable } from "svelte/store";
 import { fileToB64, b64ToAudioSrc } from "./utils";
 import * as Tone from "tone";
 import { GrainPlayer, Transport, Draw, Time } from "tone";
-import channelStore from "./channel-store";
+import channels from "./channels";
 
 const transport = Transport;
+const sessionStore = writable({tracks: {}});
+let sessionStoreValue;
+const { subscribe, update } = sessionStore;
+sessionStore.subscribe((value) => {
+  sessionStoreValue = value.tracks;
+});
+
+
 let sharedChannel;
 let privateChannel;
-
-channelStore.subscribe((value) => {
+channels.subscribe((value) => {
   sharedChannel = value.shared;
   privateChannel = value.private;
 });
 
-const initialState = {
-  tracks: {},
-};
-
-const sessionStore = writable(initialState);
-const { subscribe, update } = sessionStore;
-
-let sessionStoreValue;
-
-sessionStore.subscribe((value) => {
-  sessionStoreValue = value.tracks;
-});
 
 // ------------------- Message receiver functions ----------------------------
 function stopGrainPlayer({ track, time }) {
@@ -181,12 +176,12 @@ function configureChannelCallbacks(channelName) {
 }
 
 function joinPrivateChannel(token, currentUser) {
-  channelStore.joinPrivateChannel(token, currentUser);
+  channels.joinPrivateChannel(token, currentUser);
   configureChannelCallbacks("private");
 }
 
 function joinSharedChannel(token) {
-  channelStore.joinSharedChannel(token);
+  channels.joinSharedChannel(token);
   configureChannelCallbacks("shared");
 }
 

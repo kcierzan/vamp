@@ -1,11 +1,11 @@
 <script>
   import Clip from "./Clip.svelte";
-  import session from "js/session-store";
+  import tracks from "js/stores/tracks";
 
   export let id;
   export let clips = {};
 
-  const { addClip } = session;
+  const { addClip } = tracks;
 
   function newClip() {
     addClip(this.files[0], id);

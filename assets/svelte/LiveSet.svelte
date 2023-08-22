@@ -1,19 +1,19 @@
 <script>
   import { onMount } from "svelte";
-  import session from "../js/session-store";
-  import latency from "../js/latency-store";
+  import tracks from "../js/stores/tracks";
+  import latency from "../js/stores/latency";
   import Track from "./Track.svelte";
 
   export let currentUser;
   export let token;
 
   const { addTrack, removeTrack, joinPrivateChannel, joinSharedChannel } =
-    session;
+    tracks;
 
   const { clearLatency, measureLatency } = latency;
 
-  $: trackEntries = Object.entries($session.tracks);
-  $: sessionEmpty = Object.keys($session.tracks).length === 0;
+  $: trackEntries = Object.entries($tracks.tracks);
+  $: sessionEmpty = Object.keys($tracks.tracks).length === 0;
 
   onMount(async () => {
     joinSharedChannel(token);
