@@ -1,5 +1,5 @@
 import { writable } from "svelte/store";
-import { fileToB64, b64ToAudioSrc } from "./utils";
+import { fileToB64, b64ToAudioSrc } from "../utils";
 import * as Tone from "tone";
 import { GrainPlayer, Transport, Draw, Time } from "tone";
 import channels from "./channels";
@@ -48,7 +48,7 @@ function playVisual({ clipId, playEvent, track }) {
       store[track.id].clips[track.currentlyPlaying].paused = true;
     }
 
-    // set the clip to a playing state
+    // set the target clip to a playing state
     store[track.id].clips[clipId].paused = false;
     store[track.id].currentlyPlaying = clipId;
     store[track.id].playEvent = playEvent;
@@ -73,29 +73,31 @@ function receiveStopClip({ clipId, trackId }) {
   );
 }
 
-function receivePlayClip({ clipId, trackId, waitMilliseconds }) {
+function receivePlayClip({ waitMilliseconds, ...clips }) {
   transport.bpm.value = 116;
   transport.start();
 
-  const track = sessionStoreValue[trackId];
-  const nowWithLatencyCompensation = `+${waitMilliseconds / 1000}`;
-  const nextBarTT = quantizedTransportTime("@1m");
-  const fireAt = !!track.playEvent ? nextBarTT : nowWithLatencyCompensation;
+  Object.entries(clips).forEach(([trackId, clipId]) => {
+    const track = sessionStoreValue[trackId];
+    const nowWithLatencyCompensation = `+${waitMilliseconds / 1000}`;
+    const nextBarTT = quantizedTransportTime("@1m");
+    const fireAt = !!track.playEvent ? nextBarTT : nowWithLatencyCompensation;
 
-  const playEvent = loopClip({
-    clip: track.clips[clipId],
-    until: "+1m",
-    frequency: "1m",
-    time: fireAt,
-  });
+    const playEvent = loopClip({
+      clip: track.clips[clipId],
+      until: "+1m",
+      frequency: "1m",
+      time: fireAt,
+    });
 
-  once(
-    (time) => {
-      stopGrainPlayer({ track, time });
-      drawPlayClip({ clipId, playEvent, track, time });
-    },
-    { at: fireAt },
-  );
+    once(
+      (time) => {
+        stopGrainPlayer({ track, time });
+        drawPlayClip({ clipId, playEvent, track, time });
+      },
+      { at: fireAt },
+    );
+  })
 }
 
 // HACK: Annoying bug in tonejs makes quantized time values
@@ -208,10 +210,11 @@ async function addClip(file, trackId, clipId = crypto.randomUUID()) {
 }
 
 function playClip(id, trackId) {
-  sharedChannel.push("play_clip", {
-    trackId,
-    clipId: id,
-  });
+  playClips({ [trackId]: id });
+}
+
+function playClips(trackClips) {
+  sharedChannel.push("play_clip", trackClips);
 }
 
 function stopClip(id, trackId) {
@@ -246,6 +249,7 @@ export default {
   addClip,
   removeTrack,
   playClip,
+  playClips,
   stopClip,
   changePlaybackRate,
   joinPrivateChannel,

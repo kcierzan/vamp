@@ -1,5 +1,5 @@
 import { writable } from "svelte/store";
-import { joinChannel } from "./utils";
+import { joinChannel } from "../utils";
 
 const socketPath = "/socket";
 const livesetTopic = "liveset:shared";

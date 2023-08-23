@@ -3,6 +3,7 @@
   import tracks from "../js/stores/tracks";
   import latency from "../js/stores/latency";
   import Track from "./Track.svelte";
+  import Scenes from "./Scenes.svelte";
 
   export let currentUser;
   export let token;
@@ -36,6 +37,7 @@
   on:click={addTrack}>Add track</button
 >
 <div class="flex flex-row w-full space-x-4">
+  <Scenes {sessionEmpty} />
   {#if trackEntries}
     {#each trackEntries as [id, track] (id)}
       <div class="flex flex-col items-center">
