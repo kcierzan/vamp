@@ -1,14 +1,23 @@
 <script>
-  import Button from "./Button.svelte";
   import tracks from "js/stores/tracks";
 
   export let id;
   export let name;
   export let trackId;
-  export let paused = true;
+  export let state = "stopped";
   export let playbackRate = 100;
 
-  const { addClip, playClip, stopClip, changePlaybackRate } = tracks;
+  const { addClip, playClip, stopClips, changePlaybackRate } = tracks;
+
+  // TODO: extract this to PlayableButton or something
+  const baseStyles = "text-base w-48 h-16 text-white rounded-l-lg";
+  const stateStyles = {
+    playing: "bg-red-500 hover:bg-red-700",
+    stopped: "bg-green-500 hover:bg-green-500",
+    queued: "bg-yellow-500 hover:bg-yellow-700",
+  };
+
+  $: clipStyles = baseStyles + " " + stateStyles[state];
 
   function changeClip() {
     addClip(this.files[0], trackId, id);
@@ -16,6 +25,16 @@
 
   function changeTempo() {
     changePlaybackRate(id, trackId, this.value);
+  }
+
+  function clipAction() {
+    switch (state) {
+      case "stopped":
+        playClip(id, trackId);
+        break;
+      case "playing":
+        stopClips([trackId]);
+    }
   }
 </script>
 
@@ -26,14 +45,9 @@
     class="hidden"
     on:change={changeClip}
   />
-  <Button
-    onClick={() => {
-      paused ? playClip(id, trackId) : stopClip(id, trackId);
-    }}
-    negative={!paused}
-  >
+  <button on:click={clipAction} class={clipStyles}>
     {name}
-  </Button>
+  </button>
   <div
     class="text-center text-base w-24 h-16 align-middle text-white rounded-r-lg bg-sky-500 hover:bg-sky-700"
   >

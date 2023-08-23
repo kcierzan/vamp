@@ -1,23 +1,30 @@
 import { writable } from "svelte/store";
 import { fileToB64, b64ToAudioSrc } from "../utils";
 import * as Tone from "tone";
-import { GrainPlayer, Transport, Draw, Time } from "tone";
+import { GrainPlayer, Draw, Time } from "tone";
 import channels from "./channels";
+import transportStore from "./transport";
 
-const transport = Transport;
-const sessionStore = writable({});
 let sessionStoreValue;
+let transport;
+let sharedChannel;
+let privateChannel;
+
+const sessionStore = writable({});
 const { subscribe, update } = sessionStore;
+
 sessionStore.subscribe((value) => {
   sessionStoreValue = value;
 });
 
-let sharedChannel;
-let privateChannel;
 channels.subscribe((value) => {
   sharedChannel = value.shared;
   privateChannel = value.private;
 });
+
+transportStore.subscribe((value) => {
+  transport = value;
+})
 
 // ------------------- Message receiver functions ----------------------------
 function stopGrainPlayer({ track, time }) {
@@ -25,31 +32,33 @@ function stopGrainPlayer({ track, time }) {
     track.clips[track.currentlyPlaying].grainPlayer.stop(time);
 }
 
-function stopVisual({ clipId, track }) {
+function stopVisual({ track }) {
   update((store) => {
-    track.clips[clipId].paused = true;
+    for (const clip of Object.values(track.clips)) {
+      clip.state = "stopped";
+    }
     track.currentlyPlaying = null;
     track.playEvent = null;
     return store;
   });
 }
 
-function drawStopClip({ clipId, track, time }) {
-  Draw.schedule(() => stopVisual({ clipId, track }), time);
+function drawStopClip({ track, time }) {
+  Draw.schedule(() => stopVisual({ track }), time);
 }
 
 function playVisual({ clipId, playEvent, track }) {
   update((store) => {
     // cancel loops scheduled for the currently playing clip
-    transport.clear(track.playEvent);
+    transport.transport.clear(track.playEvent);
 
-    // if there is a clip playing for this track, set it to paused
+    // if there is a clip playing for this track, set it to `stopped`
     if (track.currentlyPlaying && track.currentlyPlaying !== clipId) {
-      store[track.id].clips[track.currentlyPlaying].paused = true;
+      store[track.id].clips[track.currentlyPlaying].state = "stopped";
     }
 
     // set the target clip to a playing state
-    store[track.id].clips[clipId].paused = false;
+    store[track.id].clips[clipId].state = "playing";
     store[track.id].currentlyPlaying = clipId;
     store[track.id].playEvent = playEvent;
     return store;
@@ -60,29 +69,44 @@ function drawPlayClip({ clipId, playEvent, track, time }) {
   Draw.schedule(() => playVisual({ clipId, playEvent, track }), time);
 }
 
-function receiveStopClip({ clipId, trackId }) {
-  const track = sessionStoreValue[trackId];
+function receiveStopClip({ trackIds }) {
   const nextBarTT = quantizedTransportTime("@1m");
-  once(
-    (time) => {
-      stopGrainPlayer({ track, time });
-      transport.clear(track.playEvent);
-      drawStopClip({ clipId, track, time });
-    },
-    { at: nextBarTT },
-  );
+
+  for (const trackId of trackIds) {
+    const track = sessionStoreValue[trackId];
+    once(
+      (time) => {
+        stopGrainPlayer({ track, time });
+        transport.transport.clear(track.playEvent);
+        drawStopClip({ track, time });
+      },
+      { at: nextBarTT },
+    );
+  }
 }
 
-function receivePlayClip({ waitMilliseconds, ...clips }) {
-  transport.bpm.value = 116;
-  transport.start();
+function drawQueueClips(playClips) {
+  Draw.schedule(() => {
+    update((store) => {
+      Object.entries(playClips).forEach(([trackId, clipId]) => {
+        store[trackId].clips[clipId].state = "queued";
+      });
+      return store;
+    });
+  }, Tone.now());
+}
+
+function receivePlayClips({ waitMilliseconds, ...clips }) {
+  const nowWithLatencyCompensation = `+${waitMilliseconds / 1000}`;
+  const nextBarTT = quantizedTransportTime("@1m");
+  const fireAt = transport.state === "playing" ? nextBarTT : nowWithLatencyCompensation;
+  transport.state === "playing" && drawQueueClips(clips);
+
+  transportStore.setBpm(116);
+  transportStore.start();
 
   Object.entries(clips).forEach(([trackId, clipId]) => {
     const track = sessionStoreValue[trackId];
-    const nowWithLatencyCompensation = `+${waitMilliseconds / 1000}`;
-    const nextBarTT = quantizedTransportTime("@1m");
-    const fireAt = !!track.playEvent ? nextBarTT : nowWithLatencyCompensation;
-
     const playEvent = loopClip({
       clip: track.clips[clipId],
       until: "+1m",
@@ -97,19 +121,19 @@ function receivePlayClip({ waitMilliseconds, ...clips }) {
       },
       { at: fireAt },
     );
-  })
+  });
 }
 
 // HACK: Annoying bug in tonejs makes quantized time values
 // in AudioContext time instead of TransportTime
 function quantizedTransportTime(quantizedTime) {
   const nextBarAC = Time(quantizedTime).toSeconds();
-  const drift = Tone.now() - transport.seconds;
+  const drift = Tone.now() - transport.transport.seconds;
   return nextBarAC - drift;
 }
 
 function loopClip({ clip, until, frequency, time }) {
-  return transport.scheduleRepeat(
+  return transport.transport.scheduleRepeat(
     (audioContextTime) => {
       clip.grainPlayer.start(audioContextTime).stop(until);
     },
@@ -119,7 +143,7 @@ function loopClip({ clip, until, frequency, time }) {
 }
 
 function once(cb, { at }) {
-  transport.scheduleOnce((time) => {
+  transport.transport.scheduleOnce((time) => {
     cb(time);
   }, at);
 }
@@ -203,7 +227,7 @@ async function addClip(file, trackId, clipId = crypto.randomUUID()) {
     data: data,
     type: file.type,
     trackId: trackId,
-    paused: true,
+    state: "stopped",
     currentTime: 0.0,
     playbackRate: 100,
   });
@@ -214,11 +238,12 @@ function playClip(id, trackId) {
 }
 
 function playClips(trackClips) {
+  drawQueueClips(trackClips);
   sharedChannel.push("play_clip", trackClips);
 }
 
-function stopClip(id, trackId) {
-  sharedChannel.push("stop_clip", { id, trackId });
+function stopClips(trackIds) {
+  sharedChannel.push("stop_clip", { trackIds });
 }
 
 function changePlaybackRate(id, trackId, playbackRate) {
@@ -238,8 +263,8 @@ const wsCallbacks = {
       receiveChangePlaybackRate({ clipId: id, trackId, playbackRate }),
   },
   private: {
-    play_clip: (args) => receivePlayClip(args),
-    stop_clip: ({ id, trackId }) => receiveStopClip({ clipId: id, trackId }),
+    play_clip: (args) => receivePlayClips(args),
+    stop_clip: ({ trackIds }) => receiveStopClip({ trackIds }),
   },
 };
 
@@ -250,7 +275,7 @@ export default {
   removeTrack,
   playClip,
   playClips,
-  stopClip,
+  stopClips,
   changePlaybackRate,
   joinPrivateChannel,
   joinSharedChannel,
