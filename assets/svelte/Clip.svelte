@@ -13,7 +13,7 @@
   const baseStyles = "text-base w-48 h-16 text-white rounded-l-lg";
   const stateStyles = {
     playing: "bg-red-500 hover:bg-red-700",
-    stopped: "bg-green-500 hover:bg-green-500",
+    stopped: "bg-green-500 hover:bg-green-700",
     queued: "bg-yellow-500 hover:bg-yellow-700",
   };
 

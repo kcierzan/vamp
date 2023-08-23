@@ -76,7 +76,7 @@ function playScene(index) {
   const clipsToPlay = {};
   const tracksToStop = [];
   for (const [trackId, clip] of Object.entries(scene)) {
-    if (!!clip) {
+    if (clip) {
       clipsToPlay[trackId] = clip.id;
     } else {
       tracksToStop.push(trackId);
