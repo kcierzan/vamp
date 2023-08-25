@@ -1,19 +1,8 @@
 import { derived } from "svelte/store";
+import { tracksToClipArrays } from "../utils"
 import tracks from "./tracks";
 
 let scenesValue;
-
-function tracksToClipArrays(tracks) {
-  const clipArrays = [];
-  for (const track of Object.values(tracks)) {
-    const trackArray = [];
-    for (const clip of Object.values(track.clips)) {
-      trackArray.push(clip);
-    }
-    clipArrays.push(trackArray);
-  }
-  return clipArrays;
-}
 
 function scenesFromTracks(tracks) {
   const scenes = [];
@@ -22,15 +11,15 @@ function scenesFromTracks(tracks) {
   for (let row = sceneCount(tracks) - 1; row >= 0; row--) {
     const scene = {};
     for (const track of clipArrays) {
-      const firstClipInTrack = track.find((clip) => !!clip);
+      const nonemptyTrack = track.find((clip) => !!clip);
 
       // there is a clip in the scene for this track
       if (track[row]) {
         scene[track[row].trackId] = track[row];
         // there is a clip somewhere in the track
         // so we should stop this track when playing this scene
-      } else if (firstClipInTrack) {
-        scene[firstClipInTrack.trackId] = null;
+      } else if (nonemptyTrack) {
+        scene[nonemptyTrack.trackId] = null;
       }
     }
     scenes.unshift(scene);

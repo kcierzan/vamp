@@ -5,7 +5,8 @@
   export let name;
   export let trackId;
   export let state = "stopped";
-  export let playbackRate = 100;
+  export let playbackRate = 1;
+  export let bpm = 0
 
   const { addClip, playClip, stopClips, changePlaybackRate } = tracks;
 
@@ -20,7 +21,7 @@
   $: clipStyles = baseStyles + " " + stateStyles[state];
 
   function changeClip() {
-    addClip(this.files[0], trackId, id);
+    addClip({ file: this.files[0], trackId, bpm, clipId: id });
   }
 
   function changeTempo() {
@@ -46,7 +47,7 @@
     on:change={changeClip}
   />
   <button on:click={clipAction} class={clipStyles}>
-    {name}
+    {name} - {bpm}BPM
   </button>
   <div
     class="text-center text-base w-24 h-16 align-middle text-white rounded-r-lg bg-sky-500 hover:bg-sky-700"
@@ -60,7 +61,8 @@
   class="mb-2 w-64"
   type="range"
   min="0"
-  max="200"
+  step="0.01"
+  max="2"
   bind:value={playbackRate}
   on:input={changeTempo}
 />

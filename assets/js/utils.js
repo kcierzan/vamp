@@ -34,16 +34,29 @@ export function joinChannel({ path, topic, token }) {
   return channel;
 }
 
+export function tracksToClipArrays(tracks) {
+  const clipArrays = [];
+  for (const track of Object.values(tracks)) {
+    const trackArray = [];
+    for (const clip of Object.values(track.clips)) {
+      trackArray.push(clip);
+    }
+    clipArrays.push(trackArray);
+  }
+  return clipArrays;
+}
+
 async function fileToByteArray(file) {
   return new Uint8Array(await fileToArrayBuffer(file));
 }
 
 function fileToArrayBuffer(file) {
+  if (!file) return;
   return new Promise((resolve, reject) => {
     let reader = new FileReader();
 
     reader.addEventListener("loadend", (e) => resolve(e.target.result));
     reader.addEventListener("error", reject);
-    !!file && reader.readAsArrayBuffer(file);
+    reader.readAsArrayBuffer(file);
   });
 }

@@ -71,11 +71,14 @@ function drawPlayClip({ clipId, playEvent, track, time }) {
 
 function receiveStopClip({ trackIds }) {
   const nextBarTT = quantizedTransportTime("@1m");
+  console.log(`NOW: ${transport.transport.seconds}`)
+  console.log(`Stopping at: ${nextBarTT}`)
 
   for (const trackId of trackIds) {
     const track = sessionStoreValue[trackId];
     once(
       (time) => {
+        console.log(`callback invoked at ${transport.transport.seconds}`)
         stopGrainPlayer({ track, time });
         transport.transport.clear(track.playEvent);
         drawStopClip({ track, time });
@@ -101,8 +104,6 @@ function receivePlayClips({ waitMilliseconds, ...clips }) {
   const nextBarTT = quantizedTransportTime("@1m");
   const fireAt = transport.state === "playing" ? nextBarTT : nowWithLatencyCompensation;
   transport.state === "playing" && drawQueueClips(clips);
-
-  transportStore.setBpm(116);
   transportStore.start();
 
   Object.entries(clips).forEach(([trackId, clipId]) => {
@@ -167,6 +168,10 @@ function receiveRemoveTrack({ trackId }) {
 function receiveNewClip({ id, trackId, data, type, ...rest }) {
   const url = b64ToAudioSrc(data, type);
   const grainPlayer = new GrainPlayer(url).toDestination();
+  grainPlayer.grainSize = 0.2
+  grainPlayer.overlap = 0.05
+  grainPlayer.playbackRate = transport.transport.bpm.value / rest.bpm
+  console.log(grainPlayer.playbackRate)
   update((store) => {
     store[trackId].clips[id] = {
       id,
@@ -182,6 +187,7 @@ function receiveNewClip({ id, trackId, data, type, ...rest }) {
 function receiveChangePlaybackRate({ clipId, trackId, playbackRate }) {
   update((store) => {
     store[trackId].clips[clipId].playbackRate = playbackRate;
+    store[trackId].clips[clipId].grainPlayer.playbackRate = playbackRate;
     return store;
   });
 }
@@ -219,17 +225,19 @@ function removeTrack(id) {
   sharedChannel.push("remove_track", { id });
 }
 
-async function addClip(file, trackId, clipId = crypto.randomUUID()) {
+async function addClip({ file, trackId, clipId, bpm }) {
+  const id = clipId ?? crypto.randomUUID()
   const data = await fileToB64(file);
   sharedChannel.push("new_clip", {
-    id: clipId,
+    id: id,
     name: file.name,
     data: data,
     type: file.type,
     trackId: trackId,
     state: "stopped",
     currentTime: 0.0,
-    playbackRate: 100,
+    playbackRate: 1,
+    bpm,
   });
 }
 

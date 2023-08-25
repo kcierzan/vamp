@@ -4,11 +4,12 @@
 
   export let id;
   export let clips = {};
+  let clipBpm;
 
   const { addClip } = tracks;
 
   function newClip() {
-    addClip(this.files[0], id);
+    addClip({ file: this.files[0], trackId: id, bpm: clipBpm });
     this.value = "";
   }
 </script>
@@ -21,6 +22,7 @@
       name={clip.name}
       state={clip.state}
       playbackRate={clip.playbackRate}
+      bpm={clip.bpm}
     />
   {/each}
   <input id="addclip-{id}" type="file" on:change={newClip} class="hidden" />
@@ -31,4 +33,5 @@
       >Add clip</label
     >
   </div>
+  <input type="number" bind:value={clipBpm} />
 </div>

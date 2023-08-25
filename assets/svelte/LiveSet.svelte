@@ -4,6 +4,7 @@
   import latency from "../js/stores/latency";
   import Track from "./Track.svelte";
   import Scenes from "./Scenes.svelte";
+  import Tempo from "./Tempo.svelte";
 
   export let currentUser;
   export let token;
@@ -31,6 +32,8 @@
   </h2>
   <h3>Your latency is {$latency} ms!</h3>
 </div>
+
+<Tempo />
 
 <button
   class="rounded class bg-green-500 hover:bg-green-700 text-white w-24 h-16 mb-4"

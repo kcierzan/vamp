@@ -27,7 +27,7 @@ function stop() {
 
 function setBpm(bpm) {
   update((store) => {
-    store.transport.bpm = bpm;
+    store.transport.bpm.value = bpm;
     return store;
   });
 }
