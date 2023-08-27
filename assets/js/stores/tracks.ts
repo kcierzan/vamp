@@ -1,16 +1,30 @@
 import type { Writable } from "svelte/store";
+import type { Channel } from "phoenix";
+import type {
+  TrackStore,
+  TransportStore,
+  ClipInfo,
+  ClipID,
+  Track,
+  Clip,
+  TrackID,
+  ClipInput,
+  NewClip,
+  User,
+  Token,
+} from "./types";
 import { writable } from "svelte/store";
 import { fileToB64, b64ToAudioSrc, clipsToClipInfos } from "../utils";
 import * as Tone from "tone";
 import { GrainPlayer, Draw, Time } from "tone";
-import type { Channel } from "phoenix";
 import channels from "./channels";
 import transportStore from "./transport";
+import { ChannelName, PlayState } from "./types"
 
 let sessionStoreValue: TrackStore;
 let transport: TransportStore;
-let sharedChannel: Channel;
-let privateChannel: Channel;
+let sharedChannel: Channel | null;
+let privateChannel: Channel | null;
 
 const trackStore: Writable<TrackStore> = writable({});
 const { subscribe, update } = trackStore;
@@ -29,15 +43,14 @@ transportStore.subscribe((value: TransportStore) => {
 });
 
 // ----------------- PLAY ----------------------------
-// FIXME: could this take a Clip[]?
-function playClips(trackClips: TrackClips) {
-  drawQueueClips(trackClips);
-  const clipInfos = clipsToClipInfos(Object.values(trackClips));
+function playClips(clips: Clip[]) {
+  const clipInfos = clipsToClipInfos(clips);
+  drawQueueClips(clipInfos);
   pushPlayClip(clipInfos);
 }
 
 function pushPlayClip(trackClips: ClipInfo[]) {
-  sharedChannel.push("play_clip", trackClips);
+  sharedChannel?.push("play_clip", trackClips);
 }
 
 function playVisual({
@@ -149,7 +162,7 @@ function loopClip({
 
 // ----------------- STOP ----------------------------
 function stopClips(trackIds: TrackID[]) {
-  sharedChannel.push("stop_clip", { trackIds });
+  sharedChannel?.push("stop_clip", { trackIds });
 }
 
 function receiveStopClip({ trackIds }: { trackIds: TrackID[] }) {
@@ -196,7 +209,7 @@ function drawStopClip({ track, time }: { track: Track; time: number }) {
 async function addTrack() {
   await Tone.start();
   console.log("tone has started");
-  sharedChannel.push("new_track", {
+  sharedChannel?.push("new_track", {
     id: crypto.randomUUID(),
   });
 }
@@ -221,7 +234,7 @@ async function addClip({
   bpm,
 }: ClipInput) {
   const data = await fileToB64(file);
-  sharedChannel.push("new_clip", {
+  sharedChannel?.push("new_clip", {
     id: id,
     name: file.name,
     data: data,
@@ -254,7 +267,7 @@ function receiveNewClip({ id, trackId, data, type, ...rest }: NewClip) {
 
 // ----------------- REMOVE TRACK ----------------------------
 function removeTrack(id: TrackID) {
-  sharedChannel.push("remove_track", { id });
+  sharedChannel?.push("remove_track", { id });
 }
 
 function receiveRemoveTrack({ trackId }: { trackId: TrackID }) {
@@ -266,7 +279,7 @@ function receiveRemoveTrack({ trackId }: { trackId: TrackID }) {
 
 // ----------------- UPDATE ----------------------------
 function updateClipProperties(...clips: Clip[]) {
-  sharedChannel.push("update_clip_properties", {
+  sharedChannel?.push("update_clip_properties", {
     clips: clipsToClipInfos(clips),
   });
 }
@@ -312,10 +325,10 @@ function joinSharedChannel(token: Token) {
 
 function configureChannelCallbacks(channelName: ChannelName) {
   for (const [message, callback] of Object.entries(wsCallbacks[channelName])) {
-    if (channelName === "private") {
-      privateChannel.on(message, callback);
-    } else if (channelName === "shared") {
-      sharedChannel.on(message, callback);
+    if (channelName === ChannelName.Private) {
+      privateChannel?.on(message, callback);
+    } else if (channelName === ChannelName.Shared) {
+      sharedChannel?.on(message, callback);
     }
   }
 }

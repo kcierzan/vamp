@@ -1,4 +1,5 @@
 import { Socket } from "phoenix";
+import { Clip, Token, TrackStore } from "./stores/types";
 
 export async function fileToB64(file: File) {
   const bytes = await fileToByteArray(file);
@@ -69,7 +70,7 @@ function fileToArrayBuffer(file: File) {
   return new Promise<ArrayBuffer>((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsArrayBuffer(file);
-    reader.onload = () => resolve(<ArrayBuffer>reader.result)
-    reader.onerror = error => reject(error)
+    reader.onload = () => resolve(<ArrayBuffer>reader.result);
+    reader.onerror = (error) => reject(error);
   });
 }

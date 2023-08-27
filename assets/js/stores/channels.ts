@@ -1,5 +1,7 @@
+import type { Writable } from "svelte/store";
 import { writable } from "svelte/store";
 import { joinChannel } from "../utils";
+import type { ChannelStore, Token, User } from "./types";
 
 const socketPath = "/socket";
 const livesetTopic = "liveset:shared";
@@ -9,10 +11,10 @@ const initialState = {
   private: null,
 };
 
-const channelStore = writable(initialState);
+const channelStore: Writable<ChannelStore> = writable(initialState);
 const { update } = channelStore;
 
-function joinPrivateChannel(token, currentUser) {
+function joinPrivateChannel(token: Token, currentUser: User) {
   const livesetPrivateTopic = `private:${currentUser.id}`;
   update((store) => {
     store.private = joinChannel({
@@ -24,7 +26,7 @@ function joinPrivateChannel(token, currentUser) {
   });
 }
 
-function joinSharedChannel(token) {
+function joinSharedChannel(token: Token) {
   update((store) => {
     store.shared = joinChannel({
       path: socketPath,
@@ -35,18 +37,10 @@ function joinSharedChannel(token) {
   });
 }
 
-function attachListener({ channel, message, callback }) {
-  update((store) => {
-    store[channel].on(message, callback);
-    return store;
-  });
-}
-
 export default {
   ...channelStore,
   set: undefined,
   update: undefined,
   joinPrivateChannel,
   joinSharedChannel,
-  attachListener,
 };

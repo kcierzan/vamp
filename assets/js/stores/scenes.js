@@ -1,5 +1,5 @@
 import { derived } from "svelte/store";
-import { tracksToClipArrays } from "../utils"
+import { tracksToClipArrays } from "../utils";
 import tracks from "./tracks";
 
 let scenesValue;
@@ -62,11 +62,11 @@ scenes.subscribe((value) => {
 function playScene(index) {
   const { playClips, stopClips } = tracks;
   const scene = scenesValue.scenes[index];
-  const clipsToPlay = {};
+  const clipsToPlay = [];
   const tracksToStop = [];
   for (const [trackId, clip] of Object.entries(scene)) {
     if (clip) {
-      clipsToPlay[trackId] = clip.id;
+      clipsToPlay.push(clip);
     } else {
       tracksToStop.push(trackId);
     }
