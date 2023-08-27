@@ -1,39 +1,42 @@
-<script>
+<script lang="ts">
   import tracks from "js/stores/tracks";
+  import { clipsToClipInfos } from "js/utils";
 
-  export let id;
-  export let name;
-  export let trackId;
-  export let state = "stopped";
-  export let playbackRate = 1;
-  export let bpm = 0
+  export let id: string;
+  export let name: string;
+  export let trackId: string;
+  export let state = PlayState.Stopped;
+  export let playbackRate: number = 1;
+  export let bpm: number = 0;
 
-  const { addClip, playClip, stopClips, changePlaybackRate } = tracks;
+  const { addClip, playClips, stopClips, updateClipProperties } = tracks;
+
+  $: clip = $tracks[trackId].clips[id];
 
   // TODO: extract this to PlayableButton or something
   const baseStyles = "text-base w-48 h-16 text-white rounded-l-lg";
   const stateStyles = {
-    playing: "bg-red-500 hover:bg-red-700",
-    stopped: "bg-green-500 hover:bg-green-700",
-    queued: "bg-yellow-500 hover:bg-yellow-700",
+    [PlayState.Playing]: "bg-red-500 hover:bg-red-700",
+    [PlayState.Stopped]: "bg-green-500 hover:bg-green-700",
+    [PlayState.Queued]: "bg-yellow-500 hover:bg-yellow-700",
   };
 
   $: clipStyles = baseStyles + " " + stateStyles[state];
 
   function changeClip() {
-    addClip({ file: this.files[0], trackId, bpm, clipId: id });
+    addClip({ file: this.files[0], trackId, bpm, id });
   }
 
   function changeTempo() {
-    changePlaybackRate(id, trackId, this.value);
+    updateClipProperties({ ...clip, playbackRate: this.value });
   }
 
   function clipAction() {
     switch (state) {
-      case "stopped":
-        playClip(id, trackId);
+      case PlayState.Stopped:
+        playClips(clipsToClipInfos([clip]));
         break;
-      case "playing":
+      case PlayState.Playing:
         stopClips([trackId]);
     }
   }

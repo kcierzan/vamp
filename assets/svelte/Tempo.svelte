@@ -5,16 +5,15 @@
   import tracks from "../js/stores/tracks";
 
   const { setBpm } = transport;
-  const { changePlaybackRate } = tracks;
+  const { updateClipProperties } = tracks;
 
   $: clipArrays = tracksToClipArrays($tracks);
 
   function stretchClipsToBpm(bpm) {
-    // const clipArrays = tracksToClipArrays($tracks)
     for (const track of clipArrays) {
       for (const clip of track) {
         const rate = bpm / clip.bpm;
-        changePlaybackRate(clip.id, clip.trackId, rate);
+        updateClipProperties({ ...clip, playbackRate: rate });
       }
     }
   }
@@ -36,7 +35,7 @@
   <input
     class="w-22"
     id="tempo"
-    value={$transport.transport.bpm?.value}
+    value={$transport.transport?.bpm?.value}
     type="number"
     min="40"
     max="250"
