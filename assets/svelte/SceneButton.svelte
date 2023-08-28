@@ -5,8 +5,17 @@
   export let index: number;
   export let state: PlayState;
 
-  // FIXME: should clicking an already playing scene stop it?
-  const { playScene } = scenes;
+  const { playScene, stopScene } = scenes;
+
+  function sceneAction() {
+    switch (state) {
+      case PlayState.Stopped:
+        playScene(index)
+        break;
+      case PlayState.Playing:
+        stopScene(index)
+    }
+  }
 
   // TODO: extract this to PlayableButton or something
   const baseStyles = "text-base w-24 h-16 text-white mb-8 rounded-lg";
@@ -20,7 +29,7 @@
 </script>
 
 <div>
-  <button class={sceneStyles} on:click={() => playScene(index)}
+  <button class={sceneStyles} on:click={sceneAction}
     >Scene {index + 1}</button
   >
 </div>

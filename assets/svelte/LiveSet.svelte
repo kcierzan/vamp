@@ -1,14 +1,14 @@
 <script lang="ts">
-  import type { Token, User } from "js/stores/types";
+  import type { Token, User } from "js/types";
   import { onMount } from "svelte";
   import vampset from "../js/stores/vampset";
   import latency from "../js/stores/latency";
   import Track from "./Track.svelte";
   import Scenes from "./Scenes.svelte";
   import Tempo from "./Tempo.svelte";
-  import { joinSharedChannel, joinPrivateChannel } from "js/stores/channels";
-  import { newTrack } from "../js/stores/tracks/new"
-  import { removeTrack } from "../js/stores/tracks/remove"
+  import { joinSharedChannel, joinPrivateChannel } from "js/channels";
+  import { newTrack } from "../js/stores/tracks/new";
+  import { removeTrack } from "../js/stores/tracks/remove";
 
   export let currentUser: User;
   export let token: Token;
