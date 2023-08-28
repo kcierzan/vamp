@@ -23,7 +23,7 @@ export function receiveStopClip({ trackIds }: { trackIds: TrackID[] }) {
         const now = Transport.seconds;
         console.log(`stop callback invoked at ${now}`);
         stopTrackAudio(track, time);
-        drawStopClip(track, time);
+        updateUIForStop(track, time);
       },
       { at: nextBarTT },
     );
@@ -35,20 +35,16 @@ export function stopTrackAudio(track: Track, time: number) {
     track.clips[track.currentlyPlaying].stopAudio(time);
 }
 
-function stopVisual({ track }: { track: Track }) {
-  vampsetStore.update((store) => {
-    for (const clip of Object.values(track.clips)) {
-      clip.state = PlayState.Stopped;
-    }
-    track.currentlyPlaying = null;
-    track.playEvent = null;
-    return store;
-  });
-}
-
-function drawStopClip(track: Track, time: number) {
+function updateUIForStop(track: Track, time: number) {
   Draw.schedule(() => {
     console.log(`drawing stop clip at ${time}`);
-    stopVisual({ track });
+    vampsetStore.update((store) => {
+      for (const clip of Object.values(track.clips)) {
+        clip.state = PlayState.Stopped;
+      }
+      track.currentlyPlaying = null;
+      track.playEvent = null;
+      return store;
+    });
   }, time);
 }
