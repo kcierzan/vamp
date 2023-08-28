@@ -1,9 +1,9 @@
 import type { TrackStore, Scene, PlayableClip, SceneStore } from "js/types";
 import type { Readable } from "svelte/store";
+import vampset from "./vampset";
 import { PlayState } from "js/types";
 import { derived } from "svelte/store";
 import { tracksToClipArrays } from "../utils";
-import vampset from "./vampset";
 import { playClips } from "./clips/play";
 import { stopClips } from "./clips/stop";
 

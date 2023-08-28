@@ -3,7 +3,7 @@ import vampsetStore from "../vampset";
 import { PlayState, Track, TrackID, TrackStore } from "js/types";
 import { Transport, Draw } from "tone";
 import { get } from "svelte/store";
-import { pushShared } from "../channels";
+import { pushShared } from "js/channels";
 
 export function stopClips(trackIds: TrackID[]) {
   pushShared("stop_clip", { trackIds });

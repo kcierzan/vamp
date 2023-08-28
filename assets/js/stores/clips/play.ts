@@ -5,7 +5,7 @@ import { PlayableClip, ClipID, ClipData, PlayState, Track } from "js/types";
 import * as Tone from "tone";
 import { Transport, Draw } from "tone";
 import { get } from "svelte/store";
-import { pushShared } from "../channels";
+import { pushShared } from "js/channels";
 import { stopTrackAudio } from "./stop";
 
 export function playClips(clips: PlayableClip[]) {

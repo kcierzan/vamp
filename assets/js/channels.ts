@@ -1,11 +1,19 @@
 import { Channel, Socket } from "phoenix";
-import { ChannelName, PlayableClip, ClipData, NewClip, Token, TrackID, User } from "js/types";
+import {
+  ChannelName,
+  PlayableClip,
+  ClipData,
+  NewClip,
+  Token,
+  TrackID,
+  User,
+} from "js/types";
 import { receivePlayClips } from "js/stores/clips/play";
 import { receiveStopClip } from "js/stores/clips/stop";
-import { receiveNewTrack } from "./tracks/new";
-import { receiveRemoveTrack } from "./tracks/remove";
-import { receiveNewClip } from "./clips/new";
-import { receiveUpdateClipProperties } from "./clips/update";
+import { receiveNewTrack } from "js/stores/tracks/new";
+import { receiveRemoveTrack } from "js/stores/tracks/remove";
+import { receiveNewClip } from "js/stores/clips/new";
+import { receiveUpdateClipProperties } from "js/stores/clips/update";
 
 const socketPath = "/socket";
 const livesetTopic = "liveset:shared";
@@ -44,6 +52,24 @@ const listeners: Listeners = {
   },
 };
 
+export function joinSharedChannel(token: Token) {
+  sharedChannel = joinChannel(socketPath, livesetTopic, token);
+
+  for (const [message, callback] of Object.entries(
+    listeners[ChannelName.Shared],
+  )) {
+    sharedChannel.on(message, callback);
+  }
+}
+
+export function pushPrivate(message: string, data: object) {
+  return privateChannel?.push(message, data);
+}
+
+export function pushShared(message: string, data: object) {
+  return sharedChannel?.push(message, data);
+}
+
 function joinChannel(path: string, topic: string, token: string) {
   const socket = new Socket(path, {
     params: { token: token },
@@ -70,22 +96,4 @@ export function joinPrivateChannel(token: Token, currentUser: User) {
   )) {
     privateChannel.on(message, callback);
   }
-}
-
-export function joinSharedChannel(token: Token) {
-  sharedChannel = joinChannel(socketPath, livesetTopic, token);
-
-  for (const [message, callback] of Object.entries(
-    listeners[ChannelName.Shared],
-  )) {
-    sharedChannel.on(message, callback);
-  }
-}
-
-export function pushPrivate(message: string, data: object) {
-  return privateChannel?.push(message, data);
-}
-
-export function pushShared(message: string, data: object) {
-  return sharedChannel?.push(message, data);
 }

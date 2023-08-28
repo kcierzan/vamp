@@ -1,4 +1,4 @@
-import { pushShared } from "../channels";
+import { pushShared } from "js/channels";
 import vampsetStore from "../vampset";
 import { PlayableClip, ClipData } from "js/types";
 

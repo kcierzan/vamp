@@ -1,5 +1,5 @@
 import vampsetStore from "../vampset"
-import { pushShared } from "../channels"
+import { pushShared } from "js/channels"
 import { TrackID } from "js/types";
 
 export function removeTrack(id: TrackID) {

@@ -1,5 +1,5 @@
 import { writable } from "svelte/store";
-import { pushShared } from "js/stores/channels";
+import { pushShared } from "js/channels";
 
 const latencyStore = writable(0);
 const { subscribe, set } = latencyStore;

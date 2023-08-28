@@ -1,6 +1,6 @@
 import vampsetStore from "../vampset";
 import * as Tone from "tone";
-import { pushShared } from "../channels";
+import { pushShared } from "js/channels";
 import { TrackID } from "js/types";
 
 export async function newTrack() {
