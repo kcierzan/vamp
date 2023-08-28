@@ -1,11 +1,12 @@
 <script lang="ts">
   import tracks from "js/stores/tracks";
-  import { clipsToClipInfos } from "js/utils";
+  import { PlayState } from "js/stores/types";
+  import type { HTMLInputEvent } from "js/stores/types";
 
   export let id: string;
   export let name: string;
   export let trackId: string;
-  export let state = PlayState.Stopped;
+  export let state: PlayState = PlayState.Stopped;
   export let playbackRate: number = 1;
   export let bpm: number = 0;
 
@@ -23,18 +24,22 @@
 
   $: clipStyles = baseStyles + " " + stateStyles[state];
 
-  function changeClip() {
-    addClip({ file: this.files[0], trackId, bpm, id });
+  function changeClip(e: HTMLInputEvent) {
+    if (!e.currentTarget.files) return;
+    addClip(e.currentTarget.files[0], trackId, bpm, id);
   }
 
-  function changeTempo() {
-    updateClipProperties({ ...clip, playbackRate: this.value });
+  function changeTempo(e: HTMLInputEvent) {
+    updateClipProperties({
+      ...clip,
+      playbackRate: parseInt(e.currentTarget.value),
+    });
   }
 
   function clipAction() {
     switch (state) {
       case PlayState.Stopped:
-        playClips(clipsToClipInfos([clip]));
+        playClips([clip]);
         break;
       case PlayState.Playing:
         stopClips([trackId]);

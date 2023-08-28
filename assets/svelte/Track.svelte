@@ -1,16 +1,18 @@
-<script>
+<script lang="ts">
+  import type { HTMLInputEvent, TrackClips } from "js/stores/types";
   import Clip from "./Clip.svelte";
   import tracks from "js/stores/tracks";
 
-  export let id;
-  export let clips = {};
-  let clipBpm;
+  export let id: string;
+  export let clips: TrackClips = {};
+  let clipBpm: number;
 
   const { addClip } = tracks;
 
-  function newClip() {
-    addClip({ file: this.files[0], trackId: id, bpm: clipBpm });
-    this.value = "";
+  function newClip(e: HTMLInputEvent) {
+    if (!e.currentTarget.files) return;
+    addClip(e.currentTarget.files[0], id, clipBpm);
+    e.currentTarget.value = "";
   }
 </script>
 

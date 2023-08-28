@@ -1,17 +1,18 @@
-<script>
+<script lang="ts">
+  import { PlayState } from "../js/stores/types";
   import scenes from "../js/stores/scenes";
 
-  export let index;
-  export let state;
+  export let index: number;
+  export let state: PlayState;
 
   const { playScene } = scenes;
 
   // TODO: extract this to PlayableButton or something
   const baseStyles = "text-base w-24 h-16 text-white mb-8 rounded-lg";
   const stateStyles = {
-    playing: "bg-red-500 hover:bg-red-700",
-    stopped: "bg-green-500 hover:bg-green-700",
-    queued: "bg-yellow-500 hover:bg-yellow-700 text-black",
+    [PlayState.Playing]: "bg-red-500 hover:bg-red-700",
+    [PlayState.Stopped]: "bg-green-500 hover:bg-green-700",
+    [PlayState.Queued]: "bg-yellow-500 hover:bg-yellow-700 text-black",
   };
 
   $: sceneStyles = baseStyles + " " + stateStyles[state];

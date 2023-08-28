@@ -19,12 +19,12 @@ import * as Tone from "tone";
 import { GrainPlayer, Draw, Time } from "tone";
 import channels from "./channels";
 import transportStore from "./transport";
-import { ChannelName, PlayState } from "./types"
+import { ChannelName, PlayState } from "./types";
 
 let sessionStoreValue: TrackStore;
 let transport: TransportStore;
-let sharedChannel: Channel | null;
-let privateChannel: Channel | null;
+let sharedChannel: Channel;
+let privateChannel: Channel;
 
 const trackStore: Writable<TrackStore> = writable({});
 const { subscribe, update } = trackStore;
@@ -34,6 +34,7 @@ trackStore.subscribe((value) => {
 });
 
 channels.subscribe((value) => {
+  if (!value.shared || !value.private) return;
   sharedChannel = value.shared;
   privateChannel = value.private;
 });
@@ -227,12 +228,12 @@ function receiveNewTrack({ id }: { id: TrackID }) {
 }
 
 // ----------------- NEW CLIP ----------------------------
-async function addClip({
-  id = crypto.randomUUID(),
-  file,
-  trackId,
-  bpm,
-}: ClipInput) {
+async function addClip(
+  file: File,
+  trackId: TrackID,
+  bpm: number,
+  id: ClipID = crypto.randomUUID(),
+) {
   const data = await fileToB64(file);
   sharedChannel?.push("new_clip", {
     id: id,

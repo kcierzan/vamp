@@ -1,15 +1,16 @@
-<script>
+<script lang="ts">
   import { onMount } from "svelte";
   import { tracksToClipArrays } from "js/utils";
   import transport from "../js/stores/transport";
   import tracks from "../js/stores/tracks";
+  import type { HTMLInputEvent } from "js/stores/types";
 
   const { setBpm } = transport;
   const { updateClipProperties } = tracks;
 
   $: clipArrays = tracksToClipArrays($tracks);
 
-  function stretchClipsToBpm(bpm) {
+  function stretchClipsToBpm(bpm: number) {
     for (const track of clipArrays) {
       for (const clip of track) {
         const rate = bpm / clip.bpm;
@@ -18,11 +19,12 @@
     }
   }
 
-  function setTransportBpm() {
+  function setTransportBpm(e: HTMLInputEvent) {
     // TODO: update all the clip playbackRates based on their BPM and the new tempo
     // TODO: make this e2e reactive
-    setBpm(this.value);
-    stretchClipsToBpm(this.value);
+    const bpm = parseInt(e.currentTarget.value);
+    setBpm(bpm);
+    stretchClipsToBpm(bpm);
   }
 
   onMount(async () => setBpm(128));

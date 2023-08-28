@@ -1,15 +1,18 @@
+import type { TrackStore, Scene, Clip, SceneStore } from "./types";
+import type { Readable } from "svelte/store";
+import { PlayState } from "./types";
 import { derived } from "svelte/store";
 import { tracksToClipArrays } from "../utils";
 import tracks from "./tracks";
 
-let scenesValue;
+let scenesValue: SceneStore | undefined;
 
-function scenesFromTracks(tracks) {
+function scenesFromTracks(tracks: TrackStore) {
   const scenes = [];
-  const clipArrays = tracksToClipArrays(tracks);
+  const clipArrays: Clip[][] = tracksToClipArrays(tracks);
   // starting at the highest scene (bottom up)
   for (let row = sceneCount(tracks) - 1; row >= 0; row--) {
-    const scene = {};
+    const scene: Scene = {};
     for (const track of clipArrays) {
       const nonemptyTrack = track.find((clip) => !!clip);
 
@@ -27,7 +30,7 @@ function scenesFromTracks(tracks) {
   return scenes;
 }
 
-function sceneArraysToStates(sceneArrays) {
+function sceneArraysToStates(sceneArrays: Scene[]) {
   return sceneArrays.map((scene) => {
     const states = [];
     for (const clip of Object.values(scene)) {
@@ -36,19 +39,19 @@ function sceneArraysToStates(sceneArrays) {
     const uniqueClipStates = new Set(states);
     return uniqueClipStates.size === 1
       ? uniqueClipStates.values().next().value
-      : "stopped";
+      : PlayState.Stopped;
   });
 }
 
-function sceneCount(tracks) {
+function sceneCount(tracks: TrackStore) {
   const clips = Object.values(tracks).map(
     (track) => Object.keys(track.clips).length,
   );
   return Math.max(...clips);
 }
 
-const scenes = derived(tracks, ($tracks, set) => {
-  const sceneArrays = scenesFromTracks($tracks);
+const scenes: Readable<SceneStore> = derived(tracks, ($tracks, set) => {
+  const sceneArrays: Scene[] = scenesFromTracks($tracks);
   set({
     states: sceneArraysToStates(sceneArrays),
     scenes: sceneArrays,
@@ -59,10 +62,11 @@ scenes.subscribe((value) => {
   scenesValue = value;
 });
 
-function playScene(index) {
+function playScene(index: number) {
+  if (!scenesValue) return;
   const { playClips, stopClips } = tracks;
   const scene = scenesValue.scenes[index];
-  const clipsToPlay = [];
+  const clipsToPlay: Clip[] = [];
   const tracksToStop = [];
   for (const [trackId, clip] of Object.entries(scene)) {
     if (clip) {

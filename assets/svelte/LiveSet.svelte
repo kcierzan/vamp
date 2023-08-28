@@ -1,4 +1,5 @@
-<script>
+<script lang="ts">
+  import type { Token, User } from "js/stores/types";
   import { onMount } from "svelte";
   import tracks from "../js/stores/tracks";
   import latency from "../js/stores/latency";
@@ -6,8 +7,8 @@
   import Scenes from "./Scenes.svelte";
   import Tempo from "./Tempo.svelte";
 
-  export let currentUser;
-  export let token;
+  export let currentUser: User;
+  export let token: Token;
 
   const { addTrack, removeTrack, joinPrivateChannel, joinSharedChannel } =
     tracks;
@@ -40,7 +41,7 @@
   on:click={addTrack}>Add track</button
 >
 <div class="flex flex-row w-full space-x-4">
-  <Scenes {sessionEmpty} />
+  <Scenes />
   {#if trackEntries}
     {#each trackEntries as [id, track] (id)}
       <div class="flex flex-col items-center">

@@ -1,5 +1,5 @@
-<script>
-  import scenes from "../js/stores/scenes"
+<script lang="ts">
+  import scenes from "../js/stores/scenes";
   import SceneButton from "./SceneButton.svelte";
 </script>
 
