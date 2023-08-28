@@ -40,7 +40,6 @@ export function once(cb: (time: number) => void, { at }: { at: number }) {
 export function quantizedTransportTime(quantizedTime: string) {
   const nextBarAC = Time(quantizedTime).toSeconds();
   const drift = Tone.now() - Transport.seconds;
-  console.log(`drift: ${drift}`);
   return nextBarAC - drift;
 }
 
