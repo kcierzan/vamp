@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PlayState } from "../js/stores/types";
+  import { PlayState } from "js/types";
   import scenes from "../js/stores/scenes";
 
   export let index: number;

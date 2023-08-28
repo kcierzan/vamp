@@ -1,17 +1,15 @@
 <script lang="ts">
-  import type { HTMLInputEvent, TrackClips } from "js/stores/types";
+  import type { HTMLInputEvent, TrackClips } from "js/types";
   import Clip from "./Clip.svelte";
-  import tracks from "js/stores/tracks";
+  import { newClip } from "js/stores/clips/new";
 
   export let id: string;
   export let clips: TrackClips = {};
   let clipBpm: number;
 
-  const { addClip } = tracks;
-
-  function newClip(e: HTMLInputEvent) {
+  function uploadClip(e: HTMLInputEvent) {
     if (!e.currentTarget.files) return;
-    addClip(e.currentTarget.files[0], id, clipBpm);
+    newClip(e.currentTarget.files[0], id, clipBpm);
     e.currentTarget.value = "";
   }
 </script>
@@ -27,7 +25,7 @@
       bpm={clip.bpm}
     />
   {/each}
-  <input id="addclip-{id}" type="file" on:change={newClip} class="hidden" />
+  <input id="addclip-{id}" type="file" on:change={uploadClip} class="hidden" />
   <div
     class="text-center text-base w-72 h-16 align-middle text-white rounded bg-sky-500 hover:bg-sky-700"
   >

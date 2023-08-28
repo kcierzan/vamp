@@ -1,7 +1,7 @@
 import type { Writable } from "svelte/store";
 import { writable } from "svelte/store";
 import * as Tone from "tone";
-import { PlayState, TransportStore } from "./types";
+import { PlayState, TransportStore } from "js/types";
 
 const initialState = {
   transport: Tone.Transport,

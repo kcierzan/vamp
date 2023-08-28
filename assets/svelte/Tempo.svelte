@@ -1,15 +1,16 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { tracksToClipArrays } from "js/utils";
-  import transport from "../js/stores/transport";
-  import tracks from "../js/stores/tracks";
-  import type { HTMLInputEvent } from "js/stores/types";
+  import transport from "js/stores/transport";
+  import vampset from "js/stores/vampset";
+  import type { HTMLInputEvent } from "js/types";
+  import { updateClipProperties } from "js/stores/clips/update";
 
   const { setBpm } = transport;
-  const { updateClipProperties } = tracks;
 
-  $: clipArrays = tracksToClipArrays($tracks);
+  $: clipArrays = tracksToClipArrays($vampset);
 
+  // FIXME: Should be in the clip class?
   function stretchClipsToBpm(bpm: number) {
     for (const track of clipArrays) {
       for (const clip of track) {

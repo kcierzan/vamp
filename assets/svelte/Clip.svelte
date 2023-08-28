@@ -1,8 +1,11 @@
 <script lang="ts">
-  import tracks from "js/stores/tracks";
-  import { PlayState } from "js/stores/types";
-  import type { HTMLInputEvent } from "js/stores/types";
+  import vampset from "js/stores/vampset";
+  import { PlayState } from "js/types";
+  import type { HTMLInputEvent } from "js/types";
   import { playClips } from "js/stores/clips/play";
+  import { stopClips } from "js/stores/clips/stop";
+  import { newClip } from "js/stores/clips/new";
+  import { updateClipProperties } from "js/stores/clips/update";
 
   export let id: string;
   export let name: string;
@@ -11,9 +14,7 @@
   export let playbackRate: number = 1;
   export let bpm: number = 0;
 
-  const { addClip, stopClips, updateClipProperties } = tracks;
-
-  $: clip = $tracks[trackId].clips[id];
+  $: clip = $vampset[trackId].clips[id];
 
   // TODO: extract this to PlayableButton or something
   const baseStyles = "text-base w-48 h-16 text-white rounded-l-lg";
@@ -27,7 +28,7 @@
 
   function changeClip(e: HTMLInputEvent) {
     if (!e.currentTarget.files) return;
-    addClip(e.currentTarget.files[0], trackId, bpm, id);
+    newClip(e.currentTarget.files[0], trackId, bpm, id);
   }
 
   function changeTempo(e: HTMLInputEvent) {

@@ -1,6 +1,4 @@
-import { get } from "svelte/store";
-import channels from "js/stores/channels";
-import { ChannelName, TrackStore } from "./stores/types";
+import { TrackStore } from "js/types";
 import { Time, Transport } from "tone";
 import * as Tone from "tone";
 
@@ -31,22 +29,6 @@ export function tracksToClipArrays(tracks: TrackStore) {
     clipArrays.push(trackArray);
   }
   return clipArrays;
-}
-
-export function pushPrivate(message: string, data: object) {
-  return get(channels)[ChannelName.Private]?.push(message, data);
-}
-
-export function pushShared(message: string, data: object) {
-  return get(channels)[ChannelName.Shared]?.push(message, data);
-}
-
-export function addChannelListener(
-  channelName: ChannelName,
-  message: string,
-  callback: (response?: any) => void,
-) {
-  get(channels)[channelName]?.on(message, callback);
 }
 
 export function once(cb: (time: number) => void, { at }: { at: number }) {

@@ -1,22 +1,22 @@
 <script lang="ts">
   import type { Token, User } from "js/stores/types";
   import { onMount } from "svelte";
-  import tracks from "../js/stores/tracks";
+  import vampset from "../js/stores/vampset";
   import latency from "../js/stores/latency";
   import Track from "./Track.svelte";
   import Scenes from "./Scenes.svelte";
   import Tempo from "./Tempo.svelte";
+  import { joinSharedChannel, joinPrivateChannel } from "js/stores/channels";
+  import { newTrack } from "../js/stores/tracks/new"
+  import { removeTrack } from "../js/stores/tracks/remove"
 
   export let currentUser: User;
   export let token: Token;
 
-  const { addTrack, removeTrack, joinPrivateChannel, joinSharedChannel } =
-    tracks;
-
   const { clearLatency, measureLatency } = latency;
 
-  $: trackEntries = Object.entries($tracks);
-  $: sessionEmpty = Object.keys($tracks).length === 0;
+  $: trackEntries = Object.entries($vampset);
+  $: sessionEmpty = Object.keys($vampset).length === 0;
 
   onMount(async () => {
     joinSharedChannel(token);
@@ -38,7 +38,7 @@
 
 <button
   class="rounded class bg-green-500 hover:bg-green-700 text-white w-24 h-16 mb-4"
-  on:click={addTrack}>Add track</button
+  on:click={newTrack}>Add track</button
 >
 <div class="flex flex-row w-full space-x-4">
   <Scenes />

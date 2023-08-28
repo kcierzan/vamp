@@ -1,11 +1,12 @@
-import { once, pushShared, quantizedTransportTime } from "js/utils";
-import trackStore from "../tracks";
+import { once, quantizedTransportTime } from "js/utils";
+import vampsetStore from "../vampset";
 import transportStore from "../transport";
-import { Clip, ClipID, ClipInfo, PlayState, Track } from "../types";
+import { Clip, ClipID, ClipInfo, PlayState, Track } from "js/types";
 import * as Tone from "tone";
 import { Transport, Draw } from "tone";
 import { get } from "svelte/store";
-
+import { pushShared } from "../channels";
+import { stopTrackAudio } from "./stop";
 
 export function playClips(clips: Clip[]) {
   const clipInfos = clips.map((clip) => clip.serialize());
@@ -28,7 +29,7 @@ export function receivePlayClips({
   transportStore.start(nowWithLatencyCompensation);
 
   clips.forEach((clip: ClipInfo) => {
-    const track = get(trackStore)[clip.trackId];
+    const track = get(vampsetStore)[clip.trackId];
     // cancel currently playing clip events for the track
     track.playEvent !== null && Transport.clear(track.playEvent);
 
@@ -42,7 +43,7 @@ export function receivePlayClips({
     once(
       (time) => {
         // TODO: import this from "stop"?
-        stopCurrentTrackAudio({ track, time });
+        stopTrackAudio({ track, time });
         updateUIForPlay({ clipId: clip.id, playEvent, track, time });
       },
       { at: fireAt },
@@ -62,7 +63,7 @@ function updateUIForPlay({
   time: number;
 }) {
   Draw.schedule(() => {
-    trackStore.update((store) => {
+    vampsetStore.update((store) => {
       // if there is a clip playing for this track, set it to `stopped`
       if (track.currentlyPlaying && track.currentlyPlaying !== clipId) {
         store[track.id].clips[track.currentlyPlaying].stopVisual();
@@ -79,7 +80,7 @@ function updateUIForPlay({
 
 function updateUIForQueue(playClips: ClipInfo[]) {
   Draw.schedule(() => {
-    trackStore.update((store) => {
+    vampsetStore.update((store) => {
       playClips.forEach((clip) => {
         store[clip.trackId].clips[clip.id].queueVisual();
       });
@@ -106,15 +107,4 @@ function loopClip({
     every,
     startTime,
   );
-}
-
-function stopCurrentTrackAudio({
-  track,
-  time,
-}: {
-  track: Track;
-  time: number;
-}) {
-  !!track.currentlyPlaying &&
-    track.clips[track.currentlyPlaying].stopAudio(time);
 }

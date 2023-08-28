@@ -1,20 +1,17 @@
 import { Channel, Socket } from "phoenix";
-import type { Writable } from "svelte/store";
-import { writable } from "svelte/store";
-import { ChannelName, ChannelStore, ClipInfo, Token, User } from "./types";
+import { ChannelName, Clip, ClipInfo, NewClip, Token, TrackID, User } from "js/types";
 import { receivePlayClips } from "js/stores/clips/play";
-import { addChannelListener } from "js/utils";
+import { receiveStopClip } from "js/stores/clips/stop";
+import { receiveNewTrack } from "./tracks/new";
+import { receiveRemoveTrack } from "./tracks/remove";
+import { receiveNewClip } from "./clips/new";
+import { receiveUpdateClipProperties } from "./clips/update";
 
 const socketPath = "/socket";
 const livesetTopic = "liveset:shared";
 
-const initialState = {
-  shared: null,
-  private: null,
-};
-
-const channelStore: Writable<ChannelStore> = writable(initialState);
-const { update } = channelStore;
+export let sharedChannel: Channel | undefined;
+export let privateChannel: Channel | undefined;
 
 interface Listeners {
   [ChannelName.Private]: {
@@ -34,16 +31,20 @@ const listeners: Listeners = {
       clips: ClipInfo[];
       waitMilliseconds: number;
     }) => receivePlayClips({ clips, waitMilliseconds }),
+    stop_clip: ({ trackIds }: { trackIds: TrackID[] }) =>
+      receiveStopClip({ trackIds }),
   },
-  shared: {},
+  shared: {
+    new_track: ({ id }: { id: TrackID }) => receiveNewTrack({ id }),
+    remove_track: ({ id }: { id: TrackID }) =>
+      receiveRemoveTrack({ trackId: id }),
+    new_clip: (newClip: NewClip) => receiveNewClip(newClip),
+    update_clip_properties: ({ clips }: { clips: Clip[] }) =>
+      receiveUpdateClipProperties({ clips }),
+  },
 };
 
-function joinChannel(
-  path: string,
-  topic: string,
-  token: string,
-  channelName: ChannelName,
-) {
+function joinChannel(path: string, topic: string, token: string) {
   const socket = new Socket(path, {
     params: { token: token },
   });
@@ -57,37 +58,34 @@ function joinChannel(
     .receive("error", (resp) => {
       console.log("Unable to join", resp);
     });
-  update((store) => {
-    store[channelName] = channel;
-    return store;
-  });
+  return channel;
 }
 
-function joinPrivateChannel(token: Token, currentUser: User) {
+export function joinPrivateChannel(token: Token, currentUser: User) {
   const livesetPrivateTopic = `private:${currentUser.id}`;
-  joinChannel(socketPath, livesetPrivateTopic, token, ChannelName.Private);
-  configureChannelCallbacks(ChannelName.Private);
-}
+  privateChannel = joinChannel(socketPath, livesetPrivateTopic, token);
 
-function joinSharedChannel(token: Token) {
-  joinChannel(socketPath, livesetTopic, token, ChannelName.Shared);
-  configureChannelCallbacks(ChannelName.Shared);
-  update((store) => {
-    console.log(store[ChannelName.Shared])
-    return store
-  })
-}
-
-function configureChannelCallbacks(channelName: ChannelName) {
-  for (const [message, callback] of Object.entries(listeners[channelName])) {
-    addChannelListener(channelName, message, callback);
+  for (const [message, callback] of Object.entries(
+    listeners[ChannelName.Private],
+  )) {
+    privateChannel.on(message, callback);
   }
 }
 
-export default {
-  ...channelStore,
-  set: undefined,
-  update: undefined,
-  joinPrivateChannel,
-  joinSharedChannel,
-};
+export function joinSharedChannel(token: Token) {
+  sharedChannel = joinChannel(socketPath, livesetTopic, token);
+
+  for (const [message, callback] of Object.entries(
+    listeners[ChannelName.Shared],
+  )) {
+    sharedChannel.on(message, callback);
+  }
+}
+
+export function pushPrivate(message: string, data: object) {
+  return privateChannel?.push(message, data);
+}
+
+export function pushShared(message: string, data: object) {
+  return sharedChannel?.push(message, data);
+}
