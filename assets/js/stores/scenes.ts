@@ -4,6 +4,7 @@ import { PlayState } from "./types";
 import { derived } from "svelte/store";
 import { tracksToClipArrays } from "../utils";
 import tracks from "./tracks";
+import { playClips } from "./clips/play";
 
 let scenesValue: SceneStore | undefined;
 
@@ -64,7 +65,7 @@ scenes.subscribe((value) => {
 
 function playScene(index: number) {
   if (!scenesValue) return;
-  const { playClips, stopClips } = tracks;
+  const { stopClips } = tracks;
   const scene = scenesValue.scenes[index];
   const clipsToPlay: Clip[] = [];
   const tracksToStop = [];

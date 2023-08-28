@@ -1,5 +1,8 @@
-import { Socket } from "phoenix";
-import { Clip, Token, TrackStore } from "./stores/types";
+import { get } from "svelte/store";
+import channels from "js/stores/channels";
+import { ChannelName, TrackStore } from "./stores/types";
+import { Time, Transport } from "tone";
+import * as Tone from "tone";
 
 export async function fileToB64(file: File) {
   const bytes = await fileToByteArray(file);
@@ -18,31 +21,6 @@ export function b64ToAudioSrc(b64: string, type: string) {
   return URL.createObjectURL(blob);
 }
 
-export function joinChannel({
-  path,
-  topic,
-  token,
-}: {
-  path: string;
-  topic: string;
-  token: Token;
-}) {
-  const socket = new Socket(path, {
-    params: { token: token },
-  });
-  socket.connect();
-  const channel = socket.channel(topic, {});
-  channel
-    .join()
-    .receive("ok", (resp) => {
-      console.log("Joined successfully", resp);
-    })
-    .receive("error", (resp) => {
-      console.log("Unable to join", resp);
-    });
-  return channel;
-}
-
 export function tracksToClipArrays(tracks: TrackStore) {
   const clipArrays = [];
   for (const track of Object.values(tracks)) {
@@ -55,11 +33,33 @@ export function tracksToClipArrays(tracks: TrackStore) {
   return clipArrays;
 }
 
-export function clipsToClipInfos(clips: Clip[]) {
-  return clips.map((clip) => {
-    const { grainPlayer, ...clipInfo } = clip;
-    return clipInfo;
-  });
+export function pushPrivate(message: string, data: object) {
+  return get(channels)[ChannelName.Private]?.push(message, data);
+}
+
+export function pushShared(message: string, data: object) {
+  return get(channels)[ChannelName.Shared]?.push(message, data);
+}
+
+export function addChannelListener(
+  channelName: ChannelName,
+  message: string,
+  callback: (response?: any) => void,
+) {
+  get(channels)[channelName]?.on(message, callback);
+}
+
+export function once(cb: (time: number) => void, { at }: { at: number }) {
+  Transport.scheduleOnce((time: number) => {
+    cb(time);
+  }, at);
+}
+
+export function quantizedTransportTime(quantizedTime: string) {
+  const nextBarAC = Time(quantizedTime).toSeconds();
+  const drift = Tone.now() - Transport.seconds;
+  console.log(`drift: ${drift}`);
+  return nextBarAC - drift;
 }
 
 async function fileToByteArray(file: File) {

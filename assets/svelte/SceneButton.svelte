@@ -5,6 +5,7 @@
   export let index: number;
   export let state: PlayState;
 
+  // FIXME: should clicking an already playing scene stop it?
   const { playScene } = scenes;
 
   // TODO: extract this to PlayableButton or something

@@ -2,6 +2,7 @@
   import tracks from "js/stores/tracks";
   import { PlayState } from "js/stores/types";
   import type { HTMLInputEvent } from "js/stores/types";
+  import { playClips } from "js/stores/clips/play";
 
   export let id: string;
   export let name: string;
@@ -10,7 +11,7 @@
   export let playbackRate: number = 1;
   export let bpm: number = 0;
 
-  const { addClip, playClips, stopClips, updateClipProperties } = tracks;
+  const { addClip, stopClips, updateClipProperties } = tracks;
 
   $: clip = $tracks[trackId].clips[id];
 
