@@ -1,10 +1,23 @@
 {
-    "compilerOptions": {
-        "types": ["node"],
-        "baseUrl": ".",
-        "paths": {
-            "$lib": ["svelte"],
-            "$lib/*": ["svelte/*"]
-        }
-    }
+  "compilerOptions": {
+    "strict": true,
+    "target": "es2017",
+    "moduleResolution": "node",
+    "types": [
+      "node"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "$lib": [
+        "svelte"
+      ],
+      "$lib/*": [
+        "svelte/*"
+      ]
+    },
+    "lib": [
+      "es2017",
+      "dom"
+    ]
+  }
 }

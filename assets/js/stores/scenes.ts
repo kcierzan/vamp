@@ -1,36 +1,30 @@
+import type { TrackStore, Scene, PlayableClip, SceneStore } from "js/types";
+import type { Readable } from "svelte/store";
+import vampset from "./vampset";
+import { PlayState } from "js/types";
 import { derived } from "svelte/store";
-import tracks from "./tracks";
+import { tracksToClipArrays } from "../utils";
+import { playClips } from "./clips/play";
+import { stopClips } from "./clips/stop";
 
-let scenesValue;
+let scenesValue: SceneStore | undefined;
 
-function tracksToClipArrays(tracks) {
-  const clipArrays = [];
-  for (const track of Object.values(tracks)) {
-    const trackArray = [];
-    for (const clip of Object.values(track.clips)) {
-      trackArray.push(clip);
-    }
-    clipArrays.push(trackArray);
-  }
-  return clipArrays;
-}
-
-function scenesFromTracks(tracks) {
+function scenesFromTracks(tracks: TrackStore) {
   const scenes = [];
-  const clipArrays = tracksToClipArrays(tracks);
+  const clipArrays: PlayableClip[][] = tracksToClipArrays(tracks);
   // starting at the highest scene (bottom up)
   for (let row = sceneCount(tracks) - 1; row >= 0; row--) {
-    const scene = {};
+    const scene: Scene = {};
     for (const track of clipArrays) {
-      const firstClipInTrack = track.find((clip) => !!clip);
+      const nonemptyTrack = track.find((clip) => !!clip);
 
       // there is a clip in the scene for this track
       if (track[row]) {
         scene[track[row].trackId] = track[row];
         // there is a clip somewhere in the track
         // so we should stop this track when playing this scene
-      } else if (firstClipInTrack) {
-        scene[firstClipInTrack.trackId] = null;
+      } else if (nonemptyTrack) {
+        scene[nonemptyTrack.trackId] = null;
       }
     }
     scenes.unshift(scene);
@@ -38,7 +32,7 @@ function scenesFromTracks(tracks) {
   return scenes;
 }
 
-function sceneArraysToStates(sceneArrays) {
+function sceneArraysToStates(sceneArrays: Scene[]) {
   return sceneArrays.map((scene) => {
     const states = [];
     for (const clip of Object.values(scene)) {
@@ -47,19 +41,19 @@ function sceneArraysToStates(sceneArrays) {
     const uniqueClipStates = new Set(states);
     return uniqueClipStates.size === 1
       ? uniqueClipStates.values().next().value
-      : "stopped";
+      : PlayState.Stopped;
   });
 }
 
-function sceneCount(tracks) {
+function sceneCount(tracks: TrackStore) {
   const clips = Object.values(tracks).map(
     (track) => Object.keys(track.clips).length,
   );
   return Math.max(...clips);
 }
 
-const scenes = derived(tracks, ($tracks, set) => {
-  const sceneArrays = scenesFromTracks($tracks);
+const scenes: Readable<SceneStore> = derived(vampset, ($tracks, set) => {
+  const sceneArrays: Scene[] = scenesFromTracks($tracks);
   set({
     states: sceneArraysToStates(sceneArrays),
     scenes: sceneArrays,
@@ -70,14 +64,14 @@ scenes.subscribe((value) => {
   scenesValue = value;
 });
 
-function playScene(index) {
-  const { playClips, stopClips } = tracks;
+function playScene(index: number) {
+  if (!scenesValue) return;
   const scene = scenesValue.scenes[index];
-  const clipsToPlay = {};
+  const clipsToPlay: PlayableClip[] = [];
   const tracksToStop = [];
   for (const [trackId, clip] of Object.entries(scene)) {
     if (clip) {
-      clipsToPlay[trackId] = clip.id;
+      clipsToPlay.push(clip);
     } else {
       tracksToStop.push(trackId);
     }
