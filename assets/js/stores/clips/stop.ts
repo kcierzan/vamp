@@ -22,21 +22,15 @@ export function receiveStopClip({ trackIds }: { trackIds: TrackID[] }) {
       (time: number) => {
         const now = Transport.seconds;
         console.log(`stop callback invoked at ${now}`);
-        stopTrackAudio({ track, time });
-        drawStopClip({ track, time });
+        stopTrackAudio(track, time);
+        drawStopClip(track, time);
       },
       { at: nextBarTT },
     );
   }
 }
 
-export function stopTrackAudio({
-  track,
-  time,
-}: {
-  track: Track;
-  time: number;
-}) {
+export function stopTrackAudio(track: Track, time: number) {
   !!track.currentlyPlaying &&
     track.clips[track.currentlyPlaying].stopAudio(time);
 }
@@ -52,7 +46,7 @@ function stopVisual({ track }: { track: Track }) {
   });
 }
 
-function drawStopClip({ track, time }: { track: Track; time: number }) {
+function drawStopClip(track: Track, time: number) {
   Draw.schedule(() => {
     console.log(`drawing stop clip at ${time}`);
     stopVisual({ track });

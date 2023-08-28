@@ -32,36 +32,23 @@ export function receivePlayClips({
     const track = get(vampsetStore)[clip.trackId];
     // cancel currently playing clip events for the track
     track.playEvent !== null && Transport.clear(track.playEvent);
-
-    const playEvent = loopClip({
-      clip: track.clips[clip.id],
-      startTime: fireAt,
-      endTime: "+1m",
-      every: "1m",
-    });
-
+    const playEvent = loopClip(track.clips[clip.id], "+1m", "1m", fireAt);
     once(
       (time) => {
-        // TODO: import this from "stop"?
-        stopTrackAudio({ track, time });
-        updateUIForPlay({ clipId: clip.id, playEvent, track, time });
+        stopTrackAudio(track, time);
+        updateUIForPlay(clip.id, playEvent, track, time);
       },
       { at: fireAt },
     );
   });
 }
 
-function updateUIForPlay({
-  clipId,
-  playEvent,
-  track,
-  time,
-}: {
-  clipId: ClipID;
-  playEvent: number;
-  track: Track;
-  time: number;
-}) {
+function updateUIForPlay(
+  clipId: ClipID,
+  playEvent: number,
+  track: Track,
+  time: number,
+) {
   Draw.schedule(() => {
     vampsetStore.update((store) => {
       // if there is a clip playing for this track, set it to `stopped`
@@ -89,17 +76,12 @@ function updateUIForQueue(playClips: ClipInfo[]) {
   }, Tone.now());
 }
 
-function loopClip({
-  clip,
-  endTime,
-  every,
-  startTime,
-}: {
-  clip: Clip;
-  endTime: string;
-  every: string;
-  startTime: number;
-}) {
+function loopClip(
+  clip: Clip,
+  endTime: string,
+  every: string,
+  startTime: number | string,
+) {
   return Transport.scheduleRepeat(
     (audioContextTime: number) => {
       clip.playAudio(audioContextTime, endTime);
