@@ -1,7 +1,7 @@
 import type { GrainPlayer } from "tone";
-import { TrackID, PlayState, ClipID, Clip } from "./types";
+import { TrackID, PlayState, ClipID, PlayableClip } from "./types";
 
-export default class PlayableClip implements Clip {
+export default class Clip implements PlayableClip {
   trackId: TrackID;
   name: string;
   playbackRate: number;

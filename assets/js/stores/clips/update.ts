@@ -1,14 +1,14 @@
 import { pushShared } from "../channels";
 import vampsetStore from "../vampset";
-import { Clip, ClipInfo } from "js/types";
+import { PlayableClip, ClipData } from "js/types";
 
-export function updateClipProperties(...clips: Clip[]) {
+export function updateClipProperties(...clips: PlayableClip[]) {
   pushShared("update_clip_properties", {
     clips: clips.map((clip) => clip.serialize()),
   });
 }
 
-export function receiveUpdateClipProperties({ clips }: { clips: ClipInfo[] }) {
+export function receiveUpdateClipProperties({ clips }: { clips: ClipData[] }) {
   vampsetStore.update((store) => {
     clips.forEach((clip) => {
       const currentClip = store[clip.trackId].clips[clip.id];

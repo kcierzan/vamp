@@ -1,14 +1,14 @@
 import { once, quantizedTransportTime } from "js/utils";
 import vampsetStore from "../vampset";
 import transportStore from "../transport";
-import { Clip, ClipID, ClipInfo, PlayState, Track } from "js/types";
+import { PlayableClip, ClipID, ClipData, PlayState, Track } from "js/types";
 import * as Tone from "tone";
 import { Transport, Draw } from "tone";
 import { get } from "svelte/store";
 import { pushShared } from "../channels";
 import { stopTrackAudio } from "./stop";
 
-export function playClips(clips: Clip[]) {
+export function playClips(clips: PlayableClip[]) {
   const clipInfos = clips.map((clip) => clip.serialize());
   updateUIForQueue(clipInfos);
   pushShared("play_clip", { clips: clipInfos });
@@ -19,7 +19,7 @@ export function receivePlayClips({
   clips,
 }: {
   waitMilliseconds: number;
-  clips: ClipInfo[];
+  clips: ClipData[];
 }) {
   const nowWithLatencyCompensation = `+${waitMilliseconds / 1000}`;
   const nextBarTT = quantizedTransportTime("@1m");
@@ -28,7 +28,7 @@ export function receivePlayClips({
   transport.state === PlayState.Playing && updateUIForQueue(clips);
   transportStore.start(nowWithLatencyCompensation);
 
-  clips.forEach((clip: ClipInfo) => {
+  clips.forEach((clip: ClipData) => {
     const track = get(vampsetStore)[clip.trackId];
     // cancel currently playing clip events for the track
     track.playEvent !== null && Transport.clear(track.playEvent);
@@ -65,7 +65,7 @@ function updateUIForPlay(
   }, time);
 }
 
-function updateUIForQueue(playClips: ClipInfo[]) {
+function updateUIForQueue(playClips: ClipData[]) {
   Draw.schedule(() => {
     vampsetStore.update((store) => {
       playClips.forEach((clip) => {
@@ -77,7 +77,7 @@ function updateUIForQueue(playClips: ClipInfo[]) {
 }
 
 function loopClip(
-  clip: Clip,
+  clip: PlayableClip,
   endTime: string,
   every: string,
   startTime: number | string,

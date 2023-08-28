@@ -1,5 +1,5 @@
 import { Channel, Socket } from "phoenix";
-import { ChannelName, Clip, ClipInfo, NewClip, Token, TrackID, User } from "js/types";
+import { ChannelName, PlayableClip, ClipData, NewClip, Token, TrackID, User } from "js/types";
 import { receivePlayClips } from "js/stores/clips/play";
 import { receiveStopClip } from "js/stores/clips/stop";
 import { receiveNewTrack } from "./tracks/new";
@@ -28,7 +28,7 @@ const listeners: Listeners = {
       clips,
       waitMilliseconds,
     }: {
-      clips: ClipInfo[];
+      clips: ClipData[];
       waitMilliseconds: number;
     }) => receivePlayClips({ clips, waitMilliseconds }),
     stop_clip: ({ trackIds }: { trackIds: TrackID[] }) =>
@@ -39,7 +39,7 @@ const listeners: Listeners = {
     remove_track: ({ id }: { id: TrackID }) =>
       receiveRemoveTrack({ trackId: id }),
     new_clip: (newClip: NewClip) => receiveNewClip(newClip),
-    update_clip_properties: ({ clips }: { clips: Clip[] }) =>
+    update_clip_properties: ({ clips }: { clips: PlayableClip[] }) =>
       receiveUpdateClipProperties({ clips }),
   },
 };

@@ -23,7 +23,7 @@ export interface ClipInput {
   file: File;
 }
 
-export interface ClipInfo {
+export interface ClipData {
   id: ClipID;
   trackId: TrackID;
   name: string;
@@ -34,12 +34,12 @@ export interface ClipInfo {
   bpm: number;
 }
 
-export interface NewClip extends ClipInfo {
+export interface NewClip extends ClipData {
   data: string;
 }
 
 export interface TrackClips {
-  [key: string]: Clip;
+  [key: string]: PlayableClip;
 }
 
 export interface Track {
@@ -59,7 +59,7 @@ export interface Track {
 }
 
 export interface Scene {
-  [key: string]: Clip | null;
+  [key: string]: PlayableClip | null;
 }
 
 export type ClipID = string;
@@ -85,14 +85,14 @@ export interface SceneStore {
   scenes: Scene[];
 }
 
-export interface Clip extends ClipInfo {
+export interface PlayableClip extends ClipData {
   playAudio: (startTime: number, stopTime: number | string) => void;
   stopAudio: (time: number) => void;
   playVisual: () => void;
   stopVisual: () => void;
   queueVisual: () => void;
   setPlaybackRate: (rate: number) => void;
-  serialize: () => ClipInfo;
+  serialize: () => ClipData;
 }
 
 export type HTMLInputEvent = Event & {

@@ -1,10 +1,10 @@
 import { fileToB64, b64ToAudioSrc } from "../../utils";
 import { GrainPlayer } from "tone";
 import { ClipID, NewClip, PlayState, TrackID } from "js/types";
-import PlayableClip from "js/playableClip";
 import { Transport } from "tone";
 import { pushShared } from "../channels";
 import vampsetStore from "../vampset";
+import Clip from "js/clip";
 
 export async function newClip(
   file: File,
@@ -30,7 +30,7 @@ export function receiveNewClip(newClip: NewClip) {
   const { trackId, name, bpm, id, state, data, type, playbackRate } = newClip;
   const url = b64ToAudioSrc(data, type);
   const grainPlayer = new GrainPlayer(url).toDestination();
-  const playableClip = new PlayableClip(
+  const playableClip = new Clip(
     trackId,
     name,
     type,
