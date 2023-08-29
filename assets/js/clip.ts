@@ -9,8 +9,8 @@ export default class Clip implements PlayableClip {
   id: ClipID;
   state: PlayState;
   type: string;
-  #grainPlayer: GrainPlayer;
   bpm: number;
+  private _grainPlayer: GrainPlayer | null;
 
   constructor(
     trackId: TrackID,
@@ -19,7 +19,6 @@ export default class Clip implements PlayableClip {
     playbackRate: number,
     currentTime: number,
     bpm: number,
-    grainPlayer: GrainPlayer,
     id: ClipID = crypto.randomUUID(),
     state: PlayState = PlayState.Stopped,
   ) {
@@ -30,21 +29,27 @@ export default class Clip implements PlayableClip {
     this.id = id;
     this.state = state;
     this.type = type;
-    this.#grainPlayer = grainPlayer;
-    this.#grainPlayer.playbackRate = playbackRate;
     this.bpm = bpm;
+    this._grainPlayer = null
 
     // TODO: parameterize these
-    this.#grainPlayer.grainSize = 0.2;
-    this.#grainPlayer.overlap = 0.05;
+    // this.#grainPlayer.grainSize = 0.2;
+    // this.#grainPlayer.overlap = 0.05;
+  }
+
+  set grainPlayer(grainPlayer: GrainPlayer) {
+    this._grainPlayer = grainPlayer;
+    this._grainPlayer.grainSize = 0.2;
+    this._grainPlayer.overlap = 0.05;
+    this._grainPlayer.playbackRate = this.playbackRate
   }
 
   playAudio(startTime: number, stopTime: number | string) {
-    this.#grainPlayer.start(startTime).stop(stopTime);
+    this._grainPlayer?.start(startTime).stop(stopTime);
   }
 
   stopAudio(time: number) {
-    this.#grainPlayer.stop(time);
+    this._grainPlayer?.stop(time);
   }
 
   queueVisual() {
@@ -57,7 +62,9 @@ export default class Clip implements PlayableClip {
 
   setPlaybackRate(rate: number) {
     this.playbackRate = rate;
-    this.#grainPlayer.playbackRate = rate;
+    if (this._grainPlayer) {
+      this._grainPlayer.playbackRate = rate;
+    }
   }
 
   stopVisual() {

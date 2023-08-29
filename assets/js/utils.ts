@@ -43,11 +43,11 @@ export function quantizedTransportTime(quantizedTime: string) {
   return nextBarAC - drift;
 }
 
-async function fileToByteArray(file: File) {
+export async function fileToByteArray(file: File) {
   return new Uint8Array(await fileToArrayBuffer(file));
 }
 
-function fileToArrayBuffer(file: File) {
+export function fileToArrayBuffer(file: File) {
   return new Promise<ArrayBuffer>((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsArrayBuffer(file);

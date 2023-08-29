@@ -1,5 +1,5 @@
 import type { Channel } from "phoenix";
-import type { Transport } from "tone";
+import type { GrainPlayer, Transport } from "tone";
 
 export enum PlayState {
   Playing = "PLAYING",
@@ -93,6 +93,7 @@ export interface PlayableClip extends ClipData {
   queueVisual: () => void;
   setPlaybackRate: (rate: number) => void;
   serialize: () => ClipData;
+  grainPlayer: GrainPlayer;
 }
 
 export type HTMLInputEvent = Event & {

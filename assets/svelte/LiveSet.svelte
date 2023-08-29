@@ -6,7 +6,11 @@
   import Track from "./Track.svelte";
   import Scenes from "./Scenes.svelte";
   import Tempo from "./Tempo.svelte";
-  import { joinSharedChannel, joinPrivateChannel } from "js/channels";
+  import {
+    joinSharedChannel,
+    joinPrivateChannel,
+    joinFileChannel,
+  } from "js/channels";
   import { newTrack } from "../js/stores/tracks/new";
   import { removeTrack } from "../js/stores/tracks/remove";
 
@@ -20,6 +24,7 @@
 
   onMount(async () => {
     joinSharedChannel(token);
+    joinFileChannel(token);
     joinPrivateChannel(token, currentUser);
     clearLatency();
     measureLatency();

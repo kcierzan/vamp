@@ -7,19 +7,24 @@ import {
   Token,
   TrackID,
   User,
+  ClipID,
 } from "js/types";
 import { receivePlayClips } from "js/stores/clips/play";
 import { receiveStopClip } from "js/stores/clips/stop";
 import { receiveNewTrack } from "js/stores/tracks/new";
 import { receiveRemoveTrack } from "js/stores/tracks/remove";
-import { receiveNewClip } from "js/stores/clips/new";
+import { receiveNewClip, receiveNewBinaryClip } from "js/stores/clips/new";
 import { receiveUpdateClipProperties } from "js/stores/clips/update";
+import { Wildcard } from "phx-wildcard";
 
 const socketPath = "/socket";
 const livesetTopic = "liveset:shared";
+const fileTopic = "files:clip";
 
 export let sharedChannel: Channel | undefined;
 export let privateChannel: Channel | undefined;
+export let fileChannel: Channel | undefined;
+export let fileWildcardChannel: Wildcard | undefined;
 
 interface Listeners {
   [ChannelName.Private]: {
@@ -70,6 +75,29 @@ export function pushShared(message: string, data: object) {
   return sharedChannel?.push(message, data);
 }
 
+export function pushFile(clipId: ClipID, trackId: TrackID, data: ArrayBuffer) {
+  return fileChannel?.push(`${trackId}:${clipId}`, data);
+}
+
+export function joinPrivateChannel(token: Token, currentUser: User) {
+  const livesetPrivateTopic = `private:${currentUser.id}`;
+  privateChannel = joinChannel(socketPath, livesetPrivateTopic, token);
+
+  for (const [message, callback] of Object.entries(
+    listeners[ChannelName.Private],
+  )) {
+    privateChannel.on(message, callback);
+  }
+}
+
+export function joinFileChannel(token: Token) {
+  const channel = joinChannel(socketPath, fileTopic, token);
+  fileChannel = channel;
+  const wildcard = new Wildcard(channel);
+  fileWildcardChannel = wildcard;
+  fileWildcardChannel.on("*:*", receiveNewBinaryClip);
+}
+
 function joinChannel(path: string, topic: string, token: string) {
   const socket = new Socket(path, {
     params: { token: token },
@@ -85,15 +113,4 @@ function joinChannel(path: string, topic: string, token: string) {
       console.log("Unable to join", resp);
     });
   return channel;
-}
-
-export function joinPrivateChannel(token: Token, currentUser: User) {
-  const livesetPrivateTopic = `private:${currentUser.id}`;
-  privateChannel = joinChannel(socketPath, livesetPrivateTopic, token);
-
-  for (const [message, callback] of Object.entries(
-    listeners[ChannelName.Private],
-  )) {
-    privateChannel.on(message, callback);
-  }
 }

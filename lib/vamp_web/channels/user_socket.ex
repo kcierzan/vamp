@@ -14,6 +14,8 @@ defmodule VampWeb.UserSocket do
   #
   channel "liveset:*", VampWeb.LiveSetChannel
   channel "private:*", VampWeb.LiveSetChannel
+  channel "files:*", VampWeb.LiveSetChannel
+
   # To create a channel file, use the mix task:
   #
   #     mix phx.gen.channel Room

@@ -17,6 +17,10 @@ defmodule VampWeb.LiveSetChannel do
     {:ok, socket}
   end
 
+  def join("files:clip", _message, socket) do
+    {:ok, socket}
+  end
+
   def handle_in("ping", %{"client_time" => client_time}, socket) do
     now = DateTime.utc_now(:millisecond) |> DateTime.to_unix(:millisecond)
     up = now - client_time
@@ -59,6 +63,11 @@ defmodule VampWeb.LiveSetChannel do
     |> shared_channel_user_ids()
     |> broadcast_with_latency_compensation!("stop_clip", data)
 
+    {:noreply, socket}
+  end
+
+  def handle_in(message, {:binary, data}, socket) do
+    broadcast!(socket, message, {:binary, data})
     {:noreply, socket}
   end
 
