@@ -2,14 +2,14 @@ import type { GrainPlayer } from "tone";
 import { TrackID, PlayState, ClipID, PlayableClip } from "./types";
 
 export default class Clip implements PlayableClip {
-  trackId: TrackID;
-  name: string;
-  playbackRate: number;
-  currentTime: number;
-  id: ClipID;
-  state: PlayState;
-  type: string;
-  bpm: number;
+  public trackId: TrackID;
+  public name: string;
+  public playbackRate: number;
+  public currentTime: number;
+  public id: ClipID;
+  public state: PlayState;
+  public type: string;
+  public bpm: number;
   private _grainPlayer: GrainPlayer | null;
 
   constructor(
@@ -30,18 +30,20 @@ export default class Clip implements PlayableClip {
     this.state = state;
     this.type = type;
     this.bpm = bpm;
-    this._grainPlayer = null
-
-    // TODO: parameterize these
-    // this.#grainPlayer.grainSize = 0.2;
-    // this.#grainPlayer.overlap = 0.05;
+    this._grainPlayer = null;
   }
 
-  set grainPlayer(grainPlayer: GrainPlayer) {
+  get grainPlayer() {
+    return this._grainPlayer;
+  }
+
+  set grainPlayer(grainPlayer: GrainPlayer | null) {
     this._grainPlayer = grainPlayer;
-    this._grainPlayer.grainSize = 0.2;
-    this._grainPlayer.overlap = 0.05;
-    this._grainPlayer.playbackRate = this.playbackRate
+    if (this._grainPlayer) {
+      this._grainPlayer.grainSize = 0.2;
+      this._grainPlayer.overlap = 0.05;
+      this._grainPlayer.playbackRate = this.playbackRate;
+    }
   }
 
   playAudio(startTime: number, stopTime: number | string) {
@@ -69,6 +71,10 @@ export default class Clip implements PlayableClip {
 
   stopVisual() {
     this.state = PlayState.Stopped;
+  }
+
+  get playable() {
+    return !!this.grainPlayer;
   }
 
   serialize() {

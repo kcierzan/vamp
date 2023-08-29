@@ -16,14 +16,7 @@
 
 <div class="flex flex-col items-center justify-center">
   {#each Object.values(clips) as clip (clip?.id)}
-    <Clip
-      id={clip.id}
-      trackId={id}
-      name={clip.name}
-      state={clip.state}
-      playbackRate={clip.playbackRate}
-      bpm={clip.bpm}
-    />
+    <Clip {clip} />
   {/each}
   <input id="addclip-{id}" type="file" on:change={uploadClip} class="hidden" />
   <div

@@ -23,8 +23,6 @@ export async function newClip(
     bpm,
   });
   const buffer = await fileToArrayBuffer(file);
-  // FIXME: make sure this message gets sent after the initial
-  // clip push message. Maybe wait for a reply?
   pushFile(id, trackId, buffer);
 }
 
@@ -47,7 +45,6 @@ export function receiveNewClip(newClip: NewClip) {
 }
 
 export function receiveNewBinaryClip(message: string, payload: ArrayBuffer) {
-  console.log("got clip audio");
   const [trackId, clipId] = message.split(":");
   const blob = new Blob([payload]);
   const url = URL.createObjectURL(blob);

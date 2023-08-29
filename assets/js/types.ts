@@ -93,7 +93,8 @@ export interface PlayableClip extends ClipData {
   queueVisual: () => void;
   setPlaybackRate: (rate: number) => void;
   serialize: () => ClipData;
-  grainPlayer: GrainPlayer;
+  grainPlayer: GrainPlayer | null;
+  playable: boolean;
 }
 
 export type HTMLInputEvent = Event & {
