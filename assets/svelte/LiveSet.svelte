@@ -6,6 +6,7 @@
   import Track from "./Track.svelte";
   import Scenes from "./Scenes.svelte";
   import Tempo from "./Tempo.svelte";
+  import Metronome from "./Metronome.svelte";
   import {
     joinSharedChannel,
     joinPrivateChannel,
@@ -40,6 +41,7 @@
 </div>
 
 <Tempo />
+<Metronome />
 
 <button
   class="rounded class bg-green-500 hover:bg-green-700 text-white w-24 h-16 mb-4"
