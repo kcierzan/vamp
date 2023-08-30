@@ -1,15 +1,15 @@
 import type { GrainPlayer } from "tone";
-import { TrackID, PlayState, ClipID, PlayableClip } from "./types";
+import { TrackID, PlayState, ClipID, ClipData } from "./types";
 
-export default class Clip implements PlayableClip {
+export default class Clip implements ClipData {
   public trackId: TrackID;
   public name: string;
-  public playbackRate: number;
   public currentTime: number;
   public id: ClipID;
   public state: PlayState;
   public type: string;
   public bpm: number;
+  private _playbackRate: number;
   private _grainPlayer: GrainPlayer | null;
 
   constructor(
@@ -24,13 +24,14 @@ export default class Clip implements PlayableClip {
   ) {
     this.trackId = trackId;
     this.name = name;
-    this.playbackRate = playbackRate;
     this.currentTime = currentTime;
     this.id = id;
     this.state = state;
     this.type = type;
     this.bpm = bpm;
     this._grainPlayer = null;
+    this._playbackRate = 1;
+    this.playbackRate = playbackRate;
   }
 
   get grainPlayer() {
@@ -44,6 +45,17 @@ export default class Clip implements PlayableClip {
       this._grainPlayer.overlap = 0.05;
       this._grainPlayer.playbackRate = this.playbackRate;
     }
+  }
+
+  set playbackRate(rate: number) {
+    this._playbackRate = rate;
+    if (this._grainPlayer) {
+      this._grainPlayer.playbackRate = rate;
+    }
+  }
+
+  get playbackRate() {
+    return this._playbackRate;
   }
 
   playAudio(startTime: number, stopTime: number | string) {
@@ -62,13 +74,6 @@ export default class Clip implements PlayableClip {
     this.state = PlayState.Playing;
   }
 
-  setPlaybackRate(rate: number) {
-    this.playbackRate = rate;
-    if (this._grainPlayer) {
-      this._grainPlayer.playbackRate = rate;
-    }
-  }
-
   stopVisual() {
     this.state = PlayState.Stopped;
   }
@@ -77,7 +82,27 @@ export default class Clip implements PlayableClip {
     return !!this.grainPlayer;
   }
 
-  serialize() {
+  setFromClipData({
+    playbackRate,
+    name,
+    type,
+    currentTime,
+    bpm,
+  }: {
+    playbackRate?: number;
+    name?: string;
+    type?: string;
+    currentTime?: number;
+    bpm?: number;
+  }) {
+    if (playbackRate !== undefined) this.playbackRate = playbackRate;
+    if (name !== undefined) this.name = name;
+    if (currentTime !== undefined) this.currentTime = currentTime;
+    if (type !== undefined) this.type = type;
+    if (bpm !== undefined) this.bpm = bpm;
+  }
+
+  public serialize() {
     return {
       trackId: this.trackId,
       name: this.name,

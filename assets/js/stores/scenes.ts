@@ -1,10 +1,4 @@
-import type {
-  TrackStore,
-  Scene,
-  PlayableClip,
-  SceneStore,
-  TrackID,
-} from "js/types";
+import type { TrackStore, Scene, SceneStore, TrackID } from "js/types";
 import type { Readable } from "svelte/store";
 import vampset from "./vampset";
 import { PlayState } from "js/types";
@@ -12,10 +6,11 @@ import { get, derived } from "svelte/store";
 import { tracksToClipArrays } from "../utils";
 import { playClips } from "./clips/play";
 import { stopClips } from "./clips/stop";
+import Clip from "js/clip";
 
 function scenesFromTracks(tracks: TrackStore) {
   const scenes = [];
-  const clipArrays: PlayableClip[][] = tracksToClipArrays(tracks);
+  const clipArrays: Clip[][] = tracksToClipArrays(tracks);
   // starting at the highest scene (bottom up)
   for (let row = sceneCount(tracks) - 1; row >= 0; row--) {
     const scene: Scene = {};
@@ -69,7 +64,7 @@ function playScene(index: number) {
 
   if (!scenesValue) return;
   const scene = scenesValue.scenes[index];
-  const clipsToPlay: PlayableClip[] = [];
+  const clipsToPlay: Clip[] = [];
   const tracksToStop: TrackID[] = [];
   for (const [trackId, clip] of Object.entries(scene)) {
     if (clip) {

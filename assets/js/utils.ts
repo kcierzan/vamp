@@ -1,6 +1,7 @@
 import { TrackStore } from "js/types";
 import { Time, Transport } from "tone";
 import * as Tone from "tone";
+import Clip from "./clip";
 
 export async function fileToB64(file: File) {
   const bytes = await fileToByteArray(file);
@@ -20,9 +21,9 @@ export function b64ToAudioSrc(b64: string, type: string) {
 }
 
 export function tracksToClipArrays(tracks: TrackStore) {
-  const clipArrays = [];
+  const clipArrays: Clip[][] = [];
   for (const track of Object.values(tracks)) {
-    const trackArray = [];
+    const trackArray: Clip[] = [];
     for (const clip of Object.values(track.clips)) {
       trackArray.push(clip);
     }
@@ -31,7 +32,7 @@ export function tracksToClipArrays(tracks: TrackStore) {
   return clipArrays;
 }
 
-export function once(cb: (time: number) => void, { at }: { at: number }) {
+export function once(cb: (time: number) => void, { at }: { at: number | string }) {
   Transport.scheduleOnce((time: number) => {
     cb(time);
   }, at);

@@ -40,13 +40,15 @@
   <h3>Your latency is {$latency} ms!</h3>
 </div>
 
-<Tempo />
-<Metronome />
+<div class="flex flex-row space-x-4">
+  <Tempo />
+  <Metronome />
 
-<button
-  class="rounded class bg-green-500 hover:bg-green-700 text-white w-24 h-16 mb-4"
-  on:click={newTrack}>Add track</button
->
+  <button
+    class="rounded class bg-green-500 hover:bg-green-700 text-white text-lg w-24 h-16 mb-4 flex-grow"
+    on:click={newTrack}>Add track</button
+  >
+</div>
 <div class="flex flex-row w-full space-x-4">
   <Scenes />
   {#if trackEntries}

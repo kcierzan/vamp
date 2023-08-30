@@ -1,12 +1,13 @@
 <script lang="ts">
   import { PlayState } from "js/types";
-  import type { HTMLInputEvent, PlayableClip } from "js/types";
+  import type { HTMLInputEvent } from "js/types";
   import { playClips } from "js/stores/clips/play";
   import { stopClips } from "js/stores/clips/stop";
   import { newClip } from "js/stores/clips/new";
   import { updateClipProperties } from "js/stores/clips/update";
+  import Clip from "js/clip";
 
-  export let clip: PlayableClip;
+  export let clip: Clip;
 
   // TODO: extract this to PlayableButton or something
   const baseStyles = "text-base w-48 h-16 text-white rounded-l-lg";
@@ -16,8 +17,8 @@
     [PlayState.Queued]: "bg-yellow-500 hover:bg-yellow-700",
   };
 
-  function computeStyles(clip: PlayableClip) {
-    const base = baseStyles + " "
+  function computeStyles(clip: Clip) {
+    const base = baseStyles + " ";
     if (!clip.playable) {
       return base + "bg-green-200";
     }
@@ -33,7 +34,7 @@
 
   function changeTempo(e: HTMLInputEvent) {
     updateClipProperties({
-      ...clip,
+      ...clip.serialize(),
       playbackRate: parseInt(e.currentTarget.value),
     });
   }

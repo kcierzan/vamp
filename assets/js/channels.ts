@@ -1,7 +1,6 @@
 import { Channel, Socket } from "phoenix";
 import {
   ChannelName,
-  PlayableClip,
   ClipData,
   NewClip,
   Token,
@@ -16,6 +15,7 @@ import { receiveRemoveTrack } from "js/stores/tracks/remove";
 import { receiveNewClip, receiveNewBinaryClip } from "js/stores/clips/new";
 import { receiveUpdateClipProperties } from "js/stores/clips/update";
 import { Wildcard } from "phx-wildcard";
+import Clip from "./clip";
 
 const socketPath = "/socket";
 const livesetTopic = "liveset:shared";
@@ -52,7 +52,7 @@ const listeners: Listeners = {
     remove_track: ({ id }: { id: TrackID }) =>
       receiveRemoveTrack({ trackId: id }),
     new_clip: (newClip: NewClip) => receiveNewClip(newClip),
-    update_clip_properties: ({ clips }: { clips: PlayableClip[] }) =>
+    update_clip_properties: ({ clips }: { clips: Clip[] }) =>
       receiveUpdateClipProperties({ clips }),
   },
 };

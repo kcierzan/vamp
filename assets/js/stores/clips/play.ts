@@ -1,14 +1,15 @@
 import { once, quantizedTransportTime } from "js/utils";
 import vampsetStore from "../vampset";
 import transportStore from "../transport";
-import { PlayableClip, ClipID, ClipData, PlayState, Track } from "js/types";
+import { ClipID, ClipData, PlayState, Track } from "js/types";
 import * as Tone from "tone";
 import { Transport, Draw } from "tone";
 import { get } from "svelte/store";
 import { pushShared } from "js/channels";
 import { stopTrackAudio } from "./stop";
+import Clip from "js/clip";
 
-export function playClips(clips: PlayableClip[]) {
+export function playClips(clips: Clip[]) {
   const clipInfos = clips.map((clip) => clip.serialize());
   updateUIForQueue(clipInfos);
   pushShared("play_clip", { clips: clipInfos });
@@ -77,7 +78,7 @@ function updateUIForQueue(playClips: ClipData[]) {
 }
 
 function loopClip(
-  clip: PlayableClip,
+  clip: Clip,
   endTime: string,
   every: string,
   startTime: number | string,
