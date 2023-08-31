@@ -15,6 +15,7 @@
     "phoenix_html": "file:../deps/phoenix_html",
     "phoenix_live_view": "file:../deps/phoenix_live_view",
     "phx-wildcard": "^1.0.1",
-    "tone": "^14.8.49"
+    "tone": "^14.8.49",
+    "web-audio-beat-detector": "^8.1.53"
   }
 }

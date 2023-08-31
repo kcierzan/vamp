@@ -5,12 +5,10 @@
 
   export let id: string;
   export let clips: TrackClips = {};
-  let clipBpm: number;
 
   function uploadClip(e: HTMLInputEvent) {
     if (!e.currentTarget.files) return;
-    newClip(e.currentTarget.files[0], id, clipBpm);
-    e.currentTarget.value = "";
+    newClip(e.currentTarget.files[0], id);
   }
 </script>
 
@@ -26,5 +24,4 @@
       >Add clip</label
     >
   </div>
-  <input type="number" bind:value={clipBpm} />
 </div>

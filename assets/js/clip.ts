@@ -62,7 +62,7 @@ export default class Clip implements ClipData {
     this._grainPlayer?.start(startTime).stop(stopTime);
   }
 
-  stopAudio(time: number) {
+  stopAudio(time: number | string) {
     this._grainPlayer?.stop(time);
   }
 

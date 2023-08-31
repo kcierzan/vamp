@@ -11,7 +11,7 @@ const initialState = {
 const transport: Writable<TransportStore> = writable(initialState);
 const { subscribe, update } = transport;
 
-function start(time: number | string) {
+function start(time?: number | string) {
   update((store) => {
     store.transport.start(time);
     store.state = PlayState.Playing;
@@ -36,9 +36,17 @@ function setBpm(bpm: number) {
   });
 }
 
+function setPosition(position: string | number) {
+  update((store) => {
+    store.transport.position = position;
+    return store;
+  });
+}
+
 export default {
   subscribe,
   stop,
   start,
   setBpm,
+  setPosition,
 };

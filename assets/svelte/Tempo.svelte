@@ -35,7 +35,7 @@
 <div class="flex flex-col items-center">
   <div class="mb-8">
     <input
-      class="text-lg w-22 h-16 rounded-lg"
+      class="text-lg w-22 h-16 border-4 rounded-lg"
       id="tempo"
       value={$transport.transport?.bpm?.value}
       type="number"

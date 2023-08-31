@@ -7,6 +7,8 @@
   import Scenes from "./Scenes.svelte";
   import Tempo from "./Tempo.svelte";
   import Metronome from "./Metronome.svelte";
+  import Transport from "./Transport.svelte";
+  import * as Tone from "tone";
   import {
     joinSharedChannel,
     joinPrivateChannel,
@@ -24,6 +26,8 @@
   $: sessionEmpty = Object.keys($vampset).length === 0;
 
   onMount(async () => {
+    Tone.getContext().lookAhead = 0;
+
     joinSharedChannel(token);
     joinFileChannel(token);
     joinPrivateChannel(token, currentUser);
@@ -41,13 +45,13 @@
 </div>
 
 <div class="flex flex-row space-x-4">
-  <Tempo />
-  <Metronome />
-
   <button
     class="rounded class bg-green-500 hover:bg-green-700 text-white text-lg w-24 h-16 mb-4 flex-grow"
     on:click={newTrack}>Add track</button
   >
+  <Transport />
+  <Tempo />
+  <Metronome />
 </div>
 <div class="flex flex-row w-full space-x-4">
   <Scenes />

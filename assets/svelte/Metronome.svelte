@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import * as Tone from "tone";
   import { Transport, Draw, Oscillator, AmplitudeEnvelope } from "tone";
   let beat: number = 1;
   let on = false;
@@ -14,13 +13,13 @@
     upOsc = new Oscillator(880, "sine");
     osc = new Oscillator(440, "sine");
     upEnvelope = new AmplitudeEnvelope({
-      attack: 0.02,
+      attack: 0.01,
       decay: 0.2,
       sustain: 0,
       release: 0.05,
     }).toDestination();
     envelope = new AmplitudeEnvelope({
-      attack: 0.02,
+      attack: 0.01,
       decay: 0.15,
       sustain: 0,
       release: 0.05,
@@ -58,14 +57,12 @@
   }
 
   async function toggle() {
-    await Tone.start();
     if (on) {
       clearEvents();
       on = false;
       beat = 1;
     } else {
       on = true;
-      Transport.start();
       scheduleBeats();
     }
   }

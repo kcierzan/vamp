@@ -29,7 +29,7 @@
 
   function changeClip(e: HTMLInputEvent) {
     if (!e.currentTarget.files) return;
-    newClip(e.currentTarget.files[0], clip.trackId, clip.bpm, clip.id);
+    newClip(e.currentTarget.files[0], clip.trackId, clip.id);
   }
 
   function changeTempo(e: HTMLInputEvent) {

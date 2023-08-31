@@ -44,8 +44,13 @@ const listeners: Listeners = {
       clips: ClipData[];
       waitMilliseconds: number;
     }) => receivePlayClips({ clips, waitMilliseconds }),
-    stop_clip: ({ trackIds }: { trackIds: TrackID[] }) =>
-      receiveStopClip({ trackIds }),
+    stop_clip: ({
+      trackIds,
+      immediate,
+    }: {
+      trackIds: TrackID[];
+      immediate: boolean;
+    }) => receiveStopClip({ trackIds, immediate }),
   },
   shared: {
     new_track: ({ id }: { id: TrackID }) => receiveNewTrack({ id }),

@@ -1,17 +1,26 @@
 import { fileToArrayBuffer } from "../../utils";
 import { GrainPlayer } from "tone";
 import { ClipID, NewClip, PlayState, TrackID } from "js/types";
+import * as Tone from "tone";
 import { Transport } from "tone";
 import { pushFile, pushShared } from "js/channels";
 import vampsetStore from "../vampset";
+import { guess } from "web-audio-beat-detector";
 import Clip from "js/clip";
+
+async function guessBPM(file: File) {
+  const arrayBuf = await fileToArrayBuffer(file);
+  const audioBuf = await Tone.getContext().decodeAudioData(arrayBuf);
+  const result = await guess(audioBuf);
+  return result;
+}
 
 export async function newClip(
   file: File,
   trackId: TrackID,
-  bpm: number,
   id: ClipID = crypto.randomUUID(),
 ) {
+  const { bpm } = await guessBPM(file);
   pushShared("new_clip", {
     id: id,
     name: file.name,
@@ -22,8 +31,8 @@ export async function newClip(
     playbackRate: Transport.bpm.value / bpm,
     bpm,
   });
-  const buffer = await fileToArrayBuffer(file);
-  pushFile(id, trackId, buffer);
+  const newbuf = await fileToArrayBuffer(file);
+  pushFile(id, trackId, newbuf);
 }
 
 export function receiveNewClip(newClip: NewClip) {
