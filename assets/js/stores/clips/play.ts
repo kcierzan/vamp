@@ -1,8 +1,8 @@
 import { quantizedTransportTime } from "js/utils";
 import vampsetStore from "../vampset";
 import transportStore from "../transport";
-import { ClipData, PlayState } from "js/types";
-import { Draw, Transport } from "tone";
+import { ClipData, PlayState, PrivateMessages } from "js/types";
+import { Draw } from "tone";
 import { get } from "svelte/store";
 import { pushShared } from "js/channels";
 import Clip from "js/clip";
@@ -10,7 +10,7 @@ import Clip from "js/clip";
 export function playClips(clips: Clip[]) {
   const clipInfos = clips.map((clip) => clip.serialize());
   updateUIForQueue(clipInfos);
-  pushShared("play_clip", { clips: clipInfos });
+  pushShared(PrivateMessages.PlayClip, { clips: clipInfos });
 }
 
 export function receivePlayClips({

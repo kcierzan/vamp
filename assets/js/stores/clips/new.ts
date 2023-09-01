@@ -1,6 +1,6 @@
 import { fileToArrayBuffer } from "../../utils";
 import { GrainPlayer } from "tone";
-import { ClipID, NewClip, PlayState, TrackID } from "js/types";
+import { ClipData, ClipID, PlayState, SharedMessages, TrackID } from "js/types";
 import * as Tone from "tone";
 import { Transport } from "tone";
 import { pushFile, pushShared } from "js/channels";
@@ -8,20 +8,25 @@ import vampsetStore from "../vampset";
 import { guess } from "web-audio-beat-detector";
 import Clip from "js/clip";
 
-async function guessBPM(file: File) {
+async function guessBPM(file: File): Promise<{ bpm: number; offset: number }> {
   const arrayBuf = await fileToArrayBuffer(file);
   const audioBuf = await Tone.getContext().decodeAudioData(arrayBuf);
-  const result = await guess(audioBuf);
-  return result;
+
+  try {
+    return await guess(audioBuf);
+  } catch {
+    // HACK: this effectively skips stretching if bpm guess fails
+    return { bpm: Transport.bpm.value, offset: 0 };
+  }
 }
 
 export async function newClip(
   file: File,
   trackId: TrackID,
   id: ClipID = crypto.randomUUID(),
-) {
+): Promise<void> {
   const { bpm } = await guessBPM(file);
-  pushShared("new_clip", {
+  pushShared(SharedMessages.NewClip, {
     id: id,
     name: file.name,
     type: file.type,
@@ -35,7 +40,7 @@ export async function newClip(
   pushFile(id, trackId, newbuf);
 }
 
-export function receiveNewClip(newClip: NewClip) {
+export function receiveNewClip(newClip: ClipData): void {
   const { trackId, name, bpm, id, state, type, playbackRate } = newClip;
   const playableClip = new Clip(
     trackId,
@@ -53,7 +58,10 @@ export function receiveNewClip(newClip: NewClip) {
   });
 }
 
-export function receiveNewBinaryClip(message: string, payload: ArrayBuffer) {
+export function receiveNewBinaryClip(
+  message: string,
+  payload: ArrayBuffer,
+): void {
   const [trackId, clipId] = message.split(":");
   const blob = new Blob([payload]);
   const url = URL.createObjectURL(blob);

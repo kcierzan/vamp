@@ -13,7 +13,7 @@ const initialState = {
 const transport: Writable<TransportStore> = writable(initialState);
 const { subscribe, update } = transport;
 
-function start(time?: Time) {
+function start(time?: Time): void {
   update((store) => {
     store.transport.start(time);
     store.state = PlayState.Playing;
@@ -21,7 +21,7 @@ function start(time?: Time) {
   });
 }
 
-function stop() {
+function stop(): void {
   update((store) => {
     store.transport.stop();
     store.state = PlayState.Stopped;
@@ -29,7 +29,7 @@ function stop() {
   });
 }
 
-function setBpm(bpm: number) {
+function setBpm(bpm: number): void {
   update((store) => {
     if (store.transport?.bpm?.value) {
       store.transport.bpm.value = bpm;
@@ -39,7 +39,7 @@ function setBpm(bpm: number) {
   });
 }
 
-function rampToBpm(bpm: number) {
+function rampToBpm(bpm: number): void {
   update((store) => {
     if (store.transport?.bpm?.value) {
       store.transport.bpm.setValueAtTime(bpm, "+0.1");
@@ -49,7 +49,7 @@ function rampToBpm(bpm: number) {
   });
 }
 
-function setPosition(position: Time) {
+function setPosition(position: Time): void {
   update((store) => {
     store.transport.position = position;
     return store;

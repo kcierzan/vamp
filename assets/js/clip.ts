@@ -1,4 +1,4 @@
-import type { Time } from "tone/build/esm/core/type/Units"
+import type { Time } from "tone/build/esm/core/type/Units";
 import type { GrainPlayer } from "tone";
 import { TrackID, PlayState, ClipID, ClipData } from "./types";
 
@@ -35,11 +35,11 @@ export default class Clip implements ClipData {
     this.playbackRate = playbackRate;
   }
 
-  get grainPlayer() {
+  public get grainPlayer() {
     return this._grainPlayer;
   }
 
-  set grainPlayer(grainPlayer: GrainPlayer | null) {
+  public set grainPlayer(grainPlayer: GrainPlayer | null) {
     this._grainPlayer = grainPlayer;
     if (this._grainPlayer) {
       this._grainPlayer.grainSize = 0.2;
@@ -48,34 +48,34 @@ export default class Clip implements ClipData {
     }
   }
 
-  set playbackRate(rate: number) {
+  public set playbackRate(rate: number) {
     this._playbackRate = rate;
     if (this._grainPlayer) {
       this._grainPlayer.playbackRate = rate;
     }
   }
 
-  get playbackRate() {
+  public get playbackRate() {
     return this._playbackRate;
   }
 
-  playAudio(startTime: Time, stopTime: Time) {
+  public playAudio(startTime: Time, stopTime: Time) {
     this._grainPlayer?.start(startTime).stop(stopTime);
   }
 
-  stopAudio(time: Time) {
+  public stopAudio(time: Time) {
     this._grainPlayer?.stop(time);
   }
 
-  queueVisual() {
+  public queueVisual() {
     this.state = PlayState.Queued;
   }
 
-  playVisual() {
+  public playVisual() {
     this.state = PlayState.Playing;
   }
 
-  stopVisual() {
+  public stopVisual() {
     this.state = PlayState.Stopped;
   }
 
@@ -83,7 +83,7 @@ export default class Clip implements ClipData {
     return !!this.grainPlayer;
   }
 
-  setFromClipData({
+  public setFromClipData({
     playbackRate,
     name,
     type,

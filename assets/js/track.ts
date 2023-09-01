@@ -22,11 +22,11 @@ export default class Track {
     this._id = id;
   }
 
-  get id() {
+  public get id() {
     return this._id;
   }
 
-  playClip(clipId: ClipID, at: Time) {
+  public playClip(clipId: ClipID, at: Time): void {
     this.clearPlayEvent();
     this.loopClip(clipId, at, "+1m", "1m");
     Transport.scheduleOnce((time) => {
@@ -34,7 +34,7 @@ export default class Track {
     }, at);
   }
 
-  stop(at: Time, immediate: boolean = false) {
+  public stop(at: Time, immediate: boolean = false) {
     this.clearPlayEvent();
 
     if (immediate) {
@@ -51,16 +51,16 @@ export default class Track {
     }, at);
   }
 
-  private clearPlayEvent() {
+  private clearPlayEvent(): void {
     this._playEvent !== null && Transport.clear(this._playEvent);
   }
 
-  private stopTrackAudio(time: Time) {
+  private stopTrackAudio(time: Time): void {
     const currentlyPlaying = this.currentlyPlayingClip();
     !!currentlyPlaying && currentlyPlaying.stopAudio(time);
   }
 
-  private updateUIForPlay(clipId: ClipID, at: Time) {
+  private updateUIForPlay(clipId: ClipID, at: Time): void {
     // const time = typeof at === "number" && Tone.now() > at ? "+0.05" : at;
     // console.log(`play UI at ${time}`);
     Draw.schedule(() => {
@@ -75,7 +75,7 @@ export default class Track {
     }, at);
   }
 
-  private updateUIForStop(at: Time) {
+  private updateUIForStop(at: Time): void {
     // const time = typeof at === "number" && Tone.now() > at ? "+0.01" : at;
     // console.log(`stop UI at ${time}`);
     Draw.schedule(() => {
@@ -93,7 +93,7 @@ export default class Track {
     return this.currentlyPlaying && this.clips[this.currentlyPlaying];
   }
 
-  private loopClip(clipId: ClipID, at: Time, endTime: Time, every: Time) {
+  private loopClip(clipId: ClipID, at: Time, endTime: Time, every: Time): void {
     this._playEvent = Transport.scheduleRepeat(
       (audioContextTime: number) => {
         this.clips[clipId].playAudio(audioContextTime, endTime);

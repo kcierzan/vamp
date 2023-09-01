@@ -1,13 +1,6 @@
 import { Channel, Socket } from "phoenix";
-import {
-  ChannelName,
-  ClipData,
-  NewClip,
-  Token,
-  TrackID,
-  User,
-  ClipID,
-} from "js/types";
+import type { ClipData, Token, TrackID, User, ClipID } from "js/types";
+import { ChannelName, PrivateMessages, SharedMessages } from "js/types"
 import { receivePlayClips } from "js/stores/clips/play";
 import { receiveStopClip } from "js/stores/clips/stop";
 import { receiveNewTrack } from "js/stores/tracks/new";
@@ -28,10 +21,10 @@ export let fileWildcardChannel: Wildcard | undefined;
 
 interface Listeners {
   [ChannelName.Private]: {
-    [key: string]: (response?: any) => void;
+    [key in PrivateMessages]: (response?: any) => void;
   };
   [ChannelName.Shared]: {
-    [key: string]: (response?: any) => void;
+    [key in SharedMessages]: (response?: any) => void;
   };
 }
 
@@ -56,7 +49,7 @@ const listeners: Listeners = {
     new_track: ({ id }: { id: TrackID }) => receiveNewTrack({ id }),
     remove_track: ({ id }: { id: TrackID }) =>
       receiveRemoveTrack({ trackId: id }),
-    new_clip: (newClip: NewClip) => receiveNewClip(newClip),
+    new_clip: (clipData: ClipData) => receiveNewClip(clipData),
     update_clip_properties: ({ clips }: { clips: Clip[] }) =>
       receiveUpdateClipProperties({ clips }),
   },

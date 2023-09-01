@@ -10,7 +10,7 @@ export enum PlayState {
 }
 
 export interface TrackStore {
-  [key: string]: Track;
+  [key: TrackID]: Track;
 }
 
 export interface ChannelStore {
@@ -18,11 +18,15 @@ export interface ChannelStore {
   private: Channel | null;
 }
 
-export interface ClipInput {
-  id: string;
-  trackId: string;
+export interface TransportStore {
+  transport: typeof Transport;
+  state: PlayState;
   bpm: number;
-  file: File;
+}
+
+export interface SceneStore {
+  states: PlayState[];
+  scenes: Scene[];
 }
 
 export interface ClipData {
@@ -36,12 +40,8 @@ export interface ClipData {
   bpm: number;
 }
 
-export interface NewClip extends ClipData {
-  data: string;
-}
-
 export interface TrackClips {
-  [key: string]: Clip;
+  [key: ClipID]: Clip;
 }
 
 export enum ChannelName {
@@ -49,8 +49,20 @@ export enum ChannelName {
   Shared = "shared",
 }
 
+export enum PrivateMessages {
+  PlayClip = "play_clip",
+  StopClip = "stop_clip",
+}
+
+export enum SharedMessages {
+  NewClip = "new_clip",
+  UpdateClipProperties = "update_clip_properties",
+  NewTrack = "new_track",
+  RemoveTrack = "remove_track",
+}
+
 export interface Scene {
-  [key: string]: Clip | null;
+  [key: TrackID]: Clip | null;
 }
 
 export type ClipID = string;
@@ -64,17 +76,6 @@ export interface User {
   email: string;
   display_name: string;
   confirmed_at: string;
-}
-
-export interface TransportStore {
-  transport: typeof Transport;
-  state: PlayState;
-  bpm: number;
-}
-
-export interface SceneStore {
-  states: PlayState[];
-  scenes: Scene[];
 }
 
 export type HTMLInputEvent = Event & {

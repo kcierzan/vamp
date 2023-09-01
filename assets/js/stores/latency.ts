@@ -4,15 +4,15 @@ import { pushShared } from "js/channels";
 const latencyStore = writable(0);
 const { subscribe, set } = latencyStore;
 
-function clearLatency() {
+function clearLatency(): void {
   pushShared("clear_latency", {});
 }
 
-function getLatency() {
+function getLatency(): void {
   pushShared("get_latency", {})?.receive("ok", (response) => set(response));
 }
 
-function measureLatency(count = 20) {
+function measureLatency(count = 20): void {
   if (count <= 0) {
     getLatency();
     return;

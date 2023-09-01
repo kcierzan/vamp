@@ -8,7 +8,7 @@ import { playClips } from "./clips/play";
 import { stopClips } from "./clips/stop";
 import Clip from "js/clip";
 
-function scenesFromTracks(tracks: TrackStore) {
+function scenesFromTracks(tracks: TrackStore): Scene[] {
   const scenes = [];
   const clipArrays: Clip[][] = tracksToClipArrays(tracks);
   // starting at the highest scene (bottom up)
@@ -31,7 +31,7 @@ function scenesFromTracks(tracks: TrackStore) {
   return scenes;
 }
 
-function sceneArraysToStates(sceneArrays: Scene[]) {
+function sceneArraysToStates(sceneArrays: Scene[]): PlayState[] {
   return sceneArrays.map((scene) => {
     const states = [];
     for (const clip of Object.values(scene)) {
@@ -44,7 +44,7 @@ function sceneArraysToStates(sceneArrays: Scene[]) {
   });
 }
 
-function sceneCount(tracks: TrackStore) {
+function sceneCount(tracks: TrackStore): number {
   const clips = Object.values(tracks).map(
     (track) => Object.keys(track.clips).length,
   );
@@ -59,7 +59,7 @@ const scenes: Readable<SceneStore> = derived(vampset, ($tracks, set) => {
   });
 });
 
-function playScene(index: number) {
+function playScene(index: number): void {
   const scenesValue = get(scenes);
 
   if (!scenesValue) return;
@@ -77,7 +77,7 @@ function playScene(index: number) {
   stopClips(tracksToStop);
 }
 
-function stopScene(index: number) {
+function stopScene(index: number): void {
   const scenesValue = get(scenes);
   if (!scenesValue) return;
   const scene = scenesValue.scenes[index];
