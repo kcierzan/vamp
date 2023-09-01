@@ -1,3 +1,4 @@
+import type { Time } from "tone/build/esm/core/type/Units"
 import type { GrainPlayer } from "tone";
 import { TrackID, PlayState, ClipID, ClipData } from "./types";
 
@@ -58,11 +59,11 @@ export default class Clip implements ClipData {
     return this._playbackRate;
   }
 
-  playAudio(startTime: number, stopTime: number | string) {
+  playAudio(startTime: Time, stopTime: Time) {
     this._grainPlayer?.start(startTime).stop(stopTime);
   }
 
-  stopAudio(time: number | string) {
+  stopAudio(time: Time) {
     this._grainPlayer?.stop(time);
   }
 

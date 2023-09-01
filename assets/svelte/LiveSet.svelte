@@ -59,7 +59,7 @@
     {#each trackEntries as [id, track] (id)}
       <div class="flex flex-col items-center">
         <div class="mb-2">
-          <Track {...track} />
+          <Track {track} />
         </div>
         <button
           class="rounded class bg-red-500 hover:bg-red-700 text-white w-24 h-16"

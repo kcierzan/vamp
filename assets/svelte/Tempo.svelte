@@ -29,7 +29,7 @@
     stretchClipsToBpm(bpm);
   }
 
-  onMount(async () => setBpm(128));
+  onMount(async () => setBpm(120));
 </script>
 
 <div class="flex flex-col items-center">
@@ -37,7 +37,7 @@
     <input
       class="text-lg w-22 h-16 border-4 rounded-lg"
       id="tempo"
-      value={$transport.transport?.bpm?.value}
+      value={$transport.bpm}
       type="number"
       min="40"
       max="250"

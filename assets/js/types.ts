@@ -1,6 +1,7 @@
 import type { Channel } from "phoenix";
 import type { Transport } from "tone";
-import Clip from "js/clip"
+import Clip from "js/clip";
+import Track from "js/track";
 
 export enum PlayState {
   Playing = "PLAYING",
@@ -43,20 +44,9 @@ export interface TrackClips {
   [key: string]: Clip;
 }
 
-export interface Track {
-  id: TrackID;
-  playEvent: number | null;
-  currentlyPlaying: ClipID | null;
-  clips: TrackClips;
-}
-
 export enum ChannelName {
   Private = "private",
   Shared = "shared",
-}
-
-export interface Track {
-  id: string;
 }
 
 export interface Scene {
@@ -79,6 +69,7 @@ export interface User {
 export interface TransportStore {
   transport: typeof Transport;
   state: PlayState;
+  bpm: number;
 }
 
 export interface SceneStore {

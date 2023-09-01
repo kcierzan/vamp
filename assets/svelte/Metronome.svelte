@@ -13,14 +13,14 @@
     upOsc = new Oscillator(880, "sine");
     osc = new Oscillator(440, "sine");
     upEnvelope = new AmplitudeEnvelope({
-      attack: 0.01,
+      attack: 0.015,
       decay: 0.2,
       sustain: 0,
       release: 0.05,
     }).toDestination();
     envelope = new AmplitudeEnvelope({
-      attack: 0.01,
-      decay: 0.15,
+      attack: 0.015,
+      decay: 0.2,
       sustain: 0,
       release: 0.05,
     }).toDestination();
@@ -34,8 +34,10 @@
       return Transport.scheduleRepeat(
         (time) => {
           if (currentBeat === 0) {
+            upOsc?.restart(time);
             upEnvelope?.triggerAttackRelease(0.2, time);
           } else {
+            osc?.restart(time);
             envelope?.triggerAttackRelease(0.2, time);
           }
           Draw.schedule(() => {
@@ -50,9 +52,9 @@
   }
 
   function clearEvents() {
-    events.forEach((eventId) => {
+    for (const eventId of events) {
       Transport.clear(eventId);
-    });
+    }
     events = [];
   }
 

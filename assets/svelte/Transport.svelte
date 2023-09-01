@@ -12,7 +12,7 @@
   let seconds = zeroPadded;
   let stopHeldStyle = "";
 
-  $: playing = $transport.state === PlayState.Playing
+  $: playing = $transport.state === PlayState.Playing;
 
   const buttonStyles =
     "text-base bg-gray-400  w-24 h-16 text-black rounded-lg mr-4";

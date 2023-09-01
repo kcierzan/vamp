@@ -8,10 +8,10 @@ export function updateClipProperties(...clips: ClipData[]) {
 
 export function receiveUpdateClipProperties({ clips }: { clips: ClipData[] }) {
   vampsetStore.update((store) => {
-    clips.forEach((clip) => {
+    for (const clip of clips) {
       const currentClip = store[clip.trackId].clips[clip.id];
       currentClip.setFromClipData(clip);
-    });
+    }
     return store;
   });
 }

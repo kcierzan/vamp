@@ -32,12 +32,6 @@ export function tracksToClipArrays(tracks: TrackStore) {
   return clipArrays;
 }
 
-export function once(cb: (time: number) => void, { at }: { at: number | string }) {
-  Transport.scheduleOnce((time: number) => {
-    cb(time);
-  }, at);
-}
-
 export function quantizedTransportTime(quantizedTime: string) {
   const nextBarAC = Time(quantizedTime).toSeconds();
   const drift = Tone.now() - Transport.seconds;
