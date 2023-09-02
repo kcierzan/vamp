@@ -10,7 +10,8 @@
   export let clip: Clip;
 
   // TODO: extract this to PlayableButton or something
-  const baseStyles = "text-base w-48 h-16 text-white rounded-l-lg";
+  const baseStyles =
+    "flex justify-between text-base w-48 h-16 text-white rounded-l-lg ";
   const stateStyles = {
     [PlayState.Playing]: "bg-sky-400 hover:bg-sky-300",
     [PlayState.Stopped]: "bg-blue-500 hover:bg-blue-400",
@@ -51,23 +52,26 @@
   }
 </script>
 
-<div class="flex flex-row mb-2">
-  <input
-    id="clipchange-{clip.id}"
-    type="file"
-    class="hidden"
-    on:change={changeClip}
-  />
-  <button on:click={clipAction} class={clipStyles}>
-    {clip.name} - {clip.bpm}BPM
-  </button>
-  <div
-    class="text-center text-base w-24 h-16 align-middle text-white rounded-r-lg bg-sky-500 hover:bg-sky-700"
-  >
-    <label
-      for="clipchange-{clip.id}"
-      class="inline-block py-5 min-h-full min-w-full">change file</label
+<div>
+  <div class="flex flex-row mb-2">
+    <input
+      id="clipchange-{clip.id}"
+      type="file"
+      class="hidden"
+      on:change={changeClip}
+    />
+    <button on:click={clipAction} class={clipStyles}>
+      <span class="hero-play self-center m-2 h-8 w-8 min-w-8 min-h-8" />
+      <span class="text-left self-center w-36 truncate">{clip.name}</span>
+    </button>
+    <div
+      class="text-center text-base w-24 h-16 align-middle text-white rounded-r-lg bg-sky-500 hover:bg-sky-700"
     >
+      <label
+        for="clipchange-{clip.id}"
+        class="inline-block py-5 min-h-full min-w-full">change file</label
+      >
+    </div>
   </div>
 </div>
 <input

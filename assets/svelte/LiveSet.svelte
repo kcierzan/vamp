@@ -46,9 +46,12 @@
 
 <div class="flex flex-row space-x-4">
   <button
-    class="rounded class bg-green-500 hover:bg-green-700 text-white text-lg w-24 h-16 mb-4 flex-grow"
-    on:click={newTrack}>Add track</button
+    class="flex justify-center space-x-4 rounded class bg-green-500 hover:bg-green-700 text-white text-lg w-24 h-16 mb-4 flex-grow"
+    on:click={newTrack}
   >
+    <span class="hero-plus-circle self-center h-8 w-8" />
+    <span class="self-center">Add track</span>
+  </button>
   <Transport />
   <Tempo />
   <Quantization />

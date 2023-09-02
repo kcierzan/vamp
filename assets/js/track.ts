@@ -32,6 +32,7 @@ export default class Track {
     }, Tone.now());
 
     Transport.scheduleOnce((time) => {
+      this.stopTrackAudio(time);
       Draw.schedule(() => {
         this.clearPlayEvent();
         this.updateUIForPlay(clipId);
@@ -42,7 +43,7 @@ export default class Track {
 
   // This is the "transport" stop
   public stopAudio() {
-    this.stopTrackAudio(undefined)
+    this.stopTrackAudio(undefined);
   }
 
   public stop(at: Time) {
@@ -100,9 +101,13 @@ export default class Track {
   }
 
   private loopClip(clipId: ClipID, endTime: Time, every: Time): void {
-    this._playEvent = Transport.scheduleRepeat((audioContextTime: number) => {
-      this.clips[clipId].playAudio(audioContextTime, endTime);
-    }, every, "+0.001");
+    this._playEvent = Transport.scheduleRepeat(
+      (audioContextTime: number) => {
+        this.clips[clipId].playAudio(audioContextTime, endTime);
+      },
+      every,
+      "+0.01",
+    );
     console.log(`creating event: ${this._playEvent}`);
   }
 }
