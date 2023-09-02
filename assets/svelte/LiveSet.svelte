@@ -8,6 +8,7 @@
   import Tempo from "./Tempo.svelte";
   import Metronome from "./Metronome.svelte";
   import Transport from "./Transport.svelte";
+  import Quantization from "./Quantization.svelte";
   import * as Tone from "tone";
   import {
     joinSharedChannel,
@@ -15,7 +16,6 @@
     joinFileChannel,
   } from "js/channels";
   import { newTrack } from "../js/stores/tracks/new";
-  import { removeTrack } from "../js/stores/tracks/remove";
 
   export let currentUser: User;
   export let token: Token;
@@ -51,21 +51,14 @@
   >
   <Transport />
   <Tempo />
+  <Quantization />
   <Metronome />
 </div>
 <div class="flex flex-row w-full space-x-4">
   <Scenes />
   {#if trackEntries}
     {#each trackEntries as [id, track] (id)}
-      <div class="flex flex-col items-center">
-        <div class="mb-2">
-          <Track {track} />
-        </div>
-        <button
-          class="rounded class bg-red-500 hover:bg-red-700 text-white w-24 h-16"
-          on:click={() => removeTrack(id)}>Remove track</button
-        >
-      </div>
+      <Track {track} />
     {/each}
   {/if}
 </div>

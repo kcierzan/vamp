@@ -58,10 +58,10 @@ defmodule VampWeb.LiveSetChannel do
     {:noreply, socket}
   end
 
-  def handle_in("stop_clip", data, socket) do
+  def handle_in("stop_track", data, socket) do
     socket
     |> shared_channel_user_ids()
-    |> broadcast_with_latency_compensation!("stop_clip", data)
+    |> broadcast_with_latency_compensation!("stop_track", data)
 
     {:noreply, socket}
   end

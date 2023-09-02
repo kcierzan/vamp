@@ -5,7 +5,7 @@ import { PlayState } from "js/types";
 import { get, derived } from "svelte/store";
 import { tracksToClipArrays } from "../utils";
 import { playClips } from "./clips/play";
-import { stopClips } from "./clips/stop";
+import { stopTracks } from "./tracks/stop";
 import Clip from "js/clip";
 
 function scenesFromTracks(tracks: TrackStore): Scene[] {
@@ -74,7 +74,7 @@ function playScene(index: number): void {
     }
   }
   playClips(clipsToPlay);
-  stopClips(tracksToStop);
+  stopTracks(tracksToStop);
 }
 
 function stopScene(index: number): void {
@@ -85,7 +85,7 @@ function stopScene(index: number): void {
   for (const trackId of Object.keys(scene)) {
     tracksToStop.push(trackId);
   }
-  stopClips(tracksToStop);
+  stopTracks(tracksToStop);
 }
 
 export default {

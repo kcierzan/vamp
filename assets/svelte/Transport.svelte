@@ -1,7 +1,6 @@
 <script lang="ts">
   import { Transport, Draw } from "tone";
   import { onMount } from "svelte";
-  import { stopAllClips } from "js/stores/clips/stop";
   import transport from "js/stores/transport";
   import { PlayState } from "js/types";
 
@@ -42,14 +41,15 @@
   }
 
   function start() {
+    playHeadPosition = zeroPosition;
+    seconds = zeroPadded;
+    // TODO: this should push a message
     transport.start(undefined);
   }
 
   function stop() {
-    stopAllClips();
+    // FIXME: This should push a message that invokes track.stopAudio
     transport.stop();
-    playHeadPosition = zeroPosition;
-    seconds = zeroPadded;
   }
 
   onMount(async () => {

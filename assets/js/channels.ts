@@ -1,8 +1,8 @@
 import { Channel, Socket } from "phoenix";
 import type { ClipData, Token, TrackID, User, ClipID } from "js/types";
-import { ChannelName, PrivateMessages, SharedMessages } from "js/types"
+import { ChannelName, PrivateMessages, SharedMessages } from "js/types";
 import { receivePlayClips } from "js/stores/clips/play";
-import { receiveStopClip } from "js/stores/clips/stop";
+import { receiveStopTrack } from "js/stores/tracks/stop";
 import { receiveNewTrack } from "js/stores/tracks/new";
 import { receiveRemoveTrack } from "js/stores/tracks/remove";
 import { receiveNewClip, receiveNewBinaryClip } from "js/stores/clips/new";
@@ -37,13 +37,8 @@ const listeners: Listeners = {
       clips: ClipData[];
       waitMilliseconds: number;
     }) => receivePlayClips({ clips, waitMilliseconds }),
-    stop_clip: ({
-      trackIds,
-      immediate,
-    }: {
-      trackIds: TrackID[];
-      immediate: boolean;
-    }) => receiveStopClip({ trackIds, immediate }),
+    stop_track: ({ trackIds }: { trackIds: TrackID[] }) =>
+      receiveStopTrack({ trackIds }),
   },
   shared: {
     new_track: ({ id }: { id: TrackID }) => receiveNewTrack({ id }),

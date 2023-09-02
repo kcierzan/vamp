@@ -2,7 +2,7 @@ import type { Time } from "tone/build/esm/core/type/Units";
 import { Draw, Transport } from "tone";
 import { ClipID, TrackClips, TrackID } from "./types";
 import vampsetStore from "js/stores/vampset";
-// import * as Tone from "tone";
+import * as Tone from "tone";
 
 export default class Track {
   public currentlyPlaying: ClipID | null;
@@ -27,79 +27,82 @@ export default class Track {
   }
 
   public playClip(clipId: ClipID, at: Time): void {
-    this.clearPlayEvent();
-    this.loopClip(clipId, at, "+1m", "1m");
+    Draw.schedule(() => {
+      this.updateUIForQueue(clipId);
+    }, Tone.now());
+
     Transport.scheduleOnce((time) => {
-      this.updateUIForPlay(clipId, time);
+      Draw.schedule(() => {
+        this.clearPlayEvent();
+        this.updateUIForPlay(clipId);
+        this.loopClip(clipId, "+1m", "1m");
+      }, time);
     }, at);
   }
 
-  public stop(at: Time, immediate: boolean = false) {
-    this.clearPlayEvent();
+  // This is the "transport" stop
+  public stopAudio() {
+    this.stopTrackAudio(undefined)
+  }
 
-    if (immediate) {
-      this.stopTrackAudio("+0.01");
-      this.updateUIForStop("+0.01");
-      return;
-    }
-    // const fireTime =
-    //   typeof at === "number" && Transport.seconds > at ? "+0.05" : at;
-    // console.log(`stop time ${fireTime} :: TT: ${Transport.seconds}`);
+  public stop(at: Time) {
     Transport.scheduleOnce((time) => {
       this.stopTrackAudio(time);
-      this.updateUIForStop(time);
+      Draw.schedule(() => {
+        this.clearPlayEvent();
+        this.updateUIForStop();
+      }, time);
     }, at);
   }
 
   private clearPlayEvent(): void {
-    this._playEvent !== null && Transport.clear(this._playEvent);
+    if (this._playEvent !== null) {
+      console.log(`cancelling event: ${this._playEvent}`);
+      Transport.clear(this._playEvent);
+    }
   }
 
-  private stopTrackAudio(time: Time): void {
+  private stopTrackAudio(time: Time | undefined): void {
     const currentlyPlaying = this.currentlyPlayingClip();
     !!currentlyPlaying && currentlyPlaying.stopAudio(time);
   }
 
-  private updateUIForPlay(clipId: ClipID, at: Time): void {
-    // const time = typeof at === "number" && Tone.now() > at ? "+0.05" : at;
-    // console.log(`play UI at ${time}`);
-    Draw.schedule(() => {
-      vampsetStore.update((store) => {
-        if (this.currentlyPlaying && this.currentlyPlaying !== clipId) {
-          store[this.id].clips[this.currentlyPlaying].stopVisual();
-        }
-        store[this.id].clips[clipId].playVisual();
-        this.currentlyPlaying = clipId;
-        return store;
-      });
-    }, at);
+  private updateUIForPlay(clipId: ClipID): void {
+    vampsetStore.update((store) => {
+      if (this.currentlyPlaying && this.currentlyPlaying !== clipId) {
+        store[this.id].clips[this.currentlyPlaying].stopVisual();
+      }
+      store[this.id].clips[clipId].playVisual();
+      this.currentlyPlaying = clipId;
+      return store;
+    });
   }
 
-  private updateUIForStop(at: Time): void {
-    // const time = typeof at === "number" && Tone.now() > at ? "+0.01" : at;
-    // console.log(`stop UI at ${time}`);
-    Draw.schedule(() => {
-      vampsetStore.update((store) => {
-        !!this.currentlyPlaying &&
-          store[this.id].clips[this.currentlyPlaying].stopVisual();
-        this.currentlyPlaying = null;
-        this._playEvent = null;
-        return store;
-      });
-    }, at);
+  private updateUIForStop(): void {
+    vampsetStore.update((store) => {
+      !!this.currentlyPlaying &&
+        store[this.id].clips[this.currentlyPlaying].stopVisual();
+      this.currentlyPlaying = null;
+      this._playEvent = null;
+      return store;
+    });
+  }
+
+  private updateUIForQueue(clipId: ClipID): void {
+    vampsetStore.update((store) => {
+      this.clips[clipId].queueVisual();
+      return store;
+    });
   }
 
   private currentlyPlayingClip() {
     return this.currentlyPlaying && this.clips[this.currentlyPlaying];
   }
 
-  private loopClip(clipId: ClipID, at: Time, endTime: Time, every: Time): void {
-    this._playEvent = Transport.scheduleRepeat(
-      (audioContextTime: number) => {
-        this.clips[clipId].playAudio(audioContextTime, endTime);
-      },
-      every,
-      at,
-    );
+  private loopClip(clipId: ClipID, endTime: Time, every: Time): void {
+    this._playEvent = Transport.scheduleRepeat((audioContextTime: number) => {
+      this.clips[clipId].playAudio(audioContextTime, endTime);
+    }, every, "+0.001");
+    console.log(`creating event: ${this._playEvent}`);
   }
 }

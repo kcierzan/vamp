@@ -1,4 +1,4 @@
-import { TrackStore } from "js/types";
+import { QuantizationInterval, TrackStore } from "js/types";
 import { Time, Transport } from "tone";
 import * as Tone from "tone";
 import Clip from "./clip";
@@ -32,7 +32,12 @@ export function tracksToClipArrays(tracks: TrackStore): Clip[][] {
   return clipArrays;
 }
 
-export function quantizedTransportTime(quantizedTime: string): number {
+export function quantizedTransportTime(
+  quantizedTime: QuantizationInterval,
+): number | string {
+  if (quantizedTime === QuantizationInterval.None) {
+    return quantizedTime;
+  }
   const nextBarAC = Time(quantizedTime).toSeconds();
   const drift = Tone.now() - Transport.seconds;
   return nextBarAC - drift;

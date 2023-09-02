@@ -2,7 +2,7 @@
   import { PlayState } from "js/types";
   import type { HTMLInputEvent } from "js/types";
   import { playClips } from "js/stores/clips/play";
-  import { stopClips } from "js/stores/clips/stop";
+  import { stopTracks } from "js/stores/tracks/stop";
   import { newClip } from "js/stores/clips/new";
   import { updateClipProperties } from "js/stores/clips/update";
   import Clip from "js/clip";
@@ -12,9 +12,9 @@
   // TODO: extract this to PlayableButton or something
   const baseStyles = "text-base w-48 h-16 text-white rounded-l-lg";
   const stateStyles = {
-    [PlayState.Playing]: "bg-red-500 hover:bg-red-700",
-    [PlayState.Stopped]: "bg-green-500 hover:bg-green-700",
-    [PlayState.Queued]: "bg-yellow-500 hover:bg-yellow-700",
+    [PlayState.Playing]: "bg-sky-400 hover:bg-sky-300",
+    [PlayState.Stopped]: "bg-blue-500 hover:bg-blue-400",
+    [PlayState.Queued]: "bg-yellow-400",
   };
 
   function computeStyles(clip: Clip) {
@@ -46,7 +46,7 @@
         playClips([clip]);
         break;
       case PlayState.Playing:
-        stopClips([clip.trackId]);
+        stopTracks([clip.trackId]);
     }
   }
 </script>

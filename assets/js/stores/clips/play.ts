@@ -1,15 +1,15 @@
 import { quantizedTransportTime } from "js/utils";
 import vampsetStore from "../vampset";
 import transportStore from "../transport";
+import quantization from "../quantization";
 import { ClipData, PlayState, PrivateMessages } from "js/types";
-import { Draw } from "tone";
+import { Draw, Transport } from "tone";
 import { get } from "svelte/store";
 import { pushShared } from "js/channels";
 import Clip from "js/clip";
 
 export function playClips(clips: Clip[]) {
   const clipInfos = clips.map((clip) => clip.serialize());
-  updateUIForQueue(clipInfos);
   pushShared(PrivateMessages.PlayClip, { clips: clipInfos });
 }
 
@@ -21,25 +21,25 @@ export function receivePlayClips({
   clips: ClipData[];
 }) {
   const nowWithLatencyCompensation = `+${waitMilliseconds / 1000 + 0.1}`;
-  const nextBar = quantizedTransportTime("@1m");
+  const currentQuantization = get(quantization);
+  // FIXME: Either make quantization settings e2e reactive or pass a time w/ the play event
+  // (different clients will have different quantization values)
+  const nextDivision = quantizedTransportTime(currentQuantization);
   const transport = get(transportStore);
-  const playTime = transport.state === PlayState.Playing ? nextBar : 0;
-  transport.state === PlayState.Playing && updateUIForQueue(clips);
-  transportStore.start(nowWithLatencyCompensation);
-
   const store = get(vampsetStore);
-  for (const clip of clips) {
-    store[clip.trackId].playClip(clip.id, playTime);
-  }
-}
 
-function updateUIForQueue(playClips: ClipData[]) {
-  for (const clip of playClips) {
-    Draw.schedule(() => {
-      vampsetStore.update((store) => {
-        store[clip.trackId].clips[clip.id].queueVisual();
-        return store;
-      });
-    }, "+0.01");
+  if (transport.state === PlayState.Stopped) {
+    for (const clip of clips) {
+      store[clip.trackId].playClip(clip.id, 0);
+    }
+    transportStore.start(nowWithLatencyCompensation);
+  } else {
+    Transport.scheduleOnce((time) => {
+      Draw.schedule(() => {
+        for (const clip of clips) {
+          store[clip.trackId].playClip(clip.id, nextDivision);
+        }
+      }, time);
+    }, nowWithLatencyCompensation);
   }
 }

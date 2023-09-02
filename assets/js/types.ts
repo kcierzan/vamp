@@ -51,7 +51,7 @@ export enum ChannelName {
 
 export enum PrivateMessages {
   PlayClip = "play_clip",
-  StopClip = "stop_clip",
+  StopTrack = "stop_track",
 }
 
 export enum SharedMessages {
@@ -59,6 +59,18 @@ export enum SharedMessages {
   UpdateClipProperties = "update_clip_properties",
   NewTrack = "new_track",
   RemoveTrack = "remove_track",
+}
+
+export enum QuantizationInterval {
+  None = "+0.01",
+  EightBars = "@8m",
+  FourBars = "@4m",
+  TwoBars = "@2m",
+  OneBar = "@1m",
+  HalfNote = "@2n",
+  QuarterNote = "@4n",
+  EigthNote = "@8n",
+  SixteenthNote = "@16n",
 }
 
 export interface Scene {
