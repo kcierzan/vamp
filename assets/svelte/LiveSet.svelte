@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Token, User } from "js/types";
   import { onMount } from "svelte";
-  import vampset from "../js/stores/vampset";
+  import project from "../js/stores/project";
   import latency from "../js/stores/latency";
   import Track from "./Track.svelte";
   import Scenes from "./Scenes.svelte";
@@ -22,8 +22,8 @@
 
   const { clearLatency, measureLatency } = latency;
 
-  $: trackEntries = Object.entries($vampset);
-  $: sessionEmpty = Object.keys($vampset).length === 0;
+  $: trackEntries = Object.entries($project);
+  $: sessionEmpty = Object.keys($project).length === 0;
 
   onMount(async () => {
     Tone.getContext().lookAhead = 0;

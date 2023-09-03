@@ -1,6 +1,6 @@
 import type { TrackStore, Scene, SceneStore, TrackID } from "js/types";
 import type { Readable } from "svelte/store";
-import vampset from "./vampset";
+import project from "./project";
 import { PlayState } from "js/types";
 import { get, derived } from "svelte/store";
 import { tracksToClipArrays } from "../utils";
@@ -51,7 +51,7 @@ function sceneCount(tracks: TrackStore): number {
   return Math.max(...clips);
 }
 
-const scenes: Readable<SceneStore> = derived(vampset, ($tracks, set) => {
+const scenes: Readable<SceneStore> = derived(project, ($tracks, set) => {
   const sceneArrays: Scene[] = scenesFromTracks($tracks);
   set({
     states: sceneArraysToStates(sceneArrays),

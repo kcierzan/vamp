@@ -1,16 +1,14 @@
 import { Channel, Socket } from "phoenix";
 import type { ClipData, Token, TrackID, User, ClipID } from "js/types";
 import { ChannelName, PrivateMessages, SharedMessages } from "js/types";
+import transport from "js/stores/transport";
 import { receivePlayClips } from "js/stores/clips/play";
 import { receiveStopTrack } from "js/stores/tracks/stop";
 import { receiveNewTrack } from "js/stores/tracks/new";
 import { receiveRemoveTrack } from "js/stores/tracks/remove";
 import { receiveNewClip, receiveNewBinaryClip } from "js/stores/clips/new";
 import { receiveUpdateClipProperties } from "js/stores/clips/update";
-import transport from "js/stores/transport";
-
 import { Wildcard } from "phx-wildcard";
-import Clip from "./clip";
 
 const socketPath = "/socket";
 const livesetTopic = "liveset:shared";
@@ -51,7 +49,7 @@ const listeners: Listeners = {
     remove_track: ({ id }: { id: TrackID }) =>
       receiveRemoveTrack({ trackId: id }),
     new_clip: (clipData: ClipData) => receiveNewClip(clipData),
-    update_clip_properties: ({ clips }: { clips: Clip[] }) =>
+    update_clip_properties: ({ clips }: { clips: ClipData[] }) =>
       receiveUpdateClipProperties({ clips }),
   },
 };

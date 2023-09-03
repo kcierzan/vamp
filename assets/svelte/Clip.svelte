@@ -15,13 +15,13 @@
   const stateStyles = {
     [PlayState.Playing]: "bg-sky-400 hover:bg-sky-300",
     [PlayState.Stopped]: "bg-blue-500 hover:bg-blue-400",
-    [PlayState.Queued]: "bg-yellow-400",
+    [PlayState.Queued]: "blink",
   };
 
   function computeStyles(clip: Clip) {
     const base = baseStyles + " ";
     if (!clip.playable) {
-      return base + "bg-green-200";
+      return base + "bg-blue-200";
     }
     return base + stateStyles[clip.state];
   }
@@ -74,3 +74,18 @@
   bind:value={clip.playbackRate}
   on:input={debounce(changeTempo)}
 />
+
+<style>
+  .blink {
+    animation: buttonbg 0.5s 0s ease-in infinite alternate;
+  }
+
+  @keyframes buttonbg {
+    from {
+      background-color: rgb(59 130 246);
+    }
+    to {
+      background-color: rgb(234 179 8);
+    }
+  }
+</style>

@@ -1,5 +1,5 @@
 import { quantizedTransportTime } from "js/utils";
-import vampsetStore from "../vampset";
+import project from "../project";
 import transportStore from "../transport";
 import quantization from "../quantization";
 import { ClipData, PlayState, PrivateMessages } from "js/types";
@@ -26,7 +26,7 @@ export function receivePlayClips({
   // (different clients will have different quantization values)
   const nextDivision = quantizedTransportTime(currentQuantization);
   const transport = get(transportStore);
-  const store = get(vampsetStore);
+  const store = get(project);
 
   if (transport.state === PlayState.Stopped) {
     for (const clip of clips) {

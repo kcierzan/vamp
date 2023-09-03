@@ -1,7 +1,7 @@
 import type { Time } from "tone/build/esm/core/type/Units";
 import { Draw, Transport } from "tone";
 import { ClipID, TrackClips, TrackID } from "./types";
-import vampsetStore from "js/stores/vampset";
+import project from "js/stores/project";
 import * as Tone from "tone";
 
 export default class Track {
@@ -34,11 +34,13 @@ export default class Track {
     // HACK: sometimes we are too late when attempting scheduling
     // and we end up trying to schedule an event in the past.
     // Rather than fail entirely, we schedule ASAP...
-    const launchTime = Transport.seconds > (at as number) ? "+0.005" : at;
+    const launchTime = Transport.seconds > (at as number) ? "+0.01" : at;
     Transport.scheduleOnce((time) => {
       this.stopTrackAudio(time);
       Draw.schedule(() => {
         this.clearPlayEvent();
+      }, time - 0.1);
+      Draw.schedule(() => {
         this.updateUIForPlay(clipId);
         this.loopClip(clipId, "+1m", "1m");
       }, time);
@@ -46,13 +48,16 @@ export default class Track {
   }
 
   public stop(at: Time) {
+    const launchTime = Transport.seconds > (at as number) ? "+0.01" : at;
     Transport.scheduleOnce((time) => {
       this.stopTrackAudio(time);
       Draw.schedule(() => {
         this.clearPlayEvent();
+      }, time - 0.1);
+      Draw.schedule(() => {
         this.updateUIForStop();
       }, time);
-    }, at);
+    }, launchTime);
   }
 
   private clearPlayEvent(): void {
@@ -63,12 +68,13 @@ export default class Track {
   }
 
   public stopTrackAudio(time: Time | undefined): void {
-    const currentlyPlaying = this.currentlyPlayingClip();
-    !!currentlyPlaying && currentlyPlaying.stopAudio(time);
+    if (this.currentlyPlaying && this.clips[this.currentlyPlaying]) {
+      this.clips[this.currentlyPlaying].stopAudio(time);
+    }
   }
 
   private updateUIForPlay(clipId: ClipID): void {
-    vampsetStore.update((store) => {
+    project.update((store) => {
       if (this.currentlyPlaying && this.currentlyPlaying !== clipId) {
         store[this.id].clips[this.currentlyPlaying].stopVisual();
       }
@@ -79,7 +85,7 @@ export default class Track {
   }
 
   private updateUIForStop(): void {
-    vampsetStore.update((store) => {
+    project.update((store) => {
       !!this.currentlyPlaying &&
         store[this.id].clips[this.currentlyPlaying].stopVisual();
       this.currentlyPlaying = null;
@@ -89,14 +95,10 @@ export default class Track {
   }
 
   private updateUIForQueue(clipId: ClipID): void {
-    vampsetStore.update((store) => {
+    project.update((store) => {
       this.clips[clipId].queueVisual();
       return store;
     });
-  }
-
-  private currentlyPlayingClip() {
-    return this.currentlyPlaying && this.clips[this.currentlyPlaying];
   }
 
   private loopClip(clipId: ClipID, endTime: Time, every: Time): void {

@@ -4,7 +4,7 @@ import { ClipData, ClipID, PlayState, SharedMessages, TrackID } from "js/types";
 import * as Tone from "tone";
 import { Transport } from "tone";
 import { pushFile, pushShared } from "js/channels";
-import vampsetStore from "../vampset";
+import project from "../project";
 import { guess } from "web-audio-beat-detector";
 import Clip from "js/clip";
 
@@ -52,7 +52,7 @@ export function receiveNewClip(newClip: ClipData): void {
     id,
     state,
   );
-  vampsetStore.update((store) => {
+  project.update((store) => {
     store[trackId].clips[id] = playableClip;
     return store;
   });
@@ -65,7 +65,7 @@ export function receiveNewBinaryClip(
   const [trackId, clipId] = message.split(":");
   const blob = new Blob([payload]);
   const url = URL.createObjectURL(blob);
-  vampsetStore.update((store) => {
+  project.update((store) => {
     store[trackId].clips[clipId].grainPlayer = new GrainPlayer(
       url,
     ).toDestination();

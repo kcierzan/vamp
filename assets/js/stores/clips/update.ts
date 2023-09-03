@@ -1,5 +1,5 @@
 import { pushShared } from "js/channels";
-import vampsetStore from "../vampset";
+import project from "../project";
 import { ClipData, SharedMessages } from "js/types";
 
 export function updateClipProperties(...clips: ClipData[]): void {
@@ -11,7 +11,7 @@ export function receiveUpdateClipProperties({
 }: {
   clips: ClipData[];
 }): void {
-  vampsetStore.update((store) => {
+  project.update((store) => {
     for (const clip of clips) {
       const currentClip = store[clip.trackId].clips[clip.id];
       currentClip.setFromClipData(clip);

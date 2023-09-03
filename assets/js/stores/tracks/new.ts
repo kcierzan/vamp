@@ -1,4 +1,4 @@
-import vampsetStore from "../vampset";
+import project from "../project";
 import * as Tone from "tone";
 import { pushShared } from "js/channels";
 import { SharedMessages, TrackID } from "js/types";
@@ -11,7 +11,7 @@ export async function newTrack(): Promise<void> {
 }
 
 export function receiveNewTrack({ id }: { id: TrackID }): void {
-  vampsetStore.update((store) => {
+  project.update((store) => {
     const newTrack = {
       [id]: new Track(null, null, {}, id),
     };

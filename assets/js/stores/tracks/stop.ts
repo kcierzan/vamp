@@ -1,5 +1,5 @@
 import { quantizedTransportTime } from "js/utils";
-import vampsetStore from "../vampset";
+import project from "../project";
 import quantization from "../quantization";
 import { PrivateMessages, TrackID, TrackStore } from "js/types";
 import { get } from "svelte/store";
@@ -10,7 +10,7 @@ export function stopTracks(trackIds: TrackID[]): void {
 }
 
 export function stopAllTracks(): void {
-  const tracks = get(vampsetStore);
+  const tracks = get(project);
   stopTracks(Object.keys(tracks));
 }
 
@@ -18,7 +18,7 @@ export function receiveStopTrack({ trackIds }: { trackIds: TrackID[] }): void {
   const currentQuantization = get(quantization);
   // FIXME: Either make quantization settings e2e reactive or pass a time w/ the stop event
   const nextBarTT = quantizedTransportTime(currentQuantization);
-  const store: TrackStore = get(vampsetStore);
+  const store: TrackStore = get(project);
   for (const trackId of trackIds) {
     store[trackId].stop(nextBarTT);
   }

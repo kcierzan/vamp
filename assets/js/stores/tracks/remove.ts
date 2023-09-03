@@ -1,4 +1,4 @@
-import vampsetStore from "../vampset";
+import project from "../project";
 import { pushShared } from "js/channels";
 import { SharedMessages, TrackID } from "js/types";
 
@@ -7,7 +7,7 @@ export function removeTrack(id: TrackID) {
 }
 
 export function receiveRemoveTrack({ trackId }: { trackId: TrackID }): void {
-  vampsetStore.update((store) => {
+  project.update((store) => {
     const { [trackId]: _, ...remainingTracks } = store;
     return remainingTracks;
   });

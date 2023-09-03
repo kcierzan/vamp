@@ -5,7 +5,7 @@ import * as Tone from "tone";
 import { PlayState, PrivateMessages, TransportStore } from "js/types";
 import { pushShared } from "js/channels";
 import { get } from "svelte/store";
-import vampset from "js/stores/vampset";
+import project from "js/stores/project";
 
 const initialState = {
   transport: Tone.Transport,
@@ -36,7 +36,7 @@ function receiveStopTransport({
   update((store) => {
     store.transport.stop(`+${waitMilliseconds / 1000 + 0.1}`);
     store.state = PlayState.Stopped;
-    const tracks = Object.values(get(vampset));
+    const tracks = Object.values(get(project));
 
     for (const track of tracks) {
       track.stopTrackAudio(undefined);
