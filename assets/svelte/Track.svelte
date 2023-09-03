@@ -4,6 +4,7 @@
   import type Track from "js/track";
   import { newClip } from "js/stores/clips/new";
   import { removeTrack } from "../js/stores/tracks/remove";
+  import { stopTracks } from "js/stores/tracks/stop";
 
   export let track: Track;
   let input: HTMLInputElement;
@@ -45,7 +46,7 @@
     >
     <button
       class="bg-red-500 hover:bg-red-700 rounded text-white w-24 h-16"
-      on:click={() => alert("hey!")}>Stop</button
+      on:click={() => stopTracks([track.id])}>Stop</button
     >
   </div>
 </div>

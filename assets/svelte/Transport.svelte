@@ -43,13 +43,7 @@
   function start() {
     playHeadPosition = zeroPosition;
     seconds = zeroPadded;
-    // TODO: this should push a message
-    transport.start(undefined);
-  }
-
-  function stop() {
-    // FIXME: This should push a message that invokes track.stopAudio
-    transport.stop();
+    transport.start();
   }
 
   onMount(async () => {
@@ -75,7 +69,7 @@
   >
   <button
     class={buttonStyles + " " + stopHeldStyle}
-    on:click={stop}
+    on:click={() => transport.stop()}
     on:mousedown={holdStop}
     on:mouseup={releaseStop}>Stop</button
   >

@@ -52,6 +52,8 @@ export enum ChannelName {
 export enum PrivateMessages {
   PlayClip = "play_clip",
   StopTrack = "stop_track",
+  StartTransport = "start_transport",
+  StopTransport = "stop_transport",
 }
 
 export enum SharedMessages {

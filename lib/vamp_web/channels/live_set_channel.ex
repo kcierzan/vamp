@@ -66,6 +66,22 @@ defmodule VampWeb.LiveSetChannel do
     {:noreply, socket}
   end
 
+  def handle_in("start_transport", data, socket) do
+    socket
+    |> shared_channel_user_ids()
+    |> broadcast_with_latency_compensation!("start_transport", data)
+
+    {:noreply, socket}
+  end
+
+  def handle_in("stop_transport", data, socket) do
+    socket
+    |> shared_channel_user_ids()
+    |> broadcast_with_latency_compensation!("stop_transport", data)
+
+    {:noreply, socket}
+  end
+
   def handle_in(message, {:binary, data}, socket) do
     broadcast!(socket, message, {:binary, data})
     {:noreply, socket}

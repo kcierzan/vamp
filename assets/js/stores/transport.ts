@@ -2,7 +2,10 @@ import type { Time } from "tone/build/esm/core/type/Units";
 import type { Writable } from "svelte/store";
 import { writable } from "svelte/store";
 import * as Tone from "tone";
-import { PlayState, TransportStore } from "js/types";
+import { PlayState, PrivateMessages, TransportStore } from "js/types";
+import { pushShared } from "js/channels";
+import { get } from "svelte/store";
+import vampset from "js/stores/vampset";
 
 const initialState = {
   transport: Tone.Transport,
@@ -13,7 +16,40 @@ const initialState = {
 const transport: Writable<TransportStore> = writable(initialState);
 const { subscribe, update } = transport;
 
-function start(time?: Time): void {
+function receiveStartTransport({
+  waitMilliseconds,
+}: {
+  waitMilliseconds: number;
+}) {
+  update((store) => {
+    store.transport.start(`+${waitMilliseconds / 1000 + 0.1}`);
+    store.state = PlayState.Playing;
+    return store;
+  });
+}
+
+function receiveStopTransport({
+  waitMilliseconds,
+}: {
+  waitMilliseconds: number;
+}) {
+  update((store) => {
+    store.transport.stop(`+${waitMilliseconds / 1000 + 0.1}`);
+    store.state = PlayState.Stopped;
+    const tracks = Object.values(get(vampset));
+
+    for (const track of tracks) {
+      track.stopTrackAudio(undefined);
+    }
+    return store;
+  });
+}
+
+function start(): void {
+  pushShared(PrivateMessages.StartTransport, {});
+}
+
+function startLocal(time: Time) {
   update((store) => {
     store.transport.start(time);
     store.state = PlayState.Playing;
@@ -22,11 +58,7 @@ function start(time?: Time): void {
 }
 
 function stop(): void {
-  update((store) => {
-    store.transport.stop();
-    store.state = PlayState.Stopped;
-    return store;
-  });
+  pushShared(PrivateMessages.StopTransport, {});
 }
 
 function setBpm(bpm: number): void {
@@ -60,6 +92,9 @@ export default {
   subscribe,
   stop,
   start,
+  receiveStartTransport,
+  receiveStopTransport,
+  startLocal,
   setBpm,
   rampToBpm,
   setPosition,

@@ -31,6 +31,10 @@ export default class Track {
       this.updateUIForQueue(clipId);
     }, Tone.now());
 
+    // HACK: sometimes we are too late when attempting scheduling
+    // and we end up trying to schedule an event in the past.
+    // Rather than fail entirely, we schedule ASAP...
+    const launchTime = Transport.seconds > (at as number) ? "+0.005" : at;
     Transport.scheduleOnce((time) => {
       this.stopTrackAudio(time);
       Draw.schedule(() => {
@@ -38,12 +42,7 @@ export default class Track {
         this.updateUIForPlay(clipId);
         this.loopClip(clipId, "+1m", "1m");
       }, time);
-    }, at);
-  }
-
-  // This is the "transport" stop
-  public stopAudio() {
-    this.stopTrackAudio(undefined);
+    }, launchTime);
   }
 
   public stop(at: Time) {
@@ -63,7 +62,7 @@ export default class Track {
     }
   }
 
-  private stopTrackAudio(time: Time | undefined): void {
+  public stopTrackAudio(time: Time | undefined): void {
     const currentlyPlaying = this.currentlyPlayingClip();
     !!currentlyPlaying && currentlyPlaying.stopAudio(time);
   }

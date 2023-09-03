@@ -2,7 +2,6 @@
   import { PlayState } from "js/types";
   import type { HTMLInputEvent } from "js/types";
   import { playClips } from "js/stores/clips/play";
-  import { stopTracks } from "js/stores/tracks/stop";
   import { newClip } from "js/stores/clips/new";
   import { updateClipProperties } from "js/stores/clips/update";
   import Clip from "js/clip";
@@ -39,17 +38,6 @@
       playbackRate: parseInt(e.currentTarget.value),
     });
   }
-
-  function clipAction() {
-    if (!clip.playable) return;
-    switch (clip.state) {
-      case PlayState.Stopped:
-        playClips([clip]);
-        break;
-      case PlayState.Playing:
-        stopTracks([clip.trackId]);
-    }
-  }
 </script>
 
 <div>
@@ -60,7 +48,7 @@
       class="hidden"
       on:change={changeClip}
     />
-    <button on:click={clipAction} class={clipStyles}>
+    <button on:click={() => playClips([clip])} class={clipStyles}>
       <span class="hero-play self-center m-2 h-8 w-8 min-w-8 min-h-8" />
       <span class="text-left self-center w-36 truncate">{clip.name}</span>
     </button>

@@ -32,7 +32,7 @@ export function receivePlayClips({
     for (const clip of clips) {
       store[clip.trackId].playClip(clip.id, 0);
     }
-    transportStore.start(nowWithLatencyCompensation);
+    transportStore.startLocal(nowWithLatencyCompensation);
   } else {
     Transport.scheduleOnce((time) => {
       Draw.schedule(() => {

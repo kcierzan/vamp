@@ -7,6 +7,8 @@ import { receiveNewTrack } from "js/stores/tracks/new";
 import { receiveRemoveTrack } from "js/stores/tracks/remove";
 import { receiveNewClip, receiveNewBinaryClip } from "js/stores/clips/new";
 import { receiveUpdateClipProperties } from "js/stores/clips/update";
+import transport from "js/stores/transport";
+
 import { Wildcard } from "phx-wildcard";
 import Clip from "./clip";
 
@@ -39,6 +41,10 @@ const listeners: Listeners = {
     }) => receivePlayClips({ clips, waitMilliseconds }),
     stop_track: ({ trackIds }: { trackIds: TrackID[] }) =>
       receiveStopTrack({ trackIds }),
+    start_transport: ({ waitMilliseconds }: { waitMilliseconds: number }) =>
+      transport.receiveStartTransport({ waitMilliseconds }),
+    stop_transport: ({ waitMilliseconds }: { waitMilliseconds: number }) =>
+      transport.receiveStopTransport({ waitMilliseconds }),
   },
   shared: {
     new_track: ({ id }: { id: TrackID }) => receiveNewTrack({ id }),
