@@ -55,3 +55,13 @@ export function fileToArrayBuffer(file: File): Promise<ArrayBuffer> {
     reader.onerror = (error) => reject(error);
   });
 }
+
+export function debounce(func: (...args: any[]) => any, timeout: number = 300) {
+  let timer: ReturnType<typeof setTimeout>;
+  return (...args: []) => {
+    clearTimeout(timer);
+    timer = setTimeout(function(this: any) {
+      func.apply(this, args);
+    }, timeout);
+  };
+}

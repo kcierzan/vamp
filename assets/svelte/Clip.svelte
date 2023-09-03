@@ -4,6 +4,7 @@
   import { playClips } from "js/stores/clips/play";
   import { newClip } from "js/stores/clips/new";
   import { updateClipProperties } from "js/stores/clips/update";
+  import { debounce } from "js/utils";
   import Clip from "js/clip";
 
   export let clip: Clip;
@@ -33,9 +34,11 @@
   }
 
   function changeTempo(e: HTMLInputEvent) {
+    const target = e.target;
+    const val = (target as HTMLInputElement).value;
     updateClipProperties({
       ...clip.serialize(),
-      playbackRate: parseInt(e.currentTarget.value),
+      playbackRate: parseFloat(val),
     });
   }
 </script>
@@ -65,9 +68,9 @@
 <input
   class="mb-2 w-64"
   type="range"
-  min="0"
+  min="0.2"
   step="0.01"
   max="2"
   bind:value={clip.playbackRate}
-  on:input={changeTempo}
+  on:input={debounce(changeTempo)}
 />
