@@ -1,13 +1,17 @@
 <script lang="ts">
+  import { flip } from "svelte/animate";
   import type { HTMLInputEvent } from "js/types";
   import Clip from "./Clip.svelte";
   import type Track from "js/track";
+  import project from "js/stores/project";
   import { newClip } from "js/stores/clips/new";
   import { removeTrack } from "../js/stores/tracks/remove";
   import { stopTracks } from "js/stores/tracks/stop";
 
   export let track: Track;
   let input: HTMLInputElement;
+
+  $: onlyTrack = Object.keys($project).length === 1;
 
   function uploadClip(e: HTMLInputEvent) {
     if (!e.currentTarget.files) return;
@@ -16,7 +20,7 @@
   }
 </script>
 
-<div class="flex flex-col items-center">
+<div class="flex flex-col items-center border-2 border-blue-500 border-solid">
   <div class="mb-2">
     <div class="flex flex-col items-center justify-center">
       {#each Object.values(track.clips) as clip (clip?.id)}
@@ -40,10 +44,12 @@
     </div>
   </div>
   <div class="flex flex-row items-center">
-    <button
-      class="rounded class bg-red-500 hover:bg-red-700 text-white w-24 h-16 mr-4"
-      on:click={() => removeTrack(track.id)}>Remove track</button
-    >
+    {#if !onlyTrack}
+      <button
+        class="rounded class bg-red-500 hover:bg-red-700 text-white w-24 h-16 mr-4"
+        on:click={() => removeTrack(track.id)}>Remove track</button
+      >
+    {/if}
     <button
       class="bg-red-500 hover:bg-red-700 rounded text-white w-24 h-16"
       on:click={() => stopTracks([track.id])}>Stop</button

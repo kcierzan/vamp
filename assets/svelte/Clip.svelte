@@ -77,7 +77,7 @@
 
 <style>
   .blink {
-    animation: buttonbg 0.5s 0s ease-in infinite alternate;
+    animation: buttonbg 0.2s 0s ease-in infinite alternate;
   }
 
   @keyframes buttonbg {

@@ -8,7 +8,7 @@ export default class Track {
   public currentlyPlaying: ClipID | null;
   public clips: TrackClips;
   private _playEvent: number | null;
-  private _id: TrackID;
+  public id: TrackID;
 
   constructor(
     currentlyPlaying: ClipID | null,
@@ -19,11 +19,7 @@ export default class Track {
     this.currentlyPlaying = currentlyPlaying;
     this.clips = clips;
     this._playEvent = playEvent;
-    this._id = id;
-  }
-
-  public get id() {
-    return this._id;
+    this.id = id;
   }
 
   public playClip(clipId: ClipID, at: Time): void {
@@ -38,9 +34,6 @@ export default class Track {
     Transport.scheduleOnce((time) => {
       this.stopTrackAudio(time);
       Draw.schedule(() => {
-        this.clearPlayEvent();
-      }, time - 0.1);
-      Draw.schedule(() => {
         this.updateUIForPlay(clipId);
         this.loopClip(clipId, "+1m", "1m");
       }, time);
@@ -52,19 +45,12 @@ export default class Track {
     Transport.scheduleOnce((time) => {
       this.stopTrackAudio(time);
       Draw.schedule(() => {
-        this.clearPlayEvent();
+        this._playEvent !== null && Transport.clear(this._playEvent);
       }, time - 0.1);
       Draw.schedule(() => {
         this.updateUIForStop();
       }, time);
     }, launchTime);
-  }
-
-  private clearPlayEvent(): void {
-    if (this._playEvent !== null) {
-      console.log(`cancelling event: ${this._playEvent}`);
-      Transport.clear(this._playEvent);
-    }
   }
 
   public stopTrackAudio(time: Time | undefined): void {
@@ -102,6 +88,7 @@ export default class Track {
   }
 
   private loopClip(clipId: ClipID, endTime: Time, every: Time): void {
+    this._playEvent !== null && Transport.clear(this._playEvent);
     this._playEvent = Transport.scheduleRepeat(
       (audioContextTime: number) => {
         this.clips[clipId].playAudio(audioContextTime, endTime);
@@ -109,6 +96,5 @@ export default class Track {
       every,
       "+0.01",
     );
-    console.log(`creating event: ${this._playEvent}`);
   }
 }
