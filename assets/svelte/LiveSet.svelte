@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { dndzone } from "svelte-dnd-action";
   import type { Token, User } from "js/types";
   import { onMount } from "svelte";
   import project from "../js/stores/project";
@@ -22,8 +23,20 @@
 
   const { clearLatency, measureLatency } = latency;
 
-  $: trackEntries = Object.entries($project);
+  // FIXME: I think the tracks are going to need an index property...
+  $: trackArr = Object.values($project);
+
   $: sessionEmpty = Object.keys($project).length === 0;
+
+  function handleDndConsider(e: any) {
+    // FIXME: set the tracks index numbers from the order of `e.detail.items`?
+    trackArr = e.detail.items;
+  }
+
+  function handleDndFinalize(e: any) {
+    // FIXME: set the tracks index numbers from the order of `e.detail.items`?
+    trackArr = e.detail.items;
+  }
 
   onMount(async () => {
     Tone.getContext().lookAhead = 0;
@@ -33,6 +46,7 @@
     joinPrivateChannel(token, currentUser);
     clearLatency();
     measureLatency();
+    newTrack();
   });
 </script>
 
@@ -57,11 +71,17 @@
   <Quantization />
   <Metronome />
 </div>
+
 <div class="flex flex-row w-full space-x-4">
   <Scenes />
-  {#if trackEntries}
-    {#each trackEntries as [id, track] (id)}
+  <section
+    class="flex flex-row"
+    use:dndzone={{ items: trackArr, flipDurationMs: 300 }}
+    on:consider={handleDndConsider}
+    on:finalize={handleDndFinalize}
+  >
+    {#each trackArr as track (track.id)}
       <Track {track} />
     {/each}
-  {/if}
+  </section>
 </div>
