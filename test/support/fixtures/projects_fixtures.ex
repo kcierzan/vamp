@@ -28,7 +28,6 @@ defmodule Vamp.ProjectsFixtures do
     {:ok, track} =
       attrs
       |> Enum.into(%{
-        index: 42,
         name: "some name",
         gain: 120.5,
         panning: 120.5

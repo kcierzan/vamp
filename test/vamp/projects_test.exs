@@ -21,7 +21,12 @@ defmodule Vamp.ProjectsTest do
     end
 
     test "create_song/1 with valid data creates a song" do
-      valid_attrs = %{description: "some description", title: "some title", bpm: 120.5, time_signature: "some time_signature"}
+      valid_attrs = %{
+        description: "some description",
+        title: "some title",
+        bpm: 120.5,
+        time_signature: "some time_signature"
+      }
 
       assert {:ok, %Song{} = song} = Projects.create_song(valid_attrs)
       assert song.description == "some description"
@@ -36,7 +41,13 @@ defmodule Vamp.ProjectsTest do
 
     test "update_song/2 with valid data updates the song" do
       song = song_fixture()
-      update_attrs = %{description: "some updated description", title: "some updated title", bpm: 456.7, time_signature: "some updated time_signature"}
+
+      update_attrs = %{
+        description: "some updated description",
+        title: "some updated title",
+        bpm: 456.7,
+        time_signature: "some updated time_signature"
+      }
 
       assert {:ok, %Song{} = song} = Projects.update_song(song, update_attrs)
       assert song.description == "some updated description"
@@ -68,7 +79,7 @@ defmodule Vamp.ProjectsTest do
 
     import Vamp.ProjectsFixtures
 
-    @invalid_attrs %{index: nil, name: nil, gain: nil, panning: nil}
+    @invalid_attrs %{name: nil, gain: nil, panning: nil}
 
     test "list_tracks/0 returns all tracks" do
       track = track_fixture()
@@ -81,10 +92,9 @@ defmodule Vamp.ProjectsTest do
     end
 
     test "create_track/1 with valid data creates a track" do
-      valid_attrs = %{index: 42, name: "some name", gain: 120.5, panning: 120.5}
+      valid_attrs = %{name: "some name", gain: 120.5, panning: 120.5}
 
       assert {:ok, %Track{} = track} = Projects.create_track(valid_attrs)
-      assert track.index == 42
       assert track.name == "some name"
       assert track.gain == 120.5
       assert track.panning == 120.5
@@ -96,10 +106,9 @@ defmodule Vamp.ProjectsTest do
 
     test "update_track/2 with valid data updates the track" do
       track = track_fixture()
-      update_attrs = %{index: 43, name: "some updated name", gain: 456.7, panning: 456.7}
+      update_attrs = %{name: "some updated name", gain: 456.7, panning: 456.7}
 
       assert {:ok, %Track{} = track} = Projects.update_track(track, update_attrs)
-      assert track.index == 43
       assert track.name == "some updated name"
       assert track.gain == 456.7
       assert track.panning == 456.7
@@ -157,7 +166,9 @@ defmodule Vamp.ProjectsTest do
       audio_clip = audio_clip_fixture()
       update_attrs = %{name: "some updated name", type: "some updated type", playback_rate: 456.7}
 
-      assert {:ok, %AudioClip{} = audio_clip} = Projects.update_audio_clip(audio_clip, update_attrs)
+      assert {:ok, %AudioClip{} = audio_clip} =
+               Projects.update_audio_clip(audio_clip, update_attrs)
+
       assert audio_clip.name == "some updated name"
       assert audio_clip.type == "some updated type"
       assert audio_clip.playback_rate == 456.7
