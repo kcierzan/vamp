@@ -14,7 +14,10 @@ config :vamp, Vamp.Repo,
   hostname: "localhost",
   database: "vamp_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
-  pool_size: 10
+  pool_size: 10,
+  migration_lock: :pg_advisory_lock,
+  migration_advisory_lock_max_tries: 10
+
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
