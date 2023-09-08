@@ -1,4 +1,3 @@
-require Logger
 # Script for populating the database. You can run it as:
 #
 #     mix run priv/repo/seeds.exs
@@ -10,6 +9,7 @@ require Logger
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
+require Logger
 alias Vamp.Repo
 alias Vamp.Accounts.User
 
@@ -32,6 +32,14 @@ user_attrs = %{
   password: "testingpassword"
 }
 
+audio_file = %Plug.Upload{filename: "100action.wav", path: "test/support/fixtures/samples/100action.wav", content_type: "audio/wav"}
+
+clip_attrs = %{
+  name: "action",
+  type: "audio/wav",
+  playback_rate: 1.0,
+}
+
 user =
   %User{}
   |> User.registration_changeset(user_attrs)
@@ -52,3 +60,12 @@ track =
   |> Repo.insert!()
 
 Logger.info("Created track ID: #{track.id}")
+
+clip =
+  track
+  |> Ecto.build_assoc(:audio_clips, clip_attrs)
+  |> Ecto.Changeset.change()
+  |> Vamp.Projects.AudioClip.changeset(%{audio_file: audio_file})
+  |> Repo.insert!()
+
+Logger.info("Created clip ID: #{clip.id}")
