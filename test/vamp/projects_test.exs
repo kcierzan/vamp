@@ -21,11 +21,14 @@ defmodule Vamp.ProjectsTest do
     end
 
     test "create_song/1 with valid data creates a song" do
+      user = Vamp.AccountsFixtures.user_fixture()
+
       valid_attrs = %{
         description: "some description",
         title: "some title",
         bpm: 120.5,
-        time_signature: "some time_signature"
+        time_signature: "some time_signature",
+        created_by_id: user.id
       }
 
       assert {:ok, %Song{} = song} = Projects.create_song(valid_attrs)
@@ -92,7 +95,8 @@ defmodule Vamp.ProjectsTest do
     end
 
     test "create_track/1 with valid data creates a track" do
-      valid_attrs = %{name: "some name", gain: 120.5, panning: 120.5}
+      song = song_fixture()
+      valid_attrs = %{name: "some name", gain: 120.5, panning: 120.5, song_id: song.id}
 
       assert {:ok, %Track{} = track} = Projects.create_track(valid_attrs)
       assert track.name == "some name"
@@ -150,7 +154,16 @@ defmodule Vamp.ProjectsTest do
     end
 
     test "create_audio_clip/1 with valid data creates a audio_clip" do
-      valid_attrs = %{name: "some name", type: "some type", playback_rate: 120.5}
+      track = track_fixture()
+      audio_file = audio_file_fixture()
+
+      valid_attrs = %{
+        name: "some name",
+        type: "some type",
+        playback_rate: 120.5,
+        track_id: track.id,
+        audio_file: audio_file
+      }
 
       assert {:ok, %AudioClip{} = audio_clip} = Projects.create_audio_clip(valid_attrs)
       assert audio_clip.name == "some name"

@@ -16,7 +16,8 @@ defmodule Vamp.Projects.Song do
   @doc false
   def changeset(song, attrs) do
     song
-    |> cast(attrs, [:title, :description, :bpm, :time_signature, :created_by])
-    |> validate_required([:title, :bpm, :time_signature, :created_by])
+    |> cast(attrs, [:title, :description, :bpm, :time_signature, :created_by_id])
+    |> validate_required([:title, :bpm, :time_signature, :created_by_id])
+    |> assoc_constraint(:created_by)
   end
 end

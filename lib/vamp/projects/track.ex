@@ -3,7 +3,6 @@ defmodule Vamp.Projects.Track do
   import Ecto.Changeset
 
   schema "tracks" do
-    field :index, :integer
     field :name, :string
     field :gain, :float
     field :panning, :float
@@ -16,7 +15,8 @@ defmodule Vamp.Projects.Track do
   @doc false
   def changeset(track, attrs) do
     track
-    |> cast(attrs, [:gain, :panning, :index, :name])
-    |> validate_required([:gain, :panning, :index, :name])
+    |> cast(attrs, [:gain, :panning, :name, :song_id])
+    |> validate_required([:gain, :panning, :name, :song_id])
+    |> assoc_constraint(:song)
   end
 end

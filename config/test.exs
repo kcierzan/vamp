@@ -37,3 +37,6 @@ config :logger, level: :warning
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
+
+# Create local filesystem storage provider for audio files
+config :waffle, storage: Waffle.Storage.Local, asset_host: "http://localhost:4000"
