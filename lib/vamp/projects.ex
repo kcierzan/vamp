@@ -17,8 +17,8 @@ defmodule Vamp.Projects do
       [%Song{}, ...]
 
   """
-  def list_songs do
-    Repo.all(Song)
+  def list_songs(user_id) do
+    user_songs(user_id) |> Repo.all()
   end
 
   @doc """
@@ -35,7 +35,9 @@ defmodule Vamp.Projects do
       ** (Ecto.NoResultsError)
 
   """
-  def get_song!(id), do: Repo.get!(Song, id)
+  def get_song!(user_id, id) do
+    user_songs(user_id) |> Repo.get!(id)
+  end
 
   @doc """
   Creates a song.
@@ -100,6 +102,13 @@ defmodule Vamp.Projects do
   """
   def change_song(%Song{} = song, attrs \\ %{}) do
     Song.changeset(song, attrs)
+  end
+
+  @doc """
+  A query to get user songs
+  """
+  defp user_songs(user_id) do
+    from(s in Song, where: s.created_by_id == ^user_id)
   end
 
   alias Vamp.Projects.Track

@@ -2,7 +2,7 @@ defmodule Vamp.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @derive {Jason.Encoder, except: [:__meta__, :password, :hashed_password]}
+  @derive {Jason.Encoder, except: [:__meta__, :password, :hashed_password, :songs]}
 
   schema "users" do
     field :email, :string

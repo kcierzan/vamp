@@ -11,8 +11,9 @@ defmodule VampWeb.LiveSetLive do
     """
   end
 
-  def mount(_params, _session, socket) do
+  def mount(%{"song_id" => song_id}, _session, socket) do
     token = Phoenix.Token.sign(socket, "user auth", socket.assigns.current_user.id)
-    {:ok, assign(socket, token: token)}
+    song = Vamp.Projects.get_song!(socket.assigns.current_user.id, song_id)
+    {:ok, assign(socket, token: token, song: song)}
   end
 end

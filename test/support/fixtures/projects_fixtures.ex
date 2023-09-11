@@ -7,9 +7,7 @@ defmodule Vamp.ProjectsFixtures do
   @doc """
   Generate a song.
   """
-  def song_fixture(attrs \\ %{}) do
-    user = Vamp.AccountsFixtures.user_fixture()
-
+  def song_fixture(user, attrs \\ %{}) do
     {:ok, song} =
       attrs
       |> Enum.into(%{
@@ -28,7 +26,8 @@ defmodule Vamp.ProjectsFixtures do
   Generate a track.
   """
   def track_fixture(attrs \\ %{}) do
-    song = song_fixture()
+    user = Vamp.AccountsFixtures.user_fixture()
+    song = song_fixture(user)
 
     {:ok, track} =
       attrs
@@ -52,8 +51,7 @@ defmodule Vamp.ProjectsFixtures do
         name: "some name",
         type: "some type",
         playback_rate: 120.5,
-        track_id: track_fixture().id,
-        audio_file: audio_file_fixture()
+        track_id: track_fixture().id
       })
 
     {:ok, clip} =

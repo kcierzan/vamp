@@ -18,7 +18,14 @@ defmodule Vamp.Projects.AudioClip do
     audio_clip
     |> cast(attrs, [:name, :type, :playback_rate, :track_id])
     |> cast_attachments(attrs, [:audio_file])
-    |> validate_required([:name, :type, :playback_rate, :audio_file, :track_id])
+    |> validate_required([:name, :type, :playback_rate, :track_id])
     |> assoc_constraint(:track)
+  end
+
+  @doc false
+  def audio_file_changeset(audio_clip, attrs) do
+    audio_clip
+    |> cast_attachments(attrs, [:audio_file])
+    |> validate_required([:audio_file])
   end
 end
