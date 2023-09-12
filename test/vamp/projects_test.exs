@@ -26,24 +26,26 @@ defmodule Vamp.ProjectsTest do
       assert Projects.get_song!(user.id, song.id) == song
     end
 
-    test "create_song/1 with valid data creates a song", %{user: user} do
+    test "create_song/2 with valid data creates a song", %{user: user} do
       valid_attrs = %{
         description: "some description",
         title: "some title",
-        bpm: 120.5,
-        time_signature: "some time_signature",
         created_by_id: user.id
       }
 
       assert {:ok, %Song{} = song} = Projects.create_song(valid_attrs)
       assert song.description == "some description"
       assert song.title == "some title"
-      assert song.bpm == 120.5
-      assert song.time_signature == "some time_signature"
+      assert song.bpm == 120.0
+      assert song.time_signature == "4/4"
     end
 
     test "create_song/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} = Projects.create_song(@invalid_attrs)
+    end
+
+    test "create song/1 with invalid created_by_id returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Projects.create_song(%{"created_by_id" => 14})
     end
 
     test "update_song/2 with valid data updates the song", %{user: user} do

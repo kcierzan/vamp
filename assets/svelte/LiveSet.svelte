@@ -2,7 +2,7 @@
   import { dndzone } from "svelte-dnd-action";
   import type { Token, User } from "js/types";
   import { onMount } from "svelte";
-  import project from "../js/stores/project";
+  import projectStore from "../js/stores/project";
   import latency from "../js/stores/latency";
   import Track from "./Track.svelte";
   import Scenes from "./Scenes.svelte";
@@ -20,13 +20,15 @@
 
   export let currentUser: User;
   export let token: Token;
+  // TODO: map this onto initial project state
+  export let project: any;
 
   const { clearLatency, measureLatency } = latency;
 
   // FIXME: I think the tracks are going to need an index property...
-  $: trackArr = Object.values($project);
+  $: trackArr = Object.values($projectStore);
 
-  $: sessionEmpty = Object.keys($project).length === 0;
+  $: sessionEmpty = Object.keys($projectStore).length === 0;
 
   function handleDndConsider(e: any) {
     // FIXME: set the tracks index numbers from the order of `e.detail.items`?
@@ -46,12 +48,11 @@
     joinPrivateChannel(token, currentUser);
     clearLatency();
     measureLatency();
-    newTrack();
   });
 </script>
 
 <div class="flex flex-col items-center">
-  <h1 class="text-4xl underline bold">Welcome to Vamp, {currentUser.email}</h1>
+  <h1 class="text-4xl underline bold">{project.title}</h1>
   <h2 class="text-2xl" class:invisible={!sessionEmpty}>
     Why don't you start by adding some tracks?
   </h2>
@@ -61,7 +62,7 @@
 <div class="flex flex-row space-x-4">
   <button
     class="flex justify-center space-x-4 rounded class bg-green-500 hover:bg-green-700 text-white text-lg w-24 h-16 mb-4 flex-grow"
-    on:click={newTrack}
+    on:click={() => newTrack(project.id)}
   >
     <span class="hero-plus-circle self-center h-8 w-8" />
     <span class="self-center">Add track</span>

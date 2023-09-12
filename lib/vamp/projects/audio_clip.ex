@@ -3,6 +3,8 @@ defmodule Vamp.Projects.AudioClip do
   use Waffle.Ecto.Schema
   import Ecto.Changeset
 
+  @derive {Jason.Encoder, except: [:__meta__, :track]}
+
   schema "audio_clips" do
     field :name, :string
     field :type, :string

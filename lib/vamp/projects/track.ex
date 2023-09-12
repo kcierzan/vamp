@@ -2,6 +2,8 @@ defmodule Vamp.Projects.Track do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @derive {Jason.Encoder, except: [:__meta__, :song]}
+
   schema "tracks" do
     field :name, :string
     field :gain, :float

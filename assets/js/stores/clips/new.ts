@@ -15,7 +15,7 @@ async function guessBPM(file: File): Promise<{ bpm: number; offset: number }> {
   try {
     return await guess(audioBuf);
   } catch {
-    // HACK: this effectively skips stretching if bpm guess fails
+    // FIXME: this effectively skips stretching if bpm guess fails
     return { bpm: Transport.bpm.value, offset: 0 };
   }
 }

@@ -9,6 +9,42 @@ defmodule Vamp.Projects do
   alias Vamp.Projects.Song
 
   @doc """
+  Returns a full project for a user
+  """
+  def get_project!(user_id, song_id) do
+    from(song in Song, as: :song)
+    |> join(:inner, [song: song], user in assoc(song, :created_by), as: :created_by)
+    |> join(:left, [song: song], track in assoc(song, :tracks), as: :tracks)
+    |> join(:left, [tracks: tracks], audio_clip in assoc(tracks, :audio_clips), as: :audio_clips)
+    |> preload(
+      [tracks: track, audio_clips: audio_clips, created_by: created_by],
+      created_by: created_by,
+      tracks: {track, audio_clips: audio_clips}
+    )
+    |> where([song: song], song.id == ^song_id and song.created_by_id == ^user_id)
+    |> Repo.one!()
+    |> add_audio_file_urls()
+  end
+
+  defp add_audio_file_urls(project) do
+    update_in(
+      project,
+      [Access.key!(:tracks), Access.all()],
+      fn track ->
+        update_in(
+          track,
+          [Access.key!(:audio_clips), Access.all()],
+          &add_url_to_audio_file/1
+        )
+      end
+    )
+  end
+
+  defp add_url_to_audio_file(clip) do
+    put_in(clip.audio_file[:url], Vamp.AudioFile.url(clip.audio_file[:file_name], clip))
+  end
+
+  @doc """
   Returns the list of songs.
 
   ## Examples
@@ -104,9 +140,6 @@ defmodule Vamp.Projects do
     Song.changeset(song, attrs)
   end
 
-  @doc """
-  A query to get user songs
-  """
   defp user_songs(user_id) do
     from(s in Song, where: s.created_by_id == ^user_id)
   end

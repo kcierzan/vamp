@@ -7,13 +7,14 @@ defmodule VampWeb.LiveSetLive do
     <.link navigate={~p"/dashboard"} class="font-semibold text-brand hover:underline">
       &lt back to dashboard
     </.link>
-    <.LiveSet ssr={true} currentUser={assigns.current_user} token={@token} />
+    <.LiveSet ssr={true} currentUser={@current_user} project={@project} token={@token} />
     """
   end
 
   def mount(%{"song_id" => song_id}, _session, socket) do
     token = Phoenix.Token.sign(socket, "user auth", socket.assigns.current_user.id)
-    song = Vamp.Projects.get_song!(socket.assigns.current_user.id, song_id)
-    {:ok, assign(socket, token: token, song: song)}
+    project = Vamp.Projects.get_project!(socket.assigns.current_user.id, song_id)
+
+    {:ok, assign(socket, token: token, project: project)}
   end
 end

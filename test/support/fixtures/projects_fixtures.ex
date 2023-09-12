@@ -9,14 +9,11 @@ defmodule Vamp.ProjectsFixtures do
   """
   def song_fixture(user, attrs \\ %{}) do
     {:ok, song} =
-      attrs
-      |> Enum.into(%{
-        description: "some description",
+      %{
         title: "some title",
-        bpm: 120.5,
-        time_signature: "some time_signature",
         created_by_id: user.id
-      })
+      }
+      |> Enum.into(attrs)
       |> Vamp.Projects.create_song()
 
     song

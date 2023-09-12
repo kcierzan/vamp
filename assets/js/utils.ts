@@ -21,15 +21,7 @@ export function b64ToAudioSrc(b64: string, type: string): string {
 }
 
 export function tracksToClipArrays(tracks: TrackStore): Clip[][] {
-  const clipArrays: Clip[][] = [];
-  for (const track of Object.values(tracks)) {
-    const trackArray: Clip[] = [];
-    for (const clip of Object.values(track.clips)) {
-      trackArray.push(clip);
-    }
-    clipArrays.push(trackArray);
-  }
-  return clipArrays;
+  return Object.values(tracks).map((track) => Object.values(track.clips));
 }
 
 export function quantizedTransportTime(
@@ -60,7 +52,7 @@ export function debounce(func: (...args: any[]) => any, timeout: number = 300) {
   let timer: ReturnType<typeof setTimeout>;
   return (...args: []) => {
     clearTimeout(timer);
-    timer = setTimeout(function(this: any) {
+    timer = setTimeout(function (this: any) {
       func.apply(this, args);
     }, timeout);
   };

@@ -13,6 +13,9 @@ export function playClips(clips: Clip[]) {
   pushShared(PrivateMessages.PlayClip, { clips: clipInfos });
 }
 
+// FIXME: lots of calls to `get` probably makes this slow.
+// Consider moving this to a derived store that derives from
+// quantization, transport, and project.
 export function receivePlayClips({
   waitMilliseconds,
   clips,
