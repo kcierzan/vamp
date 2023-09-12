@@ -3,6 +3,8 @@ defmodule Vamp.Accounts.User do
   import Ecto.Changeset
 
   @derive {Jason.Encoder, except: [:__meta__, :password, :hashed_password, :songs]}
+  @primary_key {:id, Ecto.UUID, autogenerate: true}
+  @foreign_key_type Ecto.UUID
 
   schema "users" do
     field :email, :string

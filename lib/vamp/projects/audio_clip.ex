@@ -4,6 +4,8 @@ defmodule Vamp.Projects.AudioClip do
   import Ecto.Changeset
 
   @derive {Jason.Encoder, except: [:__meta__, :track]}
+  @primary_key {:id, Ecto.UUID, autogenerate: true}
+  @foreign_key_type Ecto.UUID
 
   schema "audio_clips" do
     field :name, :string

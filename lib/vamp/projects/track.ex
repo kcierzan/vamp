@@ -3,6 +3,8 @@ defmodule Vamp.Projects.Track do
   import Ecto.Changeset
 
   @derive {Jason.Encoder, except: [:__meta__, :song]}
+  @primary_key {:id, Ecto.UUID, autogenerate: true}
+  @foreign_key_type Ecto.UUID
 
   schema "tracks" do
     field :name, :string
