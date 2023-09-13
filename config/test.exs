@@ -18,7 +18,6 @@ config :vamp, Vamp.Repo,
   migration_lock: :pg_advisory_lock,
   migration_advisory_lock_max_tries: 10
 
-
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
 config :vamp, VampWeb.Endpoint,

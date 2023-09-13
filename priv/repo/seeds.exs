@@ -32,12 +32,16 @@ user_attrs = %{
   password: "testingpassword"
 }
 
-audio_file = %Plug.Upload{filename: "100action.wav", path: "test/support/fixtures/samples/100action.wav", content_type: "audio/wav"}
+audio_file = %Plug.Upload{
+  filename: "100action.wav",
+  path: "test/support/fixtures/samples/100action.wav",
+  content_type: "audio/wav"
+}
 
 clip_attrs = %{
   name: "action",
   type: "audio/wav",
-  playback_rate: 1.0,
+  playback_rate: 1.0
 }
 
 user =

@@ -62,7 +62,8 @@ defmodule VampWeb.Router do
     live_session :require_authenticated_user,
       on_mount: [{VampWeb.UserAuth, :ensure_authenticated}] do
       live "/dashboard", DashboardLive, :index
-      live "/liveset", LiveSetLive, :new # TODO: this should probably be a separate live view
+      # TODO: this should probably be a separate live view
+      live "/liveset", LiveSetLive, :new
       live "/liveset/:song_id", LiveSetLive, :show
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email

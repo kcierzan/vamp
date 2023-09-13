@@ -9,24 +9,21 @@ defmodule Vamp.ProjectsTest do
     import Vamp.AccountsFixtures
     import Vamp.ProjectsFixtures
 
-    setup do
-      user = user_fixture()
-      %{user: user}
-    end
-
     @invalid_attrs %{description: nil, title: nil, bpm: nil, time_signature: nil}
 
-    test "list_songs/0 returns all songs for the user", %{user: user} do
-      song = song_fixture(user)
-      assert Projects.list_songs(user.id) == [song]
+    test "list_songs/0 returns all songs for the user" do
+      song = song_fixture()
+      assert Projects.list_songs(song.created_by_id) == [song]
     end
 
-    test "get_song!/1 returns the song with given id", %{user: user} do
-      song = song_fixture(user)
-      assert Projects.get_song!(user.id, song.id) == song
+    test "get_song!/1 returns the song with given id" do
+      song = song_fixture()
+      assert Projects.get_song!(song.created_by_id, song.id) == song
     end
 
-    test "create_song/2 with valid data creates a song", %{user: user} do
+    test "create_song/2 with valid data creates a song" do
+      user = user_fixture()
+
       valid_attrs = %{
         description: "some description",
         title: "some title",
@@ -48,8 +45,8 @@ defmodule Vamp.ProjectsTest do
       assert {:error, %Ecto.Changeset{}} = Projects.create_song(%{"created_by_id" => 14})
     end
 
-    test "update_song/2 with valid data updates the song", %{user: user} do
-      song = song_fixture(user)
+    test "update_song/2 with valid data updates the song" do
+      song = song_fixture()
 
       update_attrs = %{
         description: "some updated description",
@@ -65,20 +62,21 @@ defmodule Vamp.ProjectsTest do
       assert song.time_signature == "some updated time_signature"
     end
 
-    test "update_song/2 with invalid data returns error changeset", %{user: user} do
-      song = song_fixture(user)
+    test "update_song/2 with invalid data returns error changeset" do
+      user = user_fixture()
+      song = song_fixture(%{created_by_id: user.id})
       assert {:error, %Ecto.Changeset{}} = Projects.update_song(song, @invalid_attrs)
       assert song == Projects.get_song!(user.id, song.id)
     end
 
-    test "delete_song/1 deletes the song", %{user: user} do
-      song = song_fixture(user)
+    test "delete_song/1 deletes the song" do
+      song = song_fixture()
       assert {:ok, %Song{}} = Projects.delete_song(song)
-      assert_raise Ecto.NoResultsError, fn -> Projects.get_song!(user.id, song.id) end
+      assert_raise Ecto.NoResultsError, fn -> Projects.get_song!(song.created_by_id, song.id) end
     end
 
-    test "change_song/1 returns a song changeset", %{user: user} do
-      song = song_fixture(user)
+    test "change_song/1 returns a song changeset" do
+      song = song_fixture()
       assert %Ecto.Changeset{} = Projects.change_song(song)
     end
   end
@@ -106,8 +104,8 @@ defmodule Vamp.ProjectsTest do
       assert Projects.get_track!(track.id) == track
     end
 
-    test "create_track/1 with valid data creates a track", %{user: user} do
-      song = song_fixture(user)
+    test "create_track/1 with valid data creates a track" do
+      song = song_fixture()
       valid_attrs = %{name: "some name", gain: 120.5, panning: 120.5, song_id: song.id}
 
       assert {:ok, %Track{} = track} = Projects.create_track(valid_attrs)
@@ -216,6 +214,53 @@ defmodule Vamp.ProjectsTest do
     test "change_audio_clip/1 returns a audio_clip changeset" do
       audio_clip = audio_clip_fixture()
       assert %Ecto.Changeset{} = Projects.change_audio_clip(audio_clip)
+    end
+  end
+
+  describe "project" do
+    alias Vamp.Projects.Song
+
+    import Vamp.AccountsFixtures
+    import Vamp.ProjectsFixtures
+    import Vamp.SoundsFixtures
+
+    test "get_project!/2 returns a song" do
+      user = user_fixture()
+      song = song_fixture(%{created_by_id: user.id})
+
+      assert %Song{} = Projects.get_project!(user.id, song.id)
+    end
+
+    test "get_project!/2 returns a complete project" do
+      user = user_fixture()
+      song = song_fixture(%{created_by_id: user.id})
+      track = track_fixture(%{song_id: song.id})
+      audio_clip_fixture(%{track_id: track.id})
+
+      assert project = %Song{} = Projects.get_project!(user.id, song.id)
+      assert length(project.tracks) == 1
+      assert length(hd(project.tracks).audio_clips) == 1
+    end
+
+    test "get_project!/2 appends file urls to audio files" do
+      user = user_fixture()
+      song = song_fixture(%{created_by_id: user.id})
+      track = track_fixture(%{song_id: song.id})
+      audio_clip_fixture(%{track_id: track.id})
+
+      url =
+        Projects.get_project!(user.id, song.id)
+        |> get_in([
+          Access.key!(:tracks),
+          Access.at!(0),
+          Access.key!(:audio_clips),
+          Access.at(0),
+          Access.key!(:audio_file),
+          Access.key!(:file),
+          Access.key!(:url)
+        ])
+
+      assert url == "http://localhost:4000/uploads/100action.wav"
     end
   end
 end

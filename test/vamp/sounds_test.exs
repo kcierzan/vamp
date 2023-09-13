@@ -26,6 +26,7 @@ defmodule Vamp.SoundsTest do
         path: "test/support/fixtures/samples/100action.wav",
         content_type: "audio/wav"
       }
+
       valid_attrs = %{
         name: "some name",
         size: 42,
@@ -48,6 +49,7 @@ defmodule Vamp.SoundsTest do
 
     test "update_audio_file/2 with valid data updates the audio_file" do
       audio_file = audio_file_fixture()
+
       new_file = %Plug.Upload{
         filename: "Beastie Boys - Pow.wav",
         path: "test/support/fixtures/samples/Beastie Boys - Pow.wav",

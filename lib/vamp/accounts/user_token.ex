@@ -6,7 +6,6 @@ defmodule Vamp.Accounts.UserToken do
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   @foreign_key_type Ecto.UUID
 
-
   @hash_algorithm :sha256
   @rand_size 32
 

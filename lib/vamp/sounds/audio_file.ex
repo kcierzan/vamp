@@ -3,6 +3,7 @@ defmodule Vamp.Sounds.AudioFile do
   use Waffle.Ecto.Schema
   import Ecto.Changeset
 
+  @derive {Jason.Encoder, except: [:__meta__, :audio_clips]}
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   @foreign_key_type Ecto.UUID
 

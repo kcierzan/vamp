@@ -16,10 +16,13 @@ defmodule Vamp.Projects do
     |> join(:inner, [song: song], user in assoc(song, :created_by), as: :created_by)
     |> join(:left, [song: song], track in assoc(song, :tracks), as: :tracks)
     |> join(:left, [tracks: tracks], audio_clip in assoc(tracks, :audio_clips), as: :audio_clips)
+    |> join(:left, [audio_clips: audio_clips], audio_file in assoc(audio_clips, :audio_file),
+      as: :audio_file
+    )
     |> preload(
-      [tracks: track, audio_clips: audio_clips, created_by: created_by],
+      [tracks: track, audio_clips: audio_clips, created_by: created_by, audio_file: audio_file],
       created_by: created_by,
-      tracks: {track, audio_clips: audio_clips}
+      tracks: {track, audio_clips: {audio_clips, audio_file: audio_file}}
     )
     |> where([song: song], song.id == ^song_id and song.created_by_id == ^user_id)
     |> Repo.one!()
@@ -33,15 +36,15 @@ defmodule Vamp.Projects do
       fn track ->
         update_in(
           track,
-          [Access.key!(:audio_clips), Access.all()],
+          [Access.key!(:audio_clips), Access.all(), Access.key!(:audio_file)],
           &add_url_to_audio_file/1
         )
       end
     )
   end
 
-  defp add_url_to_audio_file(clip) do
-    put_in(clip.audio_file[:url], Vamp.AudioFile.url(clip.audio_file[:file_name], clip))
+  defp add_url_to_audio_file(audio_file) do
+    put_in(audio_file.file[:url], Vamp.AudioFile.url(audio_file.file[:file_name], audio_file))
   end
 
   @doc """
