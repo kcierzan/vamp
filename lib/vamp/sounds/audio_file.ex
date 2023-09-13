@@ -13,6 +13,7 @@ defmodule Vamp.Sounds.AudioFile do
     field :file, Vamp.AudioFile.Type
     field :description, :string
     field :media_type, :string
+    field :bpm, :float
     has_many :audio_clips, Vamp.Projects.AudioClip
 
     timestamps()
@@ -21,7 +22,7 @@ defmodule Vamp.Sounds.AudioFile do
   @doc false
   def changeset(audio_file, attrs) do
     audio_file
-    |> cast(attrs, [:media_type, :size, :name, :description])
+    |> cast(attrs, [:media_type, :size, :name, :description, :bpm])
     |> cast_attachments(attrs, [:file])
     |> validate_required([:media_type, :size, :name, :description, :file])
   end
