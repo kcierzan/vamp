@@ -4,10 +4,10 @@ import { pushShared } from "js/channels";
 import { SharedMessages, TrackID } from "js/types";
 import Track from "js/track";
 
-export async function newTrack(): Promise<void> {
+export async function newTrack(songId: string): Promise<void> {
   await Tone.start();
   console.log("tone has started");
-  pushShared(SharedMessages.NewTrack, { id: crypto.randomUUID() });
+  pushShared(SharedMessages.NewTrack, { song_id: songId });
 }
 
 export function receiveNewTrack({ id }: { id: TrackID }): void {

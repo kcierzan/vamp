@@ -50,6 +50,21 @@ defmodule VampWeb.LiveSetChannel do
     {:noreply, socket}
   end
 
+  def handle_in("new_track", %{"song_id" => song_id}, socket) do
+    {:ok, track} =
+      Vamp.Projects.create_track(%{
+        "gain" => 0.0,
+        "panning" => 0.0,
+        "name" => "my new track",
+        "song_id" => song_id
+      })
+
+    track = Vamp.Repo.preload(track, :audio_clips)
+    broadcast!(socket, "new_track", track)
+
+    {:noreply, socket}
+  end
+
   def handle_in("play_clip", data, socket) do
     socket
     |> shared_channel_user_ids()

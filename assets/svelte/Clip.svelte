@@ -77,6 +77,7 @@
 
 <style>
   .blink {
+    /* TODO: we can probably do svelte string interpolation here to sync animation with bpm */
     animation: buttonbg 0.2s 0s ease-in infinite alternate;
   }
 

@@ -36,9 +36,16 @@ defmodule Vamp.AccountsTest do
   end
 
   describe "get_user!/1" do
+    test "raises if id is not a uuid" do
+      assert_raise Ecto.Query.CastError, fn ->
+        Accounts.get_user!(-1)
+      end
+    end
+
+
     test "raises if id is invalid" do
       assert_raise Ecto.NoResultsError, fn ->
-        Accounts.get_user!(-1)
+        Accounts.get_user!(Ecto.UUID.generate())
       end
     end
 
@@ -97,7 +104,7 @@ defmodule Vamp.AccountsTest do
   describe "change_user_registration/2" do
     test "returns a changeset" do
       assert %Ecto.Changeset{} = changeset = Accounts.change_user_registration(%User{})
-      assert changeset.required == [:password, :email]
+      assert changeset.required == [:display_name, :password, :email]
     end
 
     test "allows fields to be set" do
