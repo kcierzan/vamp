@@ -1,4 +1,6 @@
 defmodule Vamp.ProjectsFixtures do
+  import Vamp.SoundsFixtures
+
   @moduledoc """
   This module defines test helpers for creating
   entities via the `Vamp.Projects` context.
@@ -48,7 +50,8 @@ defmodule Vamp.ProjectsFixtures do
         name: "some name",
         type: "some type",
         playback_rate: 120.5,
-        track_id: track_fixture().id
+        track_id: track_fixture().id,
+        audio_file_id: audio_file_fixture().id
       })
 
     {:ok, clip} =
@@ -57,13 +60,5 @@ defmodule Vamp.ProjectsFixtures do
       |> Vamp.Repo.insert()
 
     clip
-  end
-
-  def audio_file_fixture(attrs \\ %{}) do
-    Map.merge(attrs, %Plug.Upload{
-      filename: "100action.wav",
-      path: "test/support/fixtures/samples/100action.wav",
-      content_type: "audio/wav"
-    })
   end
 end

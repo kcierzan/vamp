@@ -153,6 +153,7 @@ defmodule Vamp.ProjectsTest do
 
     import Vamp.AccountsFixtures
     import Vamp.ProjectsFixtures
+    import Vamp.SoundsFixtures
 
     @invalid_attrs %{name: nil, type: nil, playback_rate: nil}
 
@@ -168,12 +169,14 @@ defmodule Vamp.ProjectsTest do
 
     test "create_audio_clip/1 with valid data creates a audio_clip" do
       track = track_fixture()
+      audio_file = audio_file_fixture()
 
       valid_attrs = %{
         name: "some name",
         type: "some type",
         playback_rate: 120.5,
-        track_id: track.id
+        track_id: track.id,
+        audio_file_id: audio_file.id
       }
 
       assert {:ok, %AudioClip{} = audio_clip} = Projects.create_audio_clip(valid_attrs)
