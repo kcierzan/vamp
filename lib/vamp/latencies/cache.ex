@@ -52,10 +52,13 @@ defmodule Vamp.Latencies.Cache do
   end
 
   @impl true
-  def handle_call({:get, user_id}, _from, state) when is_integer(user_id) do
+  def handle_call({:get, user_id}, _from, state) when is_binary(user_id) do
     user_latencies = get_in(state, [Access.key(user_id, [])])
     {:reply, mean(user_latencies), state}
   end
+
+  @impl true
+  def handle_call({:get, _user_id}, _from, state), do: {:reply, nil, state}
 
   defp unshift_latency(latencies, latency) do
     cond do

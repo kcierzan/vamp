@@ -89,3 +89,5 @@ config :swoosh, :api_client, false
 
 # Create local filesystem storage provider for audio files
 config :waffle, storage: Waffle.Storage.Local, asset_host: "http://localhost:4000"
+
+config :vamp, serve_local_files: true

@@ -24,6 +24,6 @@ defmodule Vamp.Sounds.AudioFile do
     audio_file
     |> cast(attrs, [:media_type, :size, :name, :description, :bpm])
     |> cast_attachments(attrs, [:file])
-    |> validate_required([:media_type, :size, :name, :description, :file])
+    |> validate_required([:media_type, :size, :name, :file])
   end
 end

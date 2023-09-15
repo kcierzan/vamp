@@ -11,28 +11,30 @@ defmodule Vamp.Latencies.CacheTest do
   describe "get_latency/2" do
     test "can add latencies and get the mean", %{cache: cache} do
       latencies = [23, 10, 12, 14]
+      user_id = Ecto.UUID.generate()
 
       for ping <- latencies do
-        Cache.add_latency(cache, %{"user_id" => 12, "latency" => ping})
+        Cache.add_latency(cache, %{"user_id" => user_id, "latency" => ping})
       end
 
-      assert Cache.get_latency(cache, 12) == 14.75
+      assert Cache.get_latency(cache, user_id) == 14.75
     end
 
     test "can add latencies and ignore outliers", %{cache: cache} do
+      user_id = Ecto.UUID.generate()
       latencies = for _ <- 0..9, do: Enum.random(0..10)
       latencies_with_outlier = latencies ++ [90]
       expected_mean = Enum.sum(latencies) / length(latencies)
 
       for ping <- latencies_with_outlier do
-        Cache.add_latency(cache, %{"user_id" => 12, "latency" => ping})
+        Cache.add_latency(cache, %{"user_id" => user_id, "latency" => ping})
       end
 
-      assert Cache.get_latency(cache, 12) == expected_mean
+      assert Cache.get_latency(cache, user_id) == expected_mean
     end
 
     test "can add and get cache for multiple users", %{cache: cache} do
-      user_ids = [1, 2, 4, 22, 63]
+      user_ids = for _ <- 0..9, do: Ecto.UUID.generate()
 
       user_latencies =
         Enum.reduce(
@@ -62,10 +64,12 @@ defmodule Vamp.Latencies.CacheTest do
 
   describe "clear_latency/2" do
     test "can clear latencies for a user", %{cache: cache} do
-      Cache.add_latency(cache, %{"user_id" => 12, "latency" => 23})
-      assert Cache.get_latency(cache, 12) == 23
-      Cache.clear_latency(cache, 12)
-      assert Cache.get_latency(cache, 12) == nil
+      user_id = Ecto.UUID.generate()
+
+      Cache.add_latency(cache, %{"user_id" => user_id, "latency" => 23})
+      assert Cache.get_latency(cache, user_id) == 23
+      Cache.clear_latency(cache, user_id)
+      assert Cache.get_latency(cache, user_id) == nil
     end
   end
 end

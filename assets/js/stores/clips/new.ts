@@ -1,6 +1,6 @@
 import { fileToArrayBuffer } from "../../utils";
 import { GrainPlayer } from "tone";
-import { ClipData, ClipID, PlayState, SharedMessages, TrackID } from "js/types";
+import { NewClip, SharedMessages, TrackID } from "js/types";
 import * as Tone from "tone";
 import { Transport } from "tone";
 import { pushFile, pushShared } from "js/channels";
@@ -20,29 +20,30 @@ async function guessBPM(file: File): Promise<{ bpm: number; offset: number }> {
   }
 }
 
-export async function newClip(
-  file: File,
-  trackId: TrackID,
-  id: ClipID = crypto.randomUUID(),
-): Promise<void> {
+export async function newClip(file: File, trackId: TrackID): Promise<void> {
   const { bpm } = await guessBPM(file);
-  // TODO: the server should respond with the ID - we should use the ID to send the binary file
   pushShared(SharedMessages.NewClip, {
-    id: id,
     name: file.name,
     type: file.type,
-    trackId: trackId,
-    state: PlayState.Stopped,
-    currentTime: 0.0,
-    playbackRate: Transport.bpm.value / bpm,
-    bpm,
+    track_id: trackId,
+    playback_rate: Transport.bpm.value / bpm,
+  })?.receive("ok", async (id) => {
+    const newBuf = await fileToArrayBuffer(file);
+    pushFile(
+      {
+        clip_id: id,
+        media_type: file.type,
+        size: newBuf.byteLength,
+        name: file.name,
+        description: "a cool file",
+      },
+      newBuf,
+    );
   });
-  const newbuf = await fileToArrayBuffer(file);
-  pushFile(id, trackId, newbuf);
 }
 
-export function receiveNewClip(newClip: ClipData): void {
-  const { trackId, name, bpm, id, state, type, playbackRate } = newClip;
+export function receiveNewClip(newClip: NewClip): void {
+  const { trackId, name, bpm, id, type, playbackRate, audioFile } = newClip;
   const playableClip = new Clip(
     trackId,
     name,
@@ -51,25 +52,12 @@ export function receiveNewClip(newClip: ClipData): void {
     0.0,
     bpm,
     id,
-    state,
   );
+  playableClip.grainPlayer = new GrainPlayer(
+    decodeURI(audioFile.url),
+  ).toDestination();
   project.update((store) => {
     store[trackId].clips[id] = playableClip;
-    return store;
-  });
-}
-
-export function receiveNewBinaryClip(
-  message: string,
-  payload: ArrayBuffer,
-): void {
-  const [trackId, clipId] = message.split(":");
-  const blob = new Blob([payload]);
-  const url = URL.createObjectURL(blob);
-  project.update((store) => {
-    store[trackId].clips[clipId].grainPlayer = new GrainPlayer(
-      url,
-    ).toDestination();
     return store;
   });
 }

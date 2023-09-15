@@ -1,5 +1,6 @@
 defmodule VampWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :vamp
+  require Logger
 
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
@@ -24,6 +25,13 @@ defmodule VampWeb.Endpoint do
     from: :vamp,
     gzip: false,
     only: VampWeb.static_paths()
+
+  if Application.compile_env!(:vamp, :serve_local_files) do
+    plug Plug.Static,
+      at: "/uploads",
+      from: Path.expand("./uploads"),
+      gzip: false
+  end
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.

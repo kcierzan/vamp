@@ -1,12 +1,12 @@
 import { Channel, Socket } from "phoenix";
-import type { ClipData, Token, TrackID, User, ClipID } from "js/types";
+import type { ClipData, Token, TrackID, User, ClipID, NewClip } from "js/types";
 import { ChannelName, PrivateMessages, SharedMessages } from "js/types";
 import transport from "js/stores/transport";
 import { receivePlayClips } from "js/stores/clips/play";
 import { receiveStopTrack } from "js/stores/tracks/stop";
 import { receiveNewTrack } from "js/stores/tracks/new";
 import { receiveRemoveTrack } from "js/stores/tracks/remove";
-import { receiveNewClip, receiveNewBinaryClip } from "js/stores/clips/new";
+import { receiveNewClip } from "js/stores/clips/new";
 import { receiveUpdateClipProperties } from "js/stores/clips/update";
 import { Wildcard } from "phx-wildcard";
 
@@ -48,7 +48,7 @@ const listeners: Listeners = {
     new_track: ({ id }: { id: TrackID }) => receiveNewTrack({ id }),
     remove_track: ({ id }: { id: TrackID }) =>
       receiveRemoveTrack({ trackId: id }),
-    new_clip: (clipData: ClipData) => receiveNewClip(clipData),
+    new_clip: (clipData: NewClip) => receiveNewClip(clipData),
     update_clip_properties: ({ clips }: { clips: ClipData[] }) =>
       receiveUpdateClipProperties({ clips }),
   },
@@ -72,8 +72,17 @@ export function pushShared(message: string, data: object) {
   return sharedChannel?.push(message, data);
 }
 
-export function pushFile(clipId: ClipID, trackId: TrackID, data: ArrayBuffer) {
-  return fileChannel?.push(`${trackId}:${clipId}`, data);
+export function pushFile(
+  audioFileAttrs: {
+    clip_id: string;
+    media_type: string;
+    size: number;
+    name: string;
+    description: string;
+  },
+  data: ArrayBuffer,
+) {
+  return fileChannel?.push(JSON.stringify(audioFileAttrs), data);
 }
 
 export function joinPrivateChannel(token: Token, currentUser: User) {
@@ -87,14 +96,8 @@ export function joinPrivateChannel(token: Token, currentUser: User) {
   }
 }
 
-// TODO: we likely won't need to send the binary audio data
-// at all once we can store the audio file on the backend
 export function joinFileChannel(token: Token) {
-  const channel = joinChannel(socketPath, fileTopic, token);
-  fileChannel = channel;
-  const wildcard = new Wildcard(channel);
-  fileWildcardChannel = wildcard;
-  fileWildcardChannel.on("*:*", receiveNewBinaryClip);
+  fileChannel = joinChannel(socketPath, fileTopic, token);
 }
 
 function joinChannel(path: string, topic: string, token: string) {

@@ -70,13 +70,16 @@ defmodule Vamp.ProjectsFixtures do
       end
 
     attributes =
-      Enum.into(attrs, %{
-        name: "some name",
-        type: "some type",
-        playback_rate: 120.5,
-        track_id: track_id,
-        audio_file_id: audio_file_fixture().id
-      })
+      Enum.into(
+        %{
+          name: "some name",
+          type: "some type",
+          playback_rate: 120.5,
+          track_id: track_id,
+          audio_file_id: audio_file_fixture().id
+        },
+        attrs
+      )
 
     {:ok, clip} =
       %Vamp.Projects.AudioClip{}

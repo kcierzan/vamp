@@ -17,10 +17,10 @@
     joinFileChannel,
   } from "js/channels";
   import { newTrack } from "../js/stores/tracks/new";
+  import { setInitialStateFromProps } from "js/stores/project/new";
 
   export let currentUser: User;
   export let token: Token;
-  // TODO: map this onto initial project state
   export let project: any;
 
   const { clearLatency, measureLatency } = latency;
@@ -46,6 +46,7 @@
     joinSharedChannel(token);
     joinFileChannel(token);
     joinPrivateChannel(token, currentUser);
+    setInitialStateFromProps(project);
     clearLatency();
     measureLatency();
   });
