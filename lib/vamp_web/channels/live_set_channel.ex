@@ -108,16 +108,11 @@ defmodule VampWeb.LiveSetChannel do
     audio_file_json
     |> Jason.decode!()
     |> add_file_attr(data)
-    |> uri_encode_filename()
     |> Vamp.Projects.create_file_for_clip!()
     |> audio_clip_to_clip_data()
     |> broadcast_to_liveset_channel!("new_clip")
 
     {:noreply, socket}
-  end
-
-  defp uri_encode_filename(attrs) do
-    update_in(attrs["file"][:filename], &URI.encode(&1))
   end
 
   defp audio_clip_to_clip_data(audio_clip) do
@@ -140,7 +135,7 @@ defmodule VampWeb.LiveSetChannel do
   end
 
   defp add_file_attr(attrs, data) do
-    put_in(attrs["file"], %{filename: attrs["name"], binary: data})
+    put_in(attrs["file"], %{filename: URI.encode(attrs["name"]), binary: data})
   end
 
   def handle_info(:after_join, socket) do

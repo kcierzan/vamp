@@ -35,7 +35,7 @@ user_attrs = %{
 audio_clip_attrs = %{
   name: "action",
   type: "audio/wav",
-  playback_rate: 1.0
+  playback_rate: 1.28
 }
 
 audio_file_attrs = %{
@@ -43,6 +43,7 @@ audio_file_attrs = %{
   size: 100,
   description: "a boring break",
   media_type: "audio/wav",
+  bpm: 100,
   file: %Plug.Upload{
     filename: "100action.wav",
     path: "test/support/fixtures/samples/100action.wav",
