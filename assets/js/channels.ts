@@ -96,14 +96,8 @@ export function joinPrivateChannel(token: Token, currentUser: User) {
   }
 }
 
-// TODO: we likely won't need to send the binary audio data
-// at all once we can store the audio file on the backend
 export function joinFileChannel(token: Token) {
-  const channel = joinChannel(socketPath, fileTopic, token);
-  fileChannel = channel;
-  // const wildcard = new Wildcard(channel);
-  // fileWildcardChannel = wildcard;
-  // fileWildcardChannel.on("*:*", receiveNewBinaryClip);
+  fileChannel = joinChannel(socketPath, fileTopic, token);
 }
 
 function joinChannel(path: string, topic: string, token: string) {
