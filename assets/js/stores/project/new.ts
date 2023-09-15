@@ -41,33 +41,41 @@ interface ProjectProps {
   title: string;
 }
 
+export function setInitialStateFromProps(props: ProjectProps) {
+  transportStore.setBpm(props.bpm);
+  projectStore.update((_store) => projectPropsToStore(props));
+}
+
 function projectPropsToStore(props: ProjectProps) {
   return props.tracks.reduce((acc: TrackStore, track) => {
-    const clips = track.audio_clips.reduce(
-      (acc: TrackClips, clip: AudioClipProps) => {
-        const newClip = new Clip(
-          track.id,
-          clip.name,
-          clip.type,
-          clip.playback_rate,
-          0,
-          clip.audio_file?.bpm,
-          clip.id,
-        );
-        newClip.grainPlayer = new GrainPlayer(
-          decodeURI(clip.audio_file?.file.url),
-        ).toDestination();
-        acc[clip.id] = newClip;
-        return acc;
-      },
-      {},
-    );
+    const clips = clipsFromProps(track);
     acc[track.id] = new Track(null, null, clips, track.id);
     return acc;
   }, {});
 }
 
-export function setInitialStateFromProps(props: ProjectProps) {
-  transportStore.setBpm(props.bpm);
-  projectStore.update((_store) => projectPropsToStore(props));
+function clipsFromProps(track: TrackProps) {
+  return track.audio_clips.reduce(
+    (acc: TrackClips, clipProps: AudioClipProps) => {
+      acc[clipProps.id] = propsToClip(clipProps, track);
+      return acc;
+    },
+    {},
+  );
+}
+
+function propsToClip(props: AudioClipProps, track: TrackProps) {
+  const newClip = new Clip(
+    track.id,
+    props.name,
+    props.type,
+    props.playback_rate,
+    0,
+    props.audio_file?.bpm,
+    props.id,
+  );
+  newClip.grainPlayer = new GrainPlayer(
+    decodeURI(props.audio_file?.file.url),
+  ).toDestination();
+  return newClip;
 }
