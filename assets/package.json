@@ -1,12 +1,18 @@
 {
   "devDependencies": {
+    "@tailwindcss/forms": "^0.5.6",
     "@types/node": "^20.5.6",
+    "autoprefixer": "^10.4.15",
     "esbuild": "^0.16.17",
     "esbuild-plugin-import-glob": "^0.1.1",
     "esbuild-svelte": "^0.7.4",
+    "postcss": "^8.4.29",
+    "postcss-load-config": "^4.0.1",
+    "postcss-preset-env": "^9.1.3",
     "svelte": "^4.2.0",
     "svelte-dnd-action": "^0.9.28",
     "svelte-preprocess": "^5.0.4",
+    "tailwindcss": "^3.3.3",
     "typescript": "^5.2.2"
   },
   "dependencies": {
@@ -18,5 +24,12 @@
     "phx-wildcard": "^1.0.1",
     "tone": "^14.8.49",
     "web-audio-beat-detector": "^8.1.53"
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {},
+      "postcss-preset-env": {},
+      "tailwindcss": {}
+    }
   }
 }
