@@ -1,10 +1,6 @@
 import { fileToArrayBuffer } from "../../utils";
 import { GrainPlayer } from "tone";
-import {
-  NewClip,
-  SharedMessages,
-  TrackID,
-} from "js/types";
+import { NewClip, SharedMessages, TrackID } from "js/types";
 import * as Tone from "tone";
 import { Transport } from "tone";
 import { pushFile, pushShared } from "js/channels";
@@ -60,7 +56,6 @@ export function receiveNewClip(newClip: NewClip): void {
   playableClip.grainPlayer = new GrainPlayer(
     decodeURI(audioFile.url),
   ).toDestination();
-  playableClip.playbackRate = playbackRate;
   project.update((store) => {
     store[trackId].clips[id] = playableClip;
     return store;

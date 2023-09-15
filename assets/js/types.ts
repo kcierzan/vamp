@@ -75,6 +75,10 @@ export enum QuantizationInterval {
   SixteenthNote = "@16n",
 }
 
+export interface AudioFile {
+  filename: string;
+  url: string;
+}
 export interface NewClip {
   id: string;
   trackId: string;
@@ -82,10 +86,7 @@ export interface NewClip {
   type: string;
   playbackRate: number;
   bpm: number;
-  audioFile: {
-    filename: string;
-    url: string;
-  };
+  audioFile: AudioFile;
 }
 
 export interface Scene {

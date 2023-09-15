@@ -57,6 +57,9 @@ defmodule Vamp.Latencies.Cache do
     {:reply, mean(user_latencies), state}
   end
 
+  @impl true
+  def handle_call({:get, _user_id}, _from, state), do: {:reply, nil, state}
+
   defp unshift_latency(latencies, latency) do
     cond do
       length(latencies) < 10 ->

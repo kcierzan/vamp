@@ -161,7 +161,7 @@ defmodule Vamp.ProjectsTest do
     end
 
     test "get_audio_clip!/1 returns the audio_clip with given id" do
-      audio_clip = audio_clip_fixture()
+      audio_clip = audio_clip_fixture() |> Repo.preload(:audio_file)
       assert Projects.get_audio_clip!(audio_clip.id) == audio_clip
     end
 
@@ -200,7 +200,7 @@ defmodule Vamp.ProjectsTest do
     end
 
     test "update_audio_clip/2 with invalid data returns error changeset" do
-      audio_clip = audio_clip_fixture()
+      audio_clip = audio_clip_fixture() |> Repo.preload(:audio_file)
       assert {:error, %Ecto.Changeset{}} = Projects.update_audio_clip(audio_clip, @invalid_attrs)
       assert audio_clip == Projects.get_audio_clip!(audio_clip.id)
     end

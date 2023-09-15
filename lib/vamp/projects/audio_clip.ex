@@ -9,6 +9,7 @@ defmodule Vamp.Projects.AudioClip do
 
   schema "audio_clips" do
     field :name, :string
+    # TODO: drop `type` in favor of `media_type` on `audio_file` this
     field :type, :string
     field :playback_rate, :float
     belongs_to :audio_file, Vamp.Sounds.AudioFile
