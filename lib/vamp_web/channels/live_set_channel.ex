@@ -3,6 +3,7 @@ defmodule VampWeb.LiveSetChannel do
   use Phoenix.Channel
   alias VampWeb.Presence
   alias VampWeb.Endpoint
+  require Logger
 
   # TODO: there should be a unique 'shared' channel for each liveset
   # (eg. `liveset:<liveset_id>:shared`)
@@ -65,6 +66,12 @@ defmodule VampWeb.LiveSetChannel do
     {:noreply, socket}
   end
 
+  def handle_in("new_clip", data, socket) do
+    {:ok, audio_clip} = Vamp.Projects.create_audio_clip(data)
+
+    {:reply, {:ok, audio_clip.id}, socket}
+  end
+
   def handle_in("play_clip", data, socket) do
     socket
     |> shared_channel_user_ids()
@@ -97,14 +104,43 @@ defmodule VampWeb.LiveSetChannel do
     {:noreply, socket}
   end
 
-  def handle_in(message, {:binary, data}, socket) do
-    broadcast!(socket, message, {:binary, data})
+  def handle_in(audio_file_json, {:binary, data}, socket) do
+    audio_file_json
+    |> Jason.decode!()
+    |> add_file_attr(data)
+    |> uri_encode_filename()
+    |> Vamp.Projects.create_file_for_clip!()
+    |> audio_clip_to_clip_data()
+    |> broadcast_to_liveset_channel!("new_clip")
+
     {:noreply, socket}
   end
 
-  def handle_in(message, data, socket) do
-    broadcast!(socket, message, data)
-    {:noreply, socket}
+  defp uri_encode_filename(attrs) do
+    update_in(attrs["file"][:filename], &URI.encode(&1))
+  end
+
+  defp audio_clip_to_clip_data(audio_clip) do
+    %{
+      "id" => audio_clip.id,
+      "trackId" => audio_clip.track_id,
+      "name" => audio_clip.name,
+      "type" => audio_clip.type,
+      "playbackRate" => audio_clip.playback_rate,
+      "bpm" => audio_clip.audio_file.bpm,
+      "audioFile" => %{
+        "filename" => audio_clip.audio_file.file.file_name,
+        "url" => audio_clip.audio_file.file.url
+      }
+    }
+  end
+
+  defp broadcast_to_liveset_channel!(data, message) do
+    Endpoint.broadcast_from(self(), "liveset:shared", message, data)
+  end
+
+  defp add_file_attr(attrs, data) do
+    put_in(attrs["file"], %{filename: attrs["name"], binary: data})
   end
 
   def handle_info(:after_join, socket) do

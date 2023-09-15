@@ -32,16 +32,22 @@ user_attrs = %{
   password: "testingpassword"
 }
 
-audio_file = %Plug.Upload{
-  filename: "100action.wav",
-  path: "test/support/fixtures/samples/100action.wav",
-  content_type: "audio/wav"
-}
-
-clip_attrs = %{
+audio_clip_attrs = %{
   name: "action",
   type: "audio/wav",
   playback_rate: 1.0
+}
+
+audio_file_attrs = %{
+  name: "action break",
+  size: 100,
+  description: "a boring break",
+  media_type: "audio/wav",
+  file: %Plug.Upload{
+    filename: "100action.wav",
+    path: "test/support/fixtures/samples/100action.wav",
+    content_type: "audio/wav"
+  }
 }
 
 user =
@@ -52,24 +58,30 @@ user =
 Logger.info("Created user ID: #{user.id}")
 
 song =
-  user
-  |> Ecto.build_assoc(:songs, song_attrs)
+  %Vamp.Projects.Song{}
+  |> Ecto.Changeset.change(created_by_id: user.id)
+  |> Vamp.Projects.Song.changeset(song_attrs)
   |> Repo.insert!()
 
 Logger.info("Created song ID: #{song.id}")
 
 track =
-  song
-  |> Ecto.build_assoc(:tracks, track_attrs)
+  %Vamp.Projects.Track{}
+  |> Ecto.Changeset.change(song_id: song.id)
+  |> Vamp.Projects.Track.changeset(track_attrs)
   |> Repo.insert!()
 
 Logger.info("Created track ID: #{track.id}")
 
+audio_file =
+  %Vamp.Sounds.AudioFile{}
+  |> Vamp.Sounds.AudioFile.changeset(audio_file_attrs)
+  |> Repo.insert!()
+
 clip =
-  track
-  |> Ecto.build_assoc(:audio_clips, clip_attrs)
-  |> Ecto.Changeset.change()
-  |> Vamp.Projects.AudioClip.changeset(%{audio_file: audio_file})
+  %Vamp.Projects.AudioClip{}
+  |> Ecto.Changeset.change(track_id: track.id, audio_file_id: audio_file.id)
+  |> Vamp.Projects.AudioClip.changeset(audio_clip_attrs)
   |> Repo.insert!()
 
 Logger.info("Created clip ID: #{clip.id}")

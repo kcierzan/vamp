@@ -1,5 +1,6 @@
 defmodule Vamp.Projects.AudioClip do
   use Ecto.Schema
+  use Waffle.Ecto.Schema
   import Ecto.Changeset
 
   @derive {Jason.Encoder, except: [:__meta__, :track]}
@@ -18,9 +19,15 @@ defmodule Vamp.Projects.AudioClip do
 
   @doc false
   def changeset(audio_clip, attrs) do
+    base_changeset(audio_clip, attrs)
+    |> cast(attrs, [:track_id, :audio_file_id])
+    |> validate_required([:track_id])
+  end
+
+  defp base_changeset(audio_clip, attrs) do
     audio_clip
-    |> cast(attrs, [:name, :type, :playback_rate, :track_id, :audio_file_id])
-    |> validate_required([:name, :type, :playback_rate, :track_id, :audio_file_id])
+    |> cast(attrs, [:name, :type, :playback_rate])
+    |> validate_required([:name, :type, :playback_rate])
     |> assoc_constraint(:track)
     |> assoc_constraint(:audio_file)
   end

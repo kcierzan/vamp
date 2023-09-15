@@ -3,30 +3,29 @@ defmodule Vamp.Projects do
   The Projects context.
   """
 
+  require Logger
   import Ecto.Query, warn: false
   alias Vamp.Repo
 
-  alias Vamp.Projects.Song
+  alias Vamp.Projects.{Song, Track, AudioClip}
+
+  def get_fixture_song() do
+    Song |> first() |> Repo.one!()
+  end
 
   @doc """
   Returns a full project for a user
   """
   def get_project!(user_id, song_id) do
-    from(song in Song, as: :song)
-    |> join(:inner, [song: song], user in assoc(song, :created_by), as: :created_by)
-    |> join(:left, [song: song], track in assoc(song, :tracks), as: :tracks)
-    |> join(:left, [tracks: tracks], audio_clip in assoc(tracks, :audio_clips), as: :audio_clips)
-    |> join(:left, [audio_clips: audio_clips], audio_file in assoc(audio_clips, :audio_file),
-      as: :audio_file
-    )
-    |> preload(
-      [tracks: track, audio_clips: audio_clips, created_by: created_by, audio_file: audio_file],
-      created_by: created_by,
-      tracks: {track, audio_clips: {audio_clips, audio_file: audio_file}}
-    )
-    |> where([song: song], song.id == ^song_id and song.created_by_id == ^user_id)
+    project_query(user_id, song_id)
     |> Repo.one!()
     |> add_audio_file_urls()
+  end
+
+  defp project_query(user_id, song_id) do
+    from(song in Song, as: :song)
+    |> preload([:created_by, tracks: [audio_clips: [:audio_file]]])
+    |> where([song: song], song.id == ^song_id and song.created_by_id == ^user_id)
   end
 
   defp add_audio_file_urls(project) do
@@ -36,12 +35,14 @@ defmodule Vamp.Projects do
       fn track ->
         update_in(
           track,
-          [Access.key!(:audio_clips), Access.all(), Access.key!(:audio_file)],
+          [Access.key(:audio_clips, []), Access.all(), Access.key(:audio_file)],
           &add_url_to_audio_file/1
         )
       end
     )
   end
+
+  defp add_url_to_audio_file(nil), do: nil
 
   defp add_url_to_audio_file(audio_file) do
     put_in(audio_file.file[:url], Vamp.AudioFile.url(audio_file.file[:file_name], audio_file))
@@ -272,7 +273,12 @@ defmodule Vamp.Projects do
       ** (Ecto.NoResultsError)
 
   """
-  def get_audio_clip!(id), do: Repo.get!(AudioClip, id)
+  def get_audio_clip!(id) do
+    from(ac in AudioClip, as: :audio_clip)
+    |> preload(:audio_file)
+    |> where([audio_clip: audio_clip], audio_clip.id == ^id)
+    |> Repo.one!()
+  end
 
   @doc """
   Creates a audio_clip.
@@ -290,6 +296,21 @@ defmodule Vamp.Projects do
     %AudioClip{}
     |> AudioClip.changeset(attrs)
     |> Repo.insert()
+  end
+
+  def create_file_for_clip!(attrs \\ %{}) do
+    audio_file_attrs = Vamp.Sounds.AudioFile.changeset(%Vamp.Sounds.AudioFile{}, attrs)
+
+    get_audio_clip!(attrs["clip_id"])
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.put_assoc(:audio_file, audio_file_attrs)
+    |> Repo.update!()
+    |> add_url_to_audio_clip()
+
+  end
+
+  defp add_url_to_audio_clip(audio_clip) do
+    put_in(audio_clip.audio_file, add_url_to_audio_file(audio_clip.audio_file))
   end
 
   @doc """

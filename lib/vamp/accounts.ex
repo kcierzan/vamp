@@ -9,6 +9,9 @@ defmodule Vamp.Accounts do
   alias Vamp.Accounts.{User, UserToken, UserNotifier}
 
   ## Database getters
+  def get_fixture_user() do
+    User |> first() |> Repo.one!()
+  end
 
   @doc """
   Gets a user by email.

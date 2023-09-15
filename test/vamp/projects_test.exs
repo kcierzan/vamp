@@ -224,11 +224,30 @@ defmodule Vamp.ProjectsTest do
     import Vamp.ProjectsFixtures
     import Vamp.SoundsFixtures
 
-    test "get_project!/2 returns a song" do
+    test "get_project!/2 returns a song when there are no tracks" do
       user = user_fixture()
       song = song_fixture(%{created_by_id: user.id})
 
       assert %Song{} = Projects.get_project!(user.id, song.id)
+    end
+
+    test "get_project!/2 returns a song where there are no clips" do
+      user = user_fixture()
+      song = song_fixture(%{created_by_id: user.id})
+      track_fixture(%{song_id: song.id})
+
+      assert %Song{} = Projects.get_project!(user.id, song.id)
+    end
+
+    test "get_project!/2 returns a song when there are clips without audio files" do
+      user = user_fixture()
+      song = song_fixture(%{created_by_id: user.id})
+      track = track_fixture(%{song_id: song.id})
+      audio_clip_fixture(%{track_id: track.id, audio_file_id: nil})
+
+      assert project = %Song{} = Projects.get_project!(user.id, song.id)
+      assert length(project.tracks) == 1
+      assert length(hd(project.tracks).audio_clips) == 1
     end
 
     test "get_project!/2 returns a complete project" do

@@ -3,6 +3,7 @@ import projectStore from "js/stores/project";
 import transportStore from "js/stores/transport";
 import Track from "js/track";
 import { TrackStore, TrackClips } from "js/types";
+import { GrainPlayer } from "tone";
 
 interface AudioFileProps {
   name: string;
@@ -44,16 +45,19 @@ function projectPropsToStore(props: ProjectProps) {
   return props.tracks.reduce((acc: TrackStore, track) => {
     const clips = track.audio_clips.reduce(
       (acc: TrackClips, clip: AudioClipProps) => {
-        // TODO: set up the grainPlayers here
-        acc[clip.id] = new Clip(
+        const newClip = new Clip(
           track.id,
           clip.name,
           clip.type,
           clip.playback_rate,
           0,
-          clip.audio_file.bpm,
+          clip.audio_file?.bpm,
           clip.id,
         );
+        newClip.grainPlayer = new GrainPlayer(
+          decodeURI(clip.audio_file?.file.url),
+        ).toDestination();
+        acc[clip.id] = newClip;
         return acc;
       },
       {},
