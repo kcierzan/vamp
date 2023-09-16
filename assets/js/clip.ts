@@ -10,6 +10,7 @@ export default class Clip implements ClipData {
   public state: PlayState;
   public type: string;
   public bpm: number;
+  public kind: "clip";
   private _playbackRate: number;
   private _grainPlayer: GrainPlayer | null;
 
@@ -33,6 +34,7 @@ export default class Clip implements ClipData {
     this._grainPlayer = null;
     this._playbackRate = 1;
     this.playbackRate = playbackRate;
+    this.kind = "clip";
   }
 
   public get grainPlayer() {

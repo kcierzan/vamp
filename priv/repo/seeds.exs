@@ -79,10 +79,14 @@ audio_file =
   |> Vamp.Sounds.AudioFile.changeset(audio_file_attrs)
   |> Repo.insert!()
 
-clip =
-  %Vamp.Projects.AudioClip{}
-  |> Ecto.Changeset.change(track_id: track.id, audio_file_id: audio_file.id)
-  |> Vamp.Projects.AudioClip.changeset(audio_clip_attrs)
-  |> Repo.insert!()
+create_clip = fn ->
+  clip =
+    %Vamp.Projects.AudioClip{}
+    |> Ecto.Changeset.change(track_id: track.id, audio_file_id: audio_file.id)
+    |> Vamp.Projects.AudioClip.changeset(audio_clip_attrs)
+    |> Repo.insert!()
 
-Logger.info("Created clip ID: #{clip.id}")
+  Logger.info("Created clip ID: #{clip.id}")
+end
+
+for _ <- 0..6, do: create_clip.()

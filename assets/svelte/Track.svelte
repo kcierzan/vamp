@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { flip } from "svelte/animate";
   import type { HTMLInputEvent } from "js/types";
   import Clip from "./Clip.svelte";
   import type Track from "js/track";
