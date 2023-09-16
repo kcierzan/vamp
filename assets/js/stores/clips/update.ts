@@ -1,20 +1,22 @@
 import { pushShared } from "js/channels";
 import project from "../project";
-import { ClipData, SharedMessages } from "js/types";
+import { SharedMessages } from "js/types";
+import { Clip, setAudio } from "js/clip";
 
-export function updateClipProperties(...clips: ClipData[]): void {
+export function updateClipProperties(...clips: Clip[]): void {
   pushShared(SharedMessages.UpdateClipProperties, { clips });
 }
 
 export function receiveUpdateClipProperties({
   clips,
 }: {
-  clips: ClipData[];
+  clips: Clip[];
 }): void {
   project.update((store) => {
     for (const clip of clips) {
-      const currentClip = store[clip.trackId].clips[clip.id];
-      currentClip.setFromClipData(clip);
+      const { audio, ...newClip } = clip
+      if (!!audio) setAudio(newClip, audio);
+      store[clip.trackId].clips[clip.id] = newClip;
     }
     return store;
   });

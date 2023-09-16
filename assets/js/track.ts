@@ -1,100 +1,91 @@
 import type { Time } from "tone/build/esm/core/type/Units";
 import { Draw, Transport } from "tone";
-import { ClipID, TrackClips, TrackID } from "./types";
+import { ClipID, PlayState, TrackClips, TrackID } from "./types";
 import project from "js/stores/project";
 import * as Tone from "tone";
+import { playAudio, stopAudio } from "js/clip";
 
-export default class Track {
-  public currentlyPlaying: ClipID | null;
-  public clips: TrackClips;
-  private _playEvent: number | null;
-  public id: TrackID;
+export interface Track {
+  readonly id: TrackID;
+  currentlyPlaying: ClipID | null;
+  clips: TrackClips;
+  playEvent: number | null;
+}
 
-  constructor(
-    currentlyPlaying: ClipID | null,
-    playEvent: number | null,
-    clips: TrackClips,
-    id: TrackID = crypto.randomUUID(),
-  ) {
-    this.currentlyPlaying = currentlyPlaying;
-    this.clips = clips;
-    this._playEvent = playEvent;
-    this.id = id;
-  }
+export function playClip(track: Track, clipId: ClipID, at: Time) {
+  Draw.schedule(() => {
+    project.update((store) => {
+      store[track.id].clips[clipId].state = PlayState.Queued;
+      return store;
+    });
+  }, Tone.now());
 
-  public playClip(clipId: ClipID, at: Time): void {
+  // HACK: sometimes we are too late when attempting scheduling
+  // and we end up trying to schedule an event in the past.
+  // Rather than fail entirely, we schedule ASAP...
+  const launchTime = Transport.seconds > (at as number) ? "+0.01" : at;
+  Transport.scheduleOnce((time) => {
+    stopTrackAudio(track, time);
     Draw.schedule(() => {
-      this.updateUIForQueue(clipId);
-    }, Tone.now());
+      updateUIForPlay(track, clipId);
+      loopClip(track, clipId, "+1m", "1m");
+    }, time);
+  }, launchTime);
+}
 
-    // HACK: sometimes we are too late when attempting scheduling
-    // and we end up trying to schedule an event in the past.
-    // Rather than fail entirely, we schedule ASAP...
-    const launchTime = Transport.seconds > (at as number) ? "+0.01" : at;
-    Transport.scheduleOnce((time) => {
-      this.stopTrackAudio(time);
-      Draw.schedule(() => {
-        this.updateUIForPlay(clipId);
-        this.loopClip(clipId, "+1m", "1m");
-      }, time);
-    }, launchTime);
+export function stop(track: Track, at: Time) {
+  const launchTime = Transport.seconds > (at as number) ? "+0.01" : at;
+  Transport.scheduleOnce((time) => {
+    stopTrackAudio(track, time);
+    Draw.schedule(() => {
+      track.playEvent !== null && Transport.clear(track.playEvent);
+    }, time - 0.1);
+    Draw.schedule(() => {
+      updateUIForStop(track);
+    }, time);
+  }, launchTime);
+}
+
+export function stopTrackAudio(track: Track, time: Time | undefined): void {
+  if (track.currentlyPlaying && track.clips[track.currentlyPlaying]) {
+    stopAudio(track.clips[track.currentlyPlaying], time);
   }
+}
 
-  public stop(at: Time) {
-    const launchTime = Transport.seconds > (at as number) ? "+0.01" : at;
-    Transport.scheduleOnce((time) => {
-      this.stopTrackAudio(time);
-      Draw.schedule(() => {
-        this._playEvent !== null && Transport.clear(this._playEvent);
-      }, time - 0.1);
-      Draw.schedule(() => {
-        this.updateUIForStop();
-      }, time);
-    }, launchTime);
-  }
+function loopClip(
+  track: Track,
+  clipId: ClipID,
+  endTime: Time,
+  every: Time,
+): void {
+  track.playEvent !== null && Transport.clear(track.playEvent);
+  track.playEvent = Transport.scheduleRepeat(
+    (audioContextTime: number) => {
+      playAudio(track.clips[clipId], audioContextTime, endTime);
+    },
+    every,
+    "+0.01",
+  );
+}
 
-  public stopTrackAudio(time: Time | undefined): void {
-    if (this.currentlyPlaying && this.clips[this.currentlyPlaying]) {
-      this.clips[this.currentlyPlaying].stopAudio(time);
+function updateUIForStop(track: Track): void {
+  project.update((store) => {
+    if (!!track.currentlyPlaying) {
+      store[track.id].clips[track.currentlyPlaying].state = PlayState.Stopped;
     }
-  }
+    track.currentlyPlaying = null;
+    track.playEvent = null;
+    return store;
+  });
+}
 
-  private updateUIForPlay(clipId: ClipID): void {
-    project.update((store) => {
-      if (this.currentlyPlaying && this.currentlyPlaying !== clipId) {
-        store[this.id].clips[this.currentlyPlaying].stopVisual();
-      }
-      store[this.id].clips[clipId].playVisual();
-      this.currentlyPlaying = clipId;
-      return store;
-    });
-  }
-
-  private updateUIForStop(): void {
-    project.update((store) => {
-      !!this.currentlyPlaying &&
-        store[this.id].clips[this.currentlyPlaying].stopVisual();
-      this.currentlyPlaying = null;
-      this._playEvent = null;
-      return store;
-    });
-  }
-
-  private updateUIForQueue(clipId: ClipID): void {
-    project.update((store) => {
-      this.clips[clipId].queueVisual();
-      return store;
-    });
-  }
-
-  private loopClip(clipId: ClipID, endTime: Time, every: Time): void {
-    this._playEvent !== null && Transport.clear(this._playEvent);
-    this._playEvent = Transport.scheduleRepeat(
-      (audioContextTime: number) => {
-        this.clips[clipId].playAudio(audioContextTime, endTime);
-      },
-      every,
-      "+0.01",
-    );
-  }
+function updateUIForPlay(track: Track, clipId: ClipID): void {
+  project.update((store) => {
+    if (track.currentlyPlaying && track.currentlyPlaying !== clipId) {
+      store[track.id].clips[track.currentlyPlaying].state = PlayState.Stopped;
+    }
+    store[track.id].clips[clipId].state = PlayState.Playing;
+    track.currentlyPlaying = clipId;
+    return store;
+  });
 }

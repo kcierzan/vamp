@@ -2,7 +2,6 @@ import project from "../project";
 import * as Tone from "tone";
 import { pushShared } from "js/channels";
 import { SharedMessages, TrackID } from "js/types";
-import Track from "js/track";
 
 export async function newTrack(songId: string): Promise<void> {
   await Tone.start();
@@ -13,7 +12,7 @@ export async function newTrack(songId: string): Promise<void> {
 export function receiveNewTrack({ id }: { id: TrackID }): void {
   project.update((store) => {
     const newTrack = {
-      [id]: new Track(null, null, {}, id),
+      [id]: { id, currentlyPlaying: null, playEvent: null, clips: {} },
     };
     return {
       ...store,

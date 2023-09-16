@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { HTMLInputEvent } from "js/types";
-  import Clip from "./Clip.svelte";
+  import ClipComponent from "./Clip.svelte";
   import type Track from "js/track";
   import project from "js/stores/project";
   import { newClip } from "js/stores/clips/new";
@@ -23,7 +23,7 @@
   <div class="mb-2">
     <div class="flex flex-col items-center justify-center">
       {#each Object.values(track.clips) as clip (clip?.id)}
-        <Clip {clip} />
+        <ClipComponent {clip} />
       {/each}
       <input
         id="addclip-{track.id}"

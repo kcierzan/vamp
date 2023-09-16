@@ -1,11 +1,10 @@
-import Clip from "js/clip";
 import projectStore from "js/stores/project";
 import transportStore from "js/stores/transport";
-import Track from "js/track";
-import { TrackStore, TrackClips } from "js/types";
-import { GrainPlayer } from "tone";
+import { TrackStore, TrackClips, PlayState } from "js/types";
+import { setAudio, type Audio, Clip } from "js/clip"
 
 interface AudioFileProps {
+  id: number;
   name: string;
   size: number;
   description: string;
@@ -49,7 +48,12 @@ export function setInitialStateFromProps(props: ProjectProps) {
 function projectPropsToStore(props: ProjectProps) {
   return props.tracks.reduce((acc: TrackStore, track) => {
     const clips = clipsFromProps(track);
-    acc[track.id] = new Track(null, null, clips, track.id);
+    acc[track.id] = {
+      id: track.id,
+      currentlyPlaying: null,
+      playEvent: null,
+      clips,
+    };
     return acc;
   }, {});
 }
@@ -65,17 +69,21 @@ function clipsFromProps(track: TrackProps) {
 }
 
 function propsToClip(props: AudioClipProps, track: TrackProps) {
-  const newClip = new Clip(
-    track.id,
-    props.name,
-    props.type,
-    props.playback_rate,
-    0,
-    props.audio_file?.bpm,
-    props.id,
-  );
-  newClip.grainPlayer = new GrainPlayer(
-    decodeURI(props.audio_file?.file.url),
-  ).toDestination();
-  return newClip;
+  const audio: Audio = {
+    id: props.audio_file.id,
+    bpm: props.audio_file.bpm,
+    filename: props.audio_file.file.file_name,
+    size: props.audio_file.size,
+    url: props.audio_file.file.url,
+    media_type: props.audio_file.media_type
+  }
+  const clip: Clip = {
+    id: props.id,
+    trackId: track.id,
+    name: props.name,
+    playbackRate: props.playback_rate,
+    state: PlayState.Stopped,
+  }
+  setAudio(clip, audio);
+  return clip;
 }

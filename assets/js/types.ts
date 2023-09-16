@@ -1,7 +1,7 @@
 import type { Channel } from "phoenix";
 import type { Transport } from "tone";
-import Clip from "js/clip";
-import Track from "js/track";
+import { Clip, Audio } from "js/clip";
+import { Track } from "js/track";
 
 export enum PlayState {
   Playing = "PLAYING",
@@ -27,17 +27,6 @@ export interface TransportStore {
 export interface SceneStore {
   states: PlayState[];
   scenes: Scene[];
-}
-
-export interface ClipData {
-  id: ClipID;
-  trackId: TrackID;
-  name: string;
-  type: string;
-  state: PlayState;
-  currentTime: number;
-  playbackRate: number;
-  bpm: number;
 }
 
 export interface TrackClips {
@@ -75,10 +64,6 @@ export enum QuantizationInterval {
   SixteenthNote = "@16n",
 }
 
-export interface AudioFile {
-  filename: string;
-  url: string;
-}
 export interface NewClip {
   id: string;
   trackId: string;
@@ -86,7 +71,7 @@ export interface NewClip {
   type: string;
   playbackRate: number;
   bpm: number;
-  audioFile: AudioFile;
+  audio: Audio;
 }
 
 export interface Scene {

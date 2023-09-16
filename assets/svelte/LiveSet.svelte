@@ -22,11 +22,6 @@
   import ClipSlot from "./ClipSlot.svelte";
   import ClipComponent from "./Clip.svelte";
 
-  interface Slot {
-    id: number;
-    kind: "slot";
-  }
-  type PoolItem = Slot | Clip;
   export let currentUser: User;
   export let token: Token;
   export let project: any;
@@ -37,7 +32,6 @@
     Array.from({ length: 8 }, (_, j) => ({ id: i * 8 + j }))
   );
 
-  $: trackArr = Object.values($projectStore);
   $: clipz = Object.values($projectStore).flatMap((track) => {
     return Object.values(track.clips);
   });
@@ -93,30 +87,29 @@
       {/each}
     </div>
   {/each}
-  <!-- <section -->
-  <!--   class="flex flex-row" -->
-  <!--   use:dndzone={{ items: trackArr, flipDurationMs: 300 }} -->
-  <!--   on:consider={handleDndConsider} -->
-  <!--   on:finalize={handleDndFinalize} -->
-  <!-- > -->
-  <!--   {#each trackArr as track (track.id)} -->
-  <!--     <Track {track} /> -->
-  <!--   {/each} -->
-  <!-- </section> -->
   <div
     class="min-w-max flex flex-col gap-1"
     use:dndzone={{ items: clipz }}
     on:consider={handleDndConsider}
     on:finalize={handleDndFinalize}
   >
-    {#each clipz as clip (clip.id)}
-      <ClipComponent {clip} />
-    {/each}
+    {#if !!clipz.length}
+      {#each clipz as clip (clip.id)}
+        <ClipComponent {clip} />
+      {/each}
+    {:else}
+      <div class="h-8 w-20 min-w-20 min-h-8 empty" />
+    {/if}
   </div>
 </div>
 
 <style lang="postcss">
   .add-track {
     @apply flex justify-center space-x-4 rounded bg-green-500 text-white text-lg w-24 h-16 mb-4 flex-grow hover:bg-green-700;
+  }
+
+  .empty::after {
+    content: "\200B";
+    visibility: hidden;
   }
 </style>

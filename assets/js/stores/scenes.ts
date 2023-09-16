@@ -6,7 +6,7 @@ import { get, derived } from "svelte/store";
 import { tracksToClipArrays } from "../utils";
 import { playClips } from "./clips/play";
 import { stopTracks } from "./tracks/stop";
-import Clip from "js/clip";
+import { Clip } from "js/clip";
 
 function scenesFromTracks(tracks: TrackStore): Scene[] {
   const scenes = [];

@@ -3,8 +3,7 @@
   import type { HTMLInputEvent } from "js/types";
   import { playClips } from "js/stores/clips/play";
   import { updateClipProperties } from "js/stores/clips/update";
-  import { debounce } from "js/utils";
-  import Clip from "js/clip";
+  import { Clip, serialize } from "js/clip";
 
   export let clip: Clip;
 
@@ -31,7 +30,7 @@
     const target = e.target;
     const val = (target as HTMLInputElement).value;
     updateClipProperties({
-      ...clip.serialize(),
+      ...serialize(clip),
       playbackRate: parseFloat(val),
     });
   }

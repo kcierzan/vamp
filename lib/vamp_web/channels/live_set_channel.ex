@@ -122,10 +122,10 @@ defmodule VampWeb.LiveSetChannel do
       "name" => audio_clip.name,
       "type" => audio_clip.type,
       "playbackRate" => audio_clip.playback_rate,
-      "bpm" => audio_clip.audio_file.bpm,
       "audioFile" => %{
         "filename" => audio_clip.audio_file.file.file_name,
-        "url" => audio_clip.audio_file.file.url
+        "url" => audio_clip.audio_file.file.url,
+        "bpm" => audio_clip.audio_file.bpm
       }
     }
   end

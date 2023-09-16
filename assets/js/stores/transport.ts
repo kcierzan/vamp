@@ -6,6 +6,7 @@ import { PlayState, PrivateMessages, TransportStore } from "js/types";
 import { pushShared } from "js/channels";
 import { get } from "svelte/store";
 import project from "js/stores/project";
+import { stopTrackAudio } from "js/track";
 
 const initialState = {
   transport: Tone.Transport,
@@ -39,7 +40,7 @@ function receiveStopTransport({
     const tracks = Object.values(get(project));
 
     for (const track of tracks) {
-      track.stopTrackAudio(undefined);
+      stopTrackAudio(track, undefined);
     }
     return store;
   });

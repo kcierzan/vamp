@@ -3,20 +3,23 @@
   import { tracksToClipArrays } from "js/utils";
   import transport from "js/stores/transport";
   import project from "js/stores/project";
-  import type { ClipData, HTMLInputEvent } from "js/types";
+  import type { HTMLInputEvent } from "js/types";
   import { updateClipProperties } from "js/stores/clips/update";
+  import { Clip, serialize, setPlaybackRate } from "js/clip";
 
   const { setBpm } = transport;
 
   $: clipArrays = tracksToClipArrays($project);
 
   function stretchClipsToBpm(bpm: number) {
-    const clipsToStretch: ClipData[] = [];
+    const clipsToStretch: Clip[] = [];
     for (const track of clipArrays) {
       for (const clip of track) {
-        const rate = bpm / clip.bpm;
-        const data: ClipData = { ...clip.serialize(), playbackRate: rate };
-        clipsToStretch.push(data);
+        if (!!clip.audio) {
+          const rate = bpm / clip.audio.bpm;
+          setPlaybackRate(clip, rate);
+        }
+        clipsToStretch.push(serialize(clip));
       }
     }
     updateClipProperties(...clipsToStretch);

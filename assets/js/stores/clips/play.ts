@@ -2,14 +2,15 @@ import { quantizedTransportTime } from "js/utils";
 import project from "../project";
 import transportStore from "../transport";
 import quantization from "../quantization";
-import { ClipData, PlayState, PrivateMessages } from "js/types";
+import { PlayState, PrivateMessages } from "js/types";
 import { Draw, Transport } from "tone";
 import { get } from "svelte/store";
 import { pushShared } from "js/channels";
-import Clip from "js/clip";
+import { Clip, serialize } from "js/clip";
+import { playClip } from "js/track";
 
 export function playClips(clips: Clip[]) {
-  const clipInfos = clips.map((clip) => clip.serialize());
+  const clipInfos = clips.map((clip) => serialize(clip));
   pushShared(PrivateMessages.PlayClip, { clips: clipInfos });
 }
 
@@ -21,7 +22,7 @@ export function receivePlayClips({
   clips,
 }: {
   waitMilliseconds: number;
-  clips: ClipData[];
+  clips: Clip[];
 }) {
   const nowWithLatencyCompensation = `+${waitMilliseconds / 1000 + 0.1}`;
   const currentQuantization = get(quantization);
@@ -33,14 +34,14 @@ export function receivePlayClips({
 
   if (transport.state === PlayState.Stopped) {
     for (const clip of clips) {
-      store[clip.trackId].playClip(clip.id, 0);
+      playClip(store[clip.trackId], clip.id, 0);
     }
     transportStore.startLocal(nowWithLatencyCompensation);
   } else {
     Transport.scheduleOnce((time) => {
       Draw.schedule(() => {
         for (const clip of clips) {
-          store[clip.trackId].playClip(clip.id, nextDivision);
+          playClip(store[clip.trackId], clip.id, nextDivision);
         }
       }, time);
     }, nowWithLatencyCompensation);
