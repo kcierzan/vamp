@@ -24,7 +24,14 @@ defmodule Vamp.Projects do
 
   defp project_query(user_id, song_id) do
     from(song in Song, as: :song)
-    |> preload([:created_by, tracks: [audio_clips: [:audio_file]]])
+    |> join(:inner, [song: song], t in assoc(song, :tracks), as: :track)
+    |> join(:left, [song: song], p in assoc(song, :audio_files), as: :pool)
+    |> join(:left, [track: track], ac in assoc(track, :audio_clips), as: :audio_clip)
+    |> join(:left, [audio_clip: audio_clip], cf in assoc(audio_clip, :audio_file), as: :clip_file)
+    |> preload([pool: pool, track: track, audio_clip: audio_clip, clip_file: clip_file],
+      audio_files: pool,
+      tracks: {track, audio_clips: {audio_clip, audio_file: clip_file}}
+    )
     |> where([song: song], song.id == ^song_id and song.created_by_id == ^user_id)
   end
 
@@ -282,20 +289,13 @@ defmodule Vamp.Projects do
 
   @doc """
   Creates a audio_clip.
-
-  ## Examples
-
-      iex> create_audio_clip(%{field: value})
-      {:ok, %AudioClip{}}
-
-      iex> create_audio_clip(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
   """
-  def create_audio_clip(attrs \\ %{}) do
+  def create_audio_clip!(attrs \\ %{}) do
     %AudioClip{}
     |> AudioClip.changeset(attrs)
-    |> Repo.insert()
+    |> Repo.insert!()
+    |> Repo.preload(:audio_file)
+    |> add_url_to_audio_clip()
   end
 
   def create_file_for_clip!(attrs \\ %{}) do
@@ -306,7 +306,6 @@ defmodule Vamp.Projects do
     |> Ecto.Changeset.put_assoc(:audio_file, audio_file_attrs)
     |> Repo.update!()
     |> add_url_to_audio_clip()
-
   end
 
   defp add_url_to_audio_clip(audio_clip) do

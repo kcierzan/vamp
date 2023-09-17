@@ -55,6 +55,18 @@ defmodule Vamp.Sounds do
     |> Repo.insert()
   end
 
+  def create_audio_file_in_pool!(song_id, attrs \\ %{}) do
+    Repo.transaction(fn ->
+      audio_file =
+        %AudioFile{}
+        |> AudioFile.changeset(attrs)
+        |> Repo.insert!()
+
+      Vamp.Pools.add_file_to_pool!(audio_file.id, song_id)
+      audio_file
+    end)
+  end
+
   @doc """
   Updates a audio_file.
 
