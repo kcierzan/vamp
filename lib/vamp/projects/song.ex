@@ -2,7 +2,7 @@ defmodule Vamp.Projects.Song do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @derive {Jason.Encoder, except: [:__meta__]}
+  @derive {Jason.Encoder, except: [:__meta__, :created_by]}
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   @foreign_key_type Ecto.UUID
 
@@ -13,6 +13,7 @@ defmodule Vamp.Projects.Song do
     field :time_signature, :string, default: "4/4"
     belongs_to :created_by, Vamp.Accounts.User, foreign_key: :created_by_id
     has_many :tracks, Vamp.Projects.Track
+    many_to_many :audio_files, Vamp.Sounds.AudioFile, join_through: Vamp.Pools.PoolFile
 
     timestamps()
   end

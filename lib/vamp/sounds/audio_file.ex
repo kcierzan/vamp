@@ -3,7 +3,7 @@ defmodule Vamp.Sounds.AudioFile do
   use Waffle.Ecto.Schema
   import Ecto.Changeset
 
-  @derive {Jason.Encoder, except: [:__meta__, :audio_clips]}
+  @derive {Jason.Encoder, except: [:__meta__, :audio_clips, :songs]}
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   @foreign_key_type Ecto.UUID
 
@@ -15,6 +15,7 @@ defmodule Vamp.Sounds.AudioFile do
     field :media_type, :string
     field :bpm, :float
     has_many :audio_clips, Vamp.Projects.AudioClip
+    many_to_many :songs, Vamp.Projects.Song, join_through: Vamp.Pools.PoolFile
 
     timestamps()
   end

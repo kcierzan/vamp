@@ -74,19 +74,11 @@ track =
 
 Logger.info("Created track ID: #{track.id}")
 
-audio_file =
-  %Vamp.Sounds.AudioFile{}
-  |> Vamp.Sounds.AudioFile.changeset(audio_file_attrs)
-  |> Repo.insert!()
+create_pool_file = fn ->
+  {:ok, audio_file} =
+    Vamp.Sounds.create_audio_file_in_pool!(song.id, audio_file_attrs)
 
-create_clip = fn ->
-  clip =
-    %Vamp.Projects.AudioClip{}
-    |> Ecto.Changeset.change(track_id: track.id, audio_file_id: audio_file.id)
-    |> Vamp.Projects.AudioClip.changeset(audio_clip_attrs)
-    |> Repo.insert!()
-
-  Logger.info("Created clip ID: #{clip.id}")
+  Logger.info("Created audio_file ID: #{audio_file.id}")
 end
 
-for _ <- 0..6, do: create_clip.()
+for _ <- 0..6, do: create_pool_file.()
