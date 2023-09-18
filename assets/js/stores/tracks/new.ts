@@ -1,15 +1,21 @@
 import project from "../project";
 import * as Tone from "tone";
 import { pushShared } from "js/channels";
-import { SharedMessages, TrackData } from "js/types";
+import { SharedMessages } from "js/types";
 
 export async function newTrack(
-  trackAttrs: TrackData,
+  songId: string,
   onOk: (res: any) => any = (_res) => {},
 ): Promise<void> {
   await Tone.start();
   console.log("tone has started");
-  pushShared(SharedMessages.NewTrack, trackAttrs)?.receive("ok", onOk);
+
+  pushShared(SharedMessages.NewTrack, {
+    name: "new track",
+    gain: 0.0,
+    panning: 0.0,
+    song_id: songId,
+  })?.receive("ok", onOk);
 }
 
 export function receiveNewTrack(track: any): void {
@@ -17,7 +23,12 @@ export function receiveNewTrack(track: any): void {
   project.update((store) => {
     return {
       ...store,
-      [track.id]: { id: track.id, currentlyPlaying: null, playEvent: null, clips: {} },
+      [track.id]: {
+        id: track.id,
+        currentlyPlaying: null,
+        playEvent: null,
+        clips: {},
+      },
     };
   });
 }

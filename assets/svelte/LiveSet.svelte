@@ -16,19 +16,15 @@
   } from "js/channels";
   import { newTrack } from "../js/stores/tracks/new";
   import { setInitialStateFromProps } from "js/stores/project/new";
-  import ClipSlot from "./ClipSlot.svelte";
   import Pool from "./Pool.svelte";
   import Track from "./Track.svelte";
+    import TrackArea from "./TrackArea.svelte";
 
   export let currentUser: User;
   export let token: Token;
   export let project: any;
 
   const { clearLatency, measureLatency } = latency;
-
-  const grid = Array.from({ length: 8 }, (_, i) =>
-    Array.from({ length: 8 }, (_, j) => ({ id: i * 8 + j }))
-  );
 
   $: sessionEmpty = Object.keys($projectStore).length === 0;
   $: tracks = Object.values($projectStore);
@@ -66,9 +62,10 @@
 
 <div class="flex flex-row w-full justify-center gap-1">
   <Scenes />
-  {#each tracks as track (track.id)}
-    <Track {track} />
-  {/each}
+  <TrackArea songId={project.id} />
+  <!-- {#each tracks as track (track.id)} -->
+  <!--   <Track {track} /> -->
+  <!-- {/each} -->
   <Pool />
 </div>
 

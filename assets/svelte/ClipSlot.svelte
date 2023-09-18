@@ -26,7 +26,7 @@
 </script>
 
 <div
-  class="box-content border-2 rounded h-8 w-36 min-h-8 min-w-8"
+  class="box-content border-2 rounded h-8 w-36"
   use:dndzone={options}
   on:consider={consider}
   on:finalize={finalize}

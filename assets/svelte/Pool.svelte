@@ -25,7 +25,7 @@
       <PoolItem {audioFile} />
     {/each}
   {:else}
-    <div class="h-8 w-20 min-w-20 min-h-8 empty" />
+    <div class="h-8 w-20 empty" />
   {/if}
 </div>
 

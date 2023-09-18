@@ -1,9 +1,12 @@
 <script lang="ts">
-  import type { Track } from "js/track";
+  import type { Track } from "js/types";
   import ClipSlot from "./ClipSlot.svelte";
 
+  const NUMBER_OF_ROWS = 12;
   export let track: Track;
-  const slots = Array.from({ length: 8 }, (_, i) => ({ id: i * 8 }));
+  const slots = Array.from({ length: NUMBER_OF_ROWS }, (_, i) => ({
+    id: i * NUMBER_OF_ROWS,
+  }));
 
   $: clips = Object.values(track.clips);
 
@@ -13,9 +16,7 @@
   // }
 </script>
 
-<div
-  class="flex flex-col gap-1 w-30 h-80 min-w-30 min-h-80"
->
+<div class="flex flex-col gap-1 w-30">
   {#each slots as slot, i (slot.id)}
     <ClipSlot items={!!clips[i] ? [clips[i]] : []} trackId={track.id} />
   {/each}
