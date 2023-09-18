@@ -1,12 +1,17 @@
 import { fileToArrayBuffer } from "../../utils";
-import { GrainPlayer } from "tone";
-import { NewClip, SharedMessages, TrackID } from "js/types";
+import {
+  AudioFile,
+  Clip,
+  PlayState,
+  SharedMessages,
+  TrackID,
+} from "js/types";
 import * as Tone from "tone";
 import { Transport } from "tone";
 import { pushFile, pushShared } from "js/channels";
 import project from "../project";
 import { guess } from "web-audio-beat-detector";
-import Clip from "js/clip";
+import { setupGrainPlayer } from "js/clip";
 
 async function guessBPM(file: File): Promise<{ bpm: number; offset: number }> {
   const arrayBuf = await fileToArrayBuffer(file);
@@ -18,6 +23,16 @@ async function guessBPM(file: File): Promise<{ bpm: number; offset: number }> {
     // FIXME: this effectively skips stretching if bpm guess fails
     return { bpm: Transport.bpm.value, offset: 0 };
   }
+}
+
+export function newClipFromPool(audio: AudioFile, trackId: TrackID) {
+  pushShared(SharedMessages.NewClip, {
+    name: audio.file.file_name,
+    type: audio.media_type,
+    track_id: trackId,
+    audio_file_id: audio.id,
+    playback_rate: Transport.bpm.value / audio.bpm,
+  });
 }
 
 export async function newClip(file: File, trackId: TrackID): Promise<void> {
@@ -42,22 +57,12 @@ export async function newClip(file: File, trackId: TrackID): Promise<void> {
   });
 }
 
-export function receiveNewClip(newClip: NewClip): void {
-  const { trackId, name, bpm, id, type, playbackRate, audioFile } = newClip;
-  const playableClip = new Clip(
-    trackId,
-    name,
-    type,
-    playbackRate,
-    0.0,
-    bpm,
-    id,
-  );
-  playableClip.grainPlayer = new GrainPlayer(
-    decodeURI(audioFile.url),
-  ).toDestination();
+export function receiveNewClip(newClip: Clip): void {
+  console.log("INCOMING CLIP", newClip);
+  const clip = { ...newClip, state: PlayState.Stopped };
+  setupGrainPlayer(clip);
   project.update((store) => {
-    store[trackId].clips[id] = playableClip;
+    store[clip.track_id].clips[clip.id] = clip;
     return store;
   });
 }

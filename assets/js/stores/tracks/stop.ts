@@ -4,6 +4,7 @@ import quantization from "../quantization";
 import { PrivateMessages, TrackID, TrackStore } from "js/types";
 import { get } from "svelte/store";
 import { pushShared } from "js/channels";
+import { stop } from "js/track";
 
 export function stopTracks(trackIds: TrackID[]): void {
   pushShared(PrivateMessages.StopTrack, { trackIds });
@@ -20,6 +21,6 @@ export function receiveStopTrack({ trackIds }: { trackIds: TrackID[] }): void {
   const nextBarTT = quantizedTransportTime(currentQuantization);
   const store: TrackStore = get(project);
   for (const trackId of trackIds) {
-    store[trackId].stop(nextBarTT);
+    stop(store[trackId], nextBarTT);
   }
 }

@@ -1,7 +1,6 @@
-import { QuantizationInterval, TrackStore } from "js/types";
+import { Clip, QuantizationInterval, TrackStore } from "js/types";
 import { Time, Transport } from "tone";
 import * as Tone from "tone";
-import Clip from "./clip";
 
 export async function fileToB64(file: File): Promise<string> {
   const bytes = await fileToByteArray(file);

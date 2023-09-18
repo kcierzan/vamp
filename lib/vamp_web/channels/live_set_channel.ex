@@ -51,14 +51,8 @@ defmodule VampWeb.LiveSetChannel do
     {:noreply, socket}
   end
 
-  def handle_in("new_track", %{"song_id" => song_id}, socket) do
-    {:ok, track} =
-      Vamp.Projects.create_track(%{
-        "gain" => 0.0,
-        "panning" => 0.0,
-        "name" => "my new track",
-        "song_id" => song_id
-      })
+  def handle_in("new_track", attrs, socket) do
+    {:ok, track} = Vamp.Projects.create_track(attrs)
 
     track = Vamp.Repo.preload(track, :audio_clips)
     broadcast!(socket, "new_track", track)
@@ -67,9 +61,19 @@ defmodule VampWeb.LiveSetChannel do
   end
 
   def handle_in("new_clip", data, socket) do
-    {:ok, audio_clip} = Vamp.Projects.create_audio_clip(data)
+    audio_clip = Vamp.Projects.create_audio_clip!(data)
 
-    {:reply, {:ok, audio_clip.id}, socket}
+    case audio_clip.audio_file do
+      %Vamp.Sounds.AudioFile{} ->
+        broadcast!(socket, "new_clip", audio_clip)
+        {:noreply, socket}
+
+      nil ->
+        {:reply, {:ok, audio_clip.id}, socket}
+
+      _ ->
+        {:reply, {:error, %{"reason" => "unexpected value for audio_file"}}, socket}
+    end
   end
 
   def handle_in("play_clip", data, socket) do
@@ -109,25 +113,9 @@ defmodule VampWeb.LiveSetChannel do
     |> Jason.decode!()
     |> add_file_attr(data)
     |> Vamp.Projects.create_file_for_clip!()
-    |> audio_clip_to_clip_data()
     |> broadcast_to_liveset_channel!("new_clip")
 
     {:noreply, socket}
-  end
-
-  defp audio_clip_to_clip_data(audio_clip) do
-    %{
-      "id" => audio_clip.id,
-      "trackId" => audio_clip.track_id,
-      "name" => audio_clip.name,
-      "type" => audio_clip.type,
-      "playbackRate" => audio_clip.playback_rate,
-      "bpm" => audio_clip.audio_file.bpm,
-      "audioFile" => %{
-        "filename" => audio_clip.audio_file.file.file_name,
-        "url" => audio_clip.audio_file.file.url
-      }
-    }
   end
 
   defp broadcast_to_liveset_channel!(data, message) do

@@ -20,6 +20,7 @@ defmodule Vamp.Projects.Track do
   def changeset(track, attrs) do
     track
     |> cast(attrs, [:gain, :panning, :name, :song_id])
+    |> cast_assoc(:audio_clips)
     |> validate_required([:gain, :panning, :name, :song_id])
     |> assoc_constraint(:song)
   end
