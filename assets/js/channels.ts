@@ -8,16 +8,14 @@ import { receiveNewTrack } from "js/stores/tracks/new";
 import { receiveRemoveTrack } from "js/stores/tracks/remove";
 import { receiveNewClip } from "js/stores/clips/new";
 import { receiveUpdateClipProperties } from "js/stores/clips/update";
-import { Wildcard } from "phx-wildcard";
 
 const socketPath = "/socket";
 const livesetTopic = "liveset:shared";
 const fileTopic = "files:clip";
 
-export let sharedChannel: Channel | undefined;
-export let privateChannel: Channel | undefined;
-export let fileChannel: Channel | undefined;
-export let fileWildcardChannel: Wildcard | undefined;
+let sharedChannel: Channel | undefined;
+let privateChannel: Channel | undefined;
+let fileChannel: Channel | undefined;
 
 interface Listeners {
   [ChannelName.Private]: {
@@ -54,14 +52,10 @@ const listeners: Listeners = {
   },
 };
 
-export function joinSharedChannel(token: Token) {
-  sharedChannel = joinChannel(socketPath, livesetTopic, token);
-
-  for (const [message, callback] of Object.entries(
-    listeners[ChannelName.Shared],
-  )) {
-    sharedChannel.on(message, callback);
-  }
+export function joinChannels(token: Token, currentUser: User) {
+  joinSharedChannel(token);
+  joinPrivateChannel(token, currentUser);
+  joinFileChannel(token);
 }
 
 export function pushPrivate(message: string, data: object) {
@@ -85,7 +79,17 @@ export function pushFile(
   return fileChannel?.push(JSON.stringify(audioFileAttrs), data);
 }
 
-export function joinPrivateChannel(token: Token, currentUser: User) {
+function joinSharedChannel(token: Token) {
+  sharedChannel = joinChannel(socketPath, livesetTopic, token);
+
+  for (const [message, callback] of Object.entries(
+    listeners[ChannelName.Shared],
+  )) {
+    sharedChannel.on(message, callback);
+  }
+}
+
+function joinPrivateChannel(token: Token, currentUser: User) {
   const livesetPrivateTopic = `private:${currentUser.id}`;
   privateChannel = joinChannel(socketPath, livesetPrivateTopic, token);
 
@@ -96,7 +100,7 @@ export function joinPrivateChannel(token: Token, currentUser: User) {
   }
 }
 
-export function joinFileChannel(token: Token) {
+function joinFileChannel(token: Token) {
   fileChannel = joinChannel(socketPath, fileTopic, token);
 }
 

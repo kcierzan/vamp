@@ -1,43 +1,34 @@
 <script lang="ts">
   import type { Token, User } from "js/types";
+  import * as Tone from "tone";
   import { onMount } from "svelte";
   import projectStore from "../js/stores/project";
   import latency from "../js/stores/latency";
+  import { joinChannels } from "js/channels";
+  import { newTrack } from "../js/stores/tracks/new";
+  import { setInitialStateFromProps } from "js/stores/project/new";
   import Scenes from "./Scenes.svelte";
   import Tempo from "./Tempo.svelte";
   import Metronome from "./Metronome.svelte";
   import Transport from "./Transport.svelte";
   import Quantization from "./Quantization.svelte";
-  import * as Tone from "tone";
-  import {
-    joinSharedChannel,
-    joinPrivateChannel,
-    joinFileChannel,
-  } from "js/channels";
-  import { newTrack } from "../js/stores/tracks/new";
-  import { setInitialStateFromProps } from "js/stores/project/new";
   import Pool from "./Pool.svelte";
-  import Track from "./Track.svelte";
-    import TrackArea from "./TrackArea.svelte";
+  import TrackArea from "./TrackArea.svelte";
 
   export let currentUser: User;
   export let token: Token;
   export let project: any;
 
-  const { clearLatency, measureLatency } = latency;
+  const { calculateLatency } = latency;
 
   $: sessionEmpty = Object.keys($projectStore).length === 0;
-  $: tracks = Object.values($projectStore);
 
   onMount(async () => {
     Tone.getContext().lookAhead = 0;
 
-    joinSharedChannel(token);
-    joinFileChannel(token);
-    joinPrivateChannel(token, currentUser);
+    joinChannels(token, currentUser);
     setInitialStateFromProps(project);
-    clearLatency();
-    measureLatency();
+    calculateLatency();
   });
 </script>
 
@@ -63,9 +54,6 @@
 <div class="flex flex-row w-full justify-center gap-1">
   <Scenes />
   <TrackArea songId={project.id} />
-  <!-- {#each tracks as track (track.id)} -->
-  <!--   <Track {track} /> -->
-  <!-- {/each} -->
   <Pool />
 </div>
 

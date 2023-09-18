@@ -29,8 +29,12 @@ function measureLatency(count = 20): void {
   setTimeout(() => measureLatency(count - 1), 100);
 }
 
+function calculateLatency() {
+  clearLatency();
+  measureLatency();
+}
+
 export default {
   subscribe,
-  clearLatency,
-  measureLatency,
+  calculateLatency,
 };
