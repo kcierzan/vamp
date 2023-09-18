@@ -1,6 +1,5 @@
 import { Channel, Socket } from "phoenix";
-import type { Token, TrackID, User, NewClip } from "js/types";
-import type { Clip } from "js/clip";
+import type { Clip, Token, TrackID, User } from "js/types";
 import { ChannelName, PrivateMessages, SharedMessages } from "js/types";
 import transport from "js/stores/transport";
 import { receivePlayClips } from "js/stores/clips/play";
@@ -49,7 +48,7 @@ const listeners: Listeners = {
     new_track: ({ id }: { id: TrackID }) => receiveNewTrack({ id }),
     remove_track: ({ id }: { id: TrackID }) =>
       receiveRemoveTrack({ trackId: id }),
-    new_clip: (clip: NewClip) => receiveNewClip(clip),
+    new_clip: (clip: Clip) => receiveNewClip(clip),
     update_clip_properties: ({ clips }: { clips: Clip[] }) =>
       receiveUpdateClipProperties({ clips }),
   },

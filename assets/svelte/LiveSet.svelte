@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { Token, User } from "js/types";
-  import type Clip from "js/clip";
   import { onMount } from "svelte";
   import { dndzone } from "svelte-dnd-action";
   import projectStore from "../js/stores/project";

@@ -1,7 +1,54 @@
 import type { Channel } from "phoenix";
-import type { Transport } from "tone";
-import { Clip, Audio } from "js/clip";
-import { Track } from "js/track";
+import type { Transport, GrainPlayer } from "tone";
+
+export interface Song {
+  title: string;
+  description: string;
+  time_signature: string;
+  bpm: number;
+  tracks: TrackData[];
+  audio_files: AudioFile[];
+}
+
+export interface Track extends TrackData {
+  currentlyPlaying: ClipID | null;
+  clips: TrackClips;
+  playEvent: number | null;
+}
+
+export interface TrackData {
+  readonly id: string;
+  gain: number;
+  panning: number;
+  name: string;
+  audio_clips: Clip[];
+}
+
+export interface Clip {
+  readonly id: ClipID;
+  readonly track_id: TrackID;
+  name: string;
+  playback_rate: number;
+  grainPlayer?: GrainPlayer;
+  state: PlayState;
+  type: string;
+  audio_file: AudioFile | null;
+}
+
+export interface StaticFile {
+  file_name: string;
+  url: string;
+}
+
+export interface AudioFile {
+  readonly id: number;
+  bpm: number;
+  name: string;
+  description: string;
+  file: StaticFile;
+  readonly size: number;
+  readonly media_type: string;
+}
 
 export enum PlayState {
   Playing = "PLAYING",
@@ -62,16 +109,6 @@ export enum QuantizationInterval {
   QuarterNote = "@4n",
   EigthNote = "@8n",
   SixteenthNote = "@16n",
-}
-
-export interface NewClip {
-  id: string;
-  trackId: string;
-  name: string;
-  type: string;
-  playbackRate: number;
-  bpm: number;
-  audio: Audio;
 }
 
 export interface Scene {

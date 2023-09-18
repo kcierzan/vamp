@@ -1,12 +1,11 @@
 import type { TrackStore, Scene, SceneStore, TrackID } from "js/types";
 import type { Readable } from "svelte/store";
 import project from "./project";
-import { PlayState } from "js/types";
+import { Clip, PlayState } from "js/types";
 import { get, derived } from "svelte/store";
 import { tracksToClipArrays } from "../utils";
 import { playClips } from "./clips/play";
 import { stopTracks } from "./tracks/stop";
-import { Clip } from "js/clip";
 
 function scenesFromTracks(tracks: TrackStore): Scene[] {
   const scenes = [];
@@ -19,11 +18,11 @@ function scenesFromTracks(tracks: TrackStore): Scene[] {
 
       // there is a clip in the scene for this track
       if (track[row]) {
-        scene[track[row].trackId] = track[row];
+        scene[track[row].track_id] = track[row];
         // there is a clip somewhere in the track
         // so we should stop this track when playing this scene
       } else if (nonemptyTrack) {
-        scene[nonemptyTrack.trackId] = null;
+        scene[nonemptyTrack.track_id] = null;
       }
     }
     scenes.unshift(scene);

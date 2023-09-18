@@ -1,11 +1,17 @@
 import { fileToArrayBuffer } from "../../utils";
-import { NewClip, PlayState, SharedMessages, TrackID } from "js/types";
+import {
+  AudioFile,
+  Clip,
+  PlayState,
+  SharedMessages,
+  TrackID,
+} from "js/types";
 import * as Tone from "tone";
 import { Transport } from "tone";
 import { pushFile, pushShared } from "js/channels";
 import project from "../project";
 import { guess } from "web-audio-beat-detector";
-import { setAudio } from "js/clip";
+import { setupGrainPlayer } from "js/clip";
 
 async function guessBPM(file: File): Promise<{ bpm: number; offset: number }> {
   const arrayBuf = await fileToArrayBuffer(file);
@@ -17,6 +23,16 @@ async function guessBPM(file: File): Promise<{ bpm: number; offset: number }> {
     // FIXME: this effectively skips stretching if bpm guess fails
     return { bpm: Transport.bpm.value, offset: 0 };
   }
+}
+
+export function newClipFromPool(audio: AudioFile, trackId: TrackID) {
+  pushShared(SharedMessages.NewClip, {
+    name: audio.file.file_name,
+    type: audio.media_type,
+    track_id: trackId,
+    audio_file_id: audio.id,
+    playback_rate: Transport.bpm.value / audio.bpm,
+  });
 }
 
 export async function newClip(file: File, trackId: TrackID): Promise<void> {
@@ -41,12 +57,12 @@ export async function newClip(file: File, trackId: TrackID): Promise<void> {
   });
 }
 
-export function receiveNewClip(newClip: NewClip): void {
-  const { audio, ...clipAttrs } = newClip;
-  const clip = { ...clipAttrs, state: PlayState.Stopped };
-  setAudio(clip, audio);
+export function receiveNewClip(newClip: Clip): void {
+  console.log("INCOMING CLIP", newClip);
+  const clip = { ...newClip, state: PlayState.Stopped };
+  setupGrainPlayer(clip);
   project.update((store) => {
-    store[clip.trackId].clips[clip.id] = clip;
+    store[clip.track_id].clips[clip.id] = clip;
     return store;
   });
 }

@@ -1,16 +1,9 @@
 import type { Time } from "tone/build/esm/core/type/Units";
 import { Draw, Transport } from "tone";
-import { ClipID, PlayState, TrackClips, TrackID } from "./types";
+import { ClipID, PlayState, Track } from "./types";
 import project from "js/stores/project";
 import * as Tone from "tone";
 import { playAudio, stopAudio } from "js/clip";
-
-export interface Track {
-  readonly id: TrackID;
-  currentlyPlaying: ClipID | null;
-  clips: TrackClips;
-  playEvent: number | null;
-}
 
 export function playClip(track: Track, clipId: ClipID, at: Time) {
   Draw.schedule(() => {
