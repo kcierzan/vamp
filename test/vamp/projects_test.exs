@@ -87,11 +87,6 @@ defmodule Vamp.ProjectsTest do
     import Vamp.AccountsFixtures
     import Vamp.ProjectsFixtures
 
-    setup do
-      user = user_fixture()
-      %{user: user}
-    end
-
     @invalid_attrs %{name: nil, gain: nil, panning: nil}
 
     test "list_tracks/0 returns all tracks" do
@@ -177,14 +172,16 @@ defmodule Vamp.ProjectsTest do
         audio_file_id: audio_file.id
       }
 
-      assert {:ok, %AudioClip{} = audio_clip} = Projects.create_audio_clip(valid_attrs)
+      assert %AudioClip{} = audio_clip = Projects.create_audio_clip!(valid_attrs)
       assert audio_clip.name == "some name"
       assert audio_clip.type == "some type"
       assert audio_clip.playback_rate == 120.5
     end
 
     test "create_audio_clip/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Projects.create_audio_clip(@invalid_attrs)
+      assert_raise Ecto.InvalidChangesetError, fn ->
+        Projects.create_audio_clip!(@invalid_attrs)
+      end
     end
 
     test "update_audio_clip/2 with valid data updates the audio_clip" do

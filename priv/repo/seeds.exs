@@ -32,12 +32,6 @@ user_attrs = %{
   password: "testingpassword"
 }
 
-audio_clip_attrs = %{
-  name: "action",
-  type: "audio/wav",
-  playback_rate: 1.28
-}
-
 audio_file_attrs = %{
   name: "action break",
   size: 100,

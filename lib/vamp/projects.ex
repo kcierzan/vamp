@@ -24,7 +24,7 @@ defmodule Vamp.Projects do
 
   defp project_query(user_id, song_id) do
     from(song in Song, as: :song)
-    |> join(:inner, [song: song], t in assoc(song, :tracks), as: :track)
+    |> join(:left, [song: song], t in assoc(song, :tracks), as: :track)
     |> join(:left, [song: song], p in assoc(song, :audio_files), as: :pool)
     |> join(:left, [track: track], ac in assoc(track, :audio_clips), as: :audio_clip)
     |> join(:left, [audio_clip: audio_clip], cf in assoc(audio_clip, :audio_file), as: :clip_file)
