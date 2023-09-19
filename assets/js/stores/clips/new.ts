@@ -1,11 +1,5 @@
 import { fileToArrayBuffer } from "../../utils";
-import {
-  AudioFile,
-  Clip,
-  PlayState,
-  SharedMessages,
-  TrackID,
-} from "js/types";
+import { AudioFile, Clip, PlayState, SharedMessages, TrackID } from "js/types";
 import * as Tone from "tone";
 import { Transport } from "tone";
 import { pushFile, pushShared } from "js/channels";
@@ -25,17 +19,26 @@ async function guessBPM(file: File): Promise<{ bpm: number; offset: number }> {
   }
 }
 
-export function newClipFromPool(audio: AudioFile, trackId: TrackID) {
+export function newClipFromPool(
+  audio: AudioFile,
+  trackId: TrackID,
+  index: number,
+) {
   pushShared(SharedMessages.NewClip, {
     name: audio.file.file_name,
     type: audio.media_type,
+    index: index,
     track_id: trackId,
     audio_file_id: audio.id,
     playback_rate: Transport.bpm.value / audio.bpm,
   });
 }
 
-export async function newClip(file: File, trackId: TrackID): Promise<void> {
+export async function newClip(
+  file: File,
+  trackId: TrackID,
+  index: number,
+): Promise<void> {
   const { bpm } = await guessBPM(file);
   pushShared(SharedMessages.NewClip, {
     name: file.name,

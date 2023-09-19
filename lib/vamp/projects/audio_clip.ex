@@ -12,6 +12,7 @@ defmodule Vamp.Projects.AudioClip do
     # TODO: drop `type` in favor of `media_type` on `audio_file` this
     field :type, :string
     field :playback_rate, :float
+    field :index, :integer
     belongs_to :audio_file, Vamp.Sounds.AudioFile
     belongs_to :track, Vamp.Projects.Track
 
@@ -20,15 +21,13 @@ defmodule Vamp.Projects.AudioClip do
 
   @doc false
   def changeset(audio_clip, attrs) do
-    base_changeset(audio_clip, attrs)
-    |> cast(attrs, [:track_id, :audio_file_id])
-    |> validate_required([:track_id])
+    base_changeset(audio_clip, attrs) |> cast(attrs, [:track_id, :audio_file_id])
   end
 
   defp base_changeset(audio_clip, attrs) do
     audio_clip
-    |> cast(attrs, [:name, :type, :playback_rate])
-    |> validate_required([:name, :type, :playback_rate])
+    |> cast(attrs, [:name, :type, :playback_rate, :index])
+    |> validate_required([:name, :type, :playback_rate, :index])
     |> assoc_constraint(:track)
     |> assoc_constraint(:audio_file)
   end

@@ -3,25 +3,29 @@
   import { dndzone } from "svelte-dnd-action";
   import PoolItem from "./PoolItem.svelte";
 
+  $: items = $pool;
+
   function handleDndConsider(e: any) {
-    pool.set(e.detail.items);
+    items = e.detail.items;
   }
 
   function handleDndFinalize(e: any) {
-    console.log(e.detail.items);
-    //FIXME: implement copy-on-drag?
-    pool.set(e.detail.items);
+    if (e.detail.items.length < $pool.length) {
+      items = $pool;
+    } else {
+      items = e.detail.items;
+    }
   }
 </script>
 
 <div
   class="min-w-max flex flex-col gap-1"
-  use:dndzone={{ items: $pool, flipDurationMs: 300 }}
+  use:dndzone={{ items: items, dropFromOthersDisabled: true }}
   on:consider={handleDndConsider}
   on:finalize={handleDndFinalize}
 >
-  {#if !!$pool.length}
-    {#each $pool as audioFile (audioFile.id)}
+  {#if !!items.length}
+    {#each items as audioFile (audioFile.id)}
       <PoolItem {audioFile} />
     {/each}
   {:else}

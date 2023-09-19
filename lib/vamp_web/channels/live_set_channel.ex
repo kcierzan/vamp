@@ -52,9 +52,7 @@ defmodule VampWeb.LiveSetChannel do
   end
 
   def handle_in("new_track", attrs, socket) do
-    {:ok, track} = Vamp.Projects.create_track(attrs)
-
-    track = Vamp.Repo.preload(track, :audio_clips)
+    track = Vamp.Projects.create_track!(attrs)
     broadcast!(socket, "new_track", track)
 
     {:noreply, socket}

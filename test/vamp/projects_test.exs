@@ -103,14 +103,14 @@ defmodule Vamp.ProjectsTest do
       song = song_fixture()
       valid_attrs = %{name: "some name", gain: 120.5, panning: 120.5, song_id: song.id}
 
-      assert {:ok, %Track{} = track} = Projects.create_track(valid_attrs)
+      %Track{} = track = Projects.create_track!(valid_attrs)
       assert track.name == "some name"
       assert track.gain == 120.5
       assert track.panning == 120.5
     end
 
-    test "create_track/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Projects.create_track(@invalid_attrs)
+    test "create_track!/1 with invalid data returns error changeset" do
+      assert_raise Ecto.InvalidChangesetError, fn -> Projects.create_track!(@invalid_attrs) end
     end
 
     test "update_track/2 with valid data updates the track" do
@@ -169,6 +169,7 @@ defmodule Vamp.ProjectsTest do
         type: "some type",
         playback_rate: 120.5,
         track_id: track.id,
+        index: 0,
         audio_file_id: audio_file.id
       }
 

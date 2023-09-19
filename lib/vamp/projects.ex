@@ -167,7 +167,9 @@ defmodule Vamp.Projects do
 
   """
   def list_tracks do
-    Repo.all(Track)
+    from(t in Track)
+    |> preload(:audio_clips)
+    |> Repo.all()
   end
 
   @doc """
@@ -184,7 +186,11 @@ defmodule Vamp.Projects do
       ** (Ecto.NoResultsError)
 
   """
-  def get_track!(id), do: Repo.get!(Track, id)
+  def get_track!(id) do
+    (from t in Track)
+    |> preload(:audio_clips)
+    |> Repo.get!(id)
+  end
 
   @doc """
   Creates a track.
@@ -198,10 +204,11 @@ defmodule Vamp.Projects do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_track(attrs \\ %{}) do
+  def create_track!(attrs \\ %{}) do
     %Track{}
     |> Track.changeset(attrs)
-    |> Repo.insert()
+    |> Repo.insert!()
+    |> Repo.preload(audio_clips: [:audio_file])
   end
 
   @doc """

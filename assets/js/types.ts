@@ -30,6 +30,7 @@ export interface Clip {
   name: string;
   playback_rate: number;
   grainPlayer?: GrainPlayer;
+  index: number;
   state: PlayState;
   type: string;
   audio_file: AudioFile | null;
@@ -41,7 +42,7 @@ export interface StaticFile {
 }
 
 export interface AudioFile {
-  readonly id: number;
+  readonly id: string;
   bpm: number;
   name: string;
   description: string;

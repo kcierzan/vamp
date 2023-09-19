@@ -1,7 +1,14 @@
 import projectStore from "js/stores/project";
 import transportStore from "js/stores/transport";
 import poolStore from "js/stores/pool";
-import { Song, Clip, TrackStore, TrackClips, PlayState, TrackData } from "js/types";
+import {
+  Song,
+  Clip,
+  TrackStore,
+  TrackClips,
+  PlayState,
+  TrackData,
+} from "js/types";
 import { setupGrainPlayer } from "js/clip";
 
 export function setInitialStateFromProps(props: Song) {

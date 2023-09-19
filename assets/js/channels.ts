@@ -43,7 +43,7 @@ const listeners: Listeners = {
       transport.receiveStopTransport({ waitMilliseconds }),
   },
   shared: {
-    new_track: ({ id }: { id: TrackID }) => receiveNewTrack({ id }),
+    new_track: (track: any) => receiveNewTrack(track),
     remove_track: ({ id }: { id: TrackID }) =>
       receiveRemoveTrack({ trackId: id }),
     new_clip: (clip: Clip) => receiveNewClip(clip),

@@ -1,27 +1,34 @@
 <script lang="ts">
   import { dndzone } from "svelte-dnd-action";
+  import project from "js/stores/project";
   import Clip from "./Clip.svelte";
-  import { TrackID } from "js/types";
+  import { AudioFile, PlayState, Track } from "js/types";
   import { newClipFromPool } from "js/stores/clips/new";
 
-  export let trackId: TrackID;
-  export let items: any[] = [];
+  export let index: number;
+  export let track: Track;
+  // TODO: find the clip in the `audio_clips` array with `index:` property === `index`
+  $: item = Object.values($project[track.id].clips).find(
+    (clip) => clip.index === index
+  );
+  $: items = !!item ? [item] : [];
 
   function consider(e: any) {
-    items = e.detail.items;
+    items = e.detail.items
   }
 
   function finalize(e: any) {
-    const draggedElem = e.detail.items.find(
-      (item: any) => item.id === e.detail.info.id
+    const dragged = e.detail.items.find(
+      (item: any) => item.track_id !== track.id
     );
-    newClipFromPool(draggedElem, trackId);
+    items = e.detail.items
+    newClipFromPool(dragged, track.id, index);
   }
 
   $: options = {
-    dropFromOthersDisabled: !!items.length,
-    items,
-    flipDurationMs: 300,
+    dropFromOthersDisabled: !!item,
+    items: items,
+    flipDurationMs: 0,
   };
 </script>
 
