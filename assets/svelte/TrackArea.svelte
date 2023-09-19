@@ -1,24 +1,25 @@
 <script lang="ts">
-  import { SHADOW_ITEM_MARKER_PROPERTY_NAME, dndzone } from "svelte-dnd-action";
+  import {
+    SHADOW_ITEM_MARKER_PROPERTY_NAME,
+    TRIGGERS,
+    dndzone,
+  } from "svelte-dnd-action";
   import project from "js/stores/project";
   import Track from "./Track.svelte";
   import { newTrackFromPoolItem } from "js/stores/tracks/new";
   import { Transport } from "tone";
 
   export let songId: string;
-  let considering = false;
   $: tracks = Object.values($project);
   let items: any[] = [{ id: 1 }];
   let draggingItem: any;
 
+  let considering = false;
   $: dndBg = considering ? "bg-orange-500" : "bg-transparent";
 
   function considerNewTrack(e: any) {
-    if (e.detail.items.length) {
-      considering = true;
-    } else {
-      considering = false;
-    }
+    if (e.detail.info.trigger === TRIGGERS.DRAGGED_ENTERED) considering = true;
+    if (e.detail.info.trigger === TRIGGERS.DRAGGED_LEFT) considering = false;
     items = e.detail.items
       .filter((item: any) => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME])
       .concat(
@@ -63,7 +64,7 @@
     }}
     on:consider={considerNewTrack}
     on:finalize={finalizeNewTrack}
-    class="flex justify-center items-center border-2 border-orange-500 w-full {dndBg}"
+    class="flex justify-center items-center w-full {dndBg}"
   >
     {#each items as item, i (item.id)}
       {#if i == 0}

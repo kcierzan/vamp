@@ -19,7 +19,7 @@
 </script>
 
 <div
-  class="min-w-max flex flex-col gap-1"
+  class="min-w-max flex border-2 border-slate-200 rounded p-2 flex-col gap-1"
   use:dndzone={{
     items: items,
     dropFromOthersDisabled: true,
