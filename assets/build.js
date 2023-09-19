@@ -22,7 +22,7 @@ let optsClient = {
   plugins: [
     importGlobPlugin(),
     sveltePlugin({
-      cache: "overzealous",
+      // cache: "overzealous",
       preprocess: sveltePreprocess({ postcss: true }),
       compilerOptions: { dev: !deploy, hydratable: true, css: "injected" },
     }),
@@ -44,7 +44,7 @@ let optsServer = {
   plugins: [
     importGlobPlugin(),
     sveltePlugin({
-      cache: "overzealous",
+      // cache: "overzealous",
       preprocess: sveltePreprocess({ postcss: true }),
       compilerOptions: { dev: !deploy, hydratable: true, generate: "ssr" },
     }),

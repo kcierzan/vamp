@@ -20,7 +20,12 @@
 
 <div
   class="min-w-max flex flex-col gap-1"
-  use:dndzone={{ items: items, dropFromOthersDisabled: true }}
+  use:dndzone={{
+    items: items,
+    dropFromOthersDisabled: true,
+    morphDisabled: true,
+    flipDurationMs: 0,
+  }}
   on:consider={handleDndConsider}
   on:finalize={handleDndFinalize}
 >

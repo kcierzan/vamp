@@ -32,18 +32,12 @@
   }
 </script>
 
-{#if clip}
-  <div>
-    <div class="flex flex-row">
-      <button on:click={() => playClips([clip])} class={clipStyles}>
-        <span class="hero-play self-center ml-2 h-4 w-6" />
-        <span class="text-left self-center w-30 truncate">{clip.name}</span>
-      </button>
-    </div>
-  </div>
-{:else}
-  <div class="h-8 w-8 empty" />
-{/if}
+<div class="flex flex-row">
+  <button on:click={() => playClips([clip])} class={clipStyles}>
+    <span class="hero-play self-center ml-2 h-4 w-6" />
+    <span class="text-left self-center w-30 truncate">{clip.name}</span>
+  </button>
+</div>
 
 <style>
   .blink {
