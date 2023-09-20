@@ -17,7 +17,7 @@ export interface Track extends TrackData {
 }
 
 export interface TrackData {
-  readonly id: string;
+  readonly id: TrackID;
   gain: number;
   panning: number;
   name: string;

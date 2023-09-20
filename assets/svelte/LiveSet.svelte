@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Token, User } from "js/types";
+  import type { Song, Token, User } from "js/types";
   import * as Tone from "tone";
   import { onMount } from "svelte";
   import projectStore from "../js/stores/project";
@@ -17,7 +17,7 @@
 
   export let currentUser: User;
   export let token: Token;
-  export let project: any;
+  export let project: Song;
 
   const { calculateLatency } = latency;
 

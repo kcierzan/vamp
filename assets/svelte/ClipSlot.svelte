@@ -9,21 +9,20 @@
   export let track: Track;
   let items: Clip[] | AudioFile[];
   let considering = false;
-  $: dndBg = considering ? "bg-orange-500" : "bg-transparent"
+  $: dndBg = considering ? "bg-orange-500" : "bg-transparent";
   $: occupyingClip = Object.values($project[track.id].clips).find(
     (clip) => clip.index === index
   );
   $: items = !!occupyingClip ? [occupyingClip] : [];
 
-  function consider(e: any) {
-    console.log("SLOT CONSIDER", e.detail.items);
-    considering = e.detail.items.length ? true : false;
+  function consider(e: CustomEvent<DndEvent<any>>) {
+    considering = !!e.detail.items.length;
     items = e.detail.items;
   }
 
-  function finalize(e: any) {
+  function finalize(e: CustomEvent<DndEvent<any>>) {
     const dragged = e.detail.items.find(
-      (item: any) => item.track_id !== track.id
+      (item: Clip) => item.track_id !== track.id
     );
     considering = false;
     items = e.detail.items;

@@ -14,8 +14,7 @@ export function receiveUpdateClipProperties({
 }): void {
   project.update((store) => {
     for (const clip of clips) {
-      setupGrainPlayer(clip);
-      store[clip.track_id].clips[clip.id] = clip;
+      store[clip.track_id].clips[clip.id] = setupGrainPlayer(clip);
     }
     return store;
   });

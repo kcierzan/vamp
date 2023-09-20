@@ -37,7 +37,5 @@ function clipsFromProps(track: TrackData) {
 }
 
 function propsToClip(props: Clip) {
-  const clip = { ...props, state: PlayState.Stopped };
-  setupGrainPlayer(clip);
-  return clip;
+  return setupGrainPlayer({...props, state: PlayState.Stopped});
 }

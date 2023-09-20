@@ -7,6 +7,7 @@ export function setupGrainPlayer(clip: Clip) {
     const grainPlayer = new GrainPlayer(decodeURI(clip.audio_file.file.url)).toDestination()
     setGrainPlayer(clip, grainPlayer);
   }
+  return clip;
 }
 
 export function serialize(clip: Clip): Clip {

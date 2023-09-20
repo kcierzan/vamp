@@ -7,17 +7,23 @@
   import project from "js/stores/project";
   import Track from "./Track.svelte";
   import { newTrackFromPoolItem } from "js/stores/tracks/new";
-  import { Transport } from "tone";
+  import { AudioFile, Clip } from "js/types";
+
+  interface PlaceHolderDndItem {
+    id: number;
+  }
+
+  type DndItem = PlaceHolderDndItem | AudioFile | Clip;
 
   export let songId: string;
   $: tracks = Object.values($project);
-  let items: any[] = [{ id: 1 }];
-  let draggingItem: any;
+  let items: DndItem[] = [{ id: 1 }];
+  let draggingItem: DndItem;
 
   let considering = false;
   $: dndBg = considering ? "bg-orange-500" : "bg-transparent";
 
-  function considerNewTrack(e: any) {
+  function considerNewTrack(e: CustomEvent<DndEvent<DndItem>>) {
     if (e.detail.info.trigger === TRIGGERS.DRAGGED_ENTERED) considering = true;
     if (e.detail.info.trigger === TRIGGERS.DRAGGED_LEFT) considering = false;
     items = e.detail.items
@@ -30,27 +36,13 @@
     draggingItem = e.detail.items[0];
   }
 
-  // NOTE: supports dragging from the pool ONLY
-  function finalizeNewTrack(e: any) {
+  function finalizeNewTrack(e: CustomEvent<DndEvent<DndItem>>) {
     console.log("finalize items", e.detail.items);
-    const item = draggingItem;
+    // FIXME: this needs to support clips also
+    const audioFile = draggingItem;
     considering = false;
     items = [{ id: 1 }];
-    newTrackFromPoolItem({
-      song_id: songId,
-      name: "new track",
-      gain: 0.0,
-      panning: 0.0,
-      audio_clips: [
-        {
-          name: item.name,
-          type: item.media_type,
-          playback_rate: item.bpm ? Transport.bpm.value / item.bpm : 1.0,
-          index: 0,
-          audio_file_id: item.id,
-        },
-      ],
-    });
+    newTrackFromPoolItem(songId, audioFile);
   }
 </script>
 

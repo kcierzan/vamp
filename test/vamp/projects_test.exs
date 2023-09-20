@@ -213,6 +213,28 @@ defmodule Vamp.ProjectsTest do
       audio_clip = audio_clip_fixture()
       assert %Ecto.Changeset{} = Projects.change_audio_clip(audio_clip)
     end
+
+    test "create_file_for_clip/1 with valid data creates an associated audio file" do
+      audio_clip = audio_clip_fixture(%{audio_file_id: nil})
+
+      updated_clip =
+        Projects.create_file_for_clip!(%{
+          "clip_id" => audio_clip.id,
+          "bpm" => 128.0,
+          "name" => "my file",
+          "media_type" => "audio/wav",
+          "size" => 123,
+          "file" => %{
+            filename: "myfilename.wav",
+            binary: <<4, 8, 15, 16, 23, 42>>
+          }
+        })
+
+      assert updated_clip.audio_file.file.file_name == "myfilename.wav"
+
+      assert %Vamp.Sounds.AudioFile{bpm: 128.0, name: "my file", size: 123} =
+               Projects.get_audio_clip!(audio_clip.id).audio_file
+    end
   end
 
   describe "project" do
