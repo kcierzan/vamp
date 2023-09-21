@@ -10,15 +10,18 @@
   import { AudioFile, Clip } from "js/types";
 
   interface PlaceHolderDndItem {
-    id: number;
+    id: string;
+    kind: string;
   }
+
+  const dummyItem = { id: "dummy", kind: "dummy" };
 
   type DndItem = PlaceHolderDndItem | AudioFile | Clip;
 
   export let songId: string;
   $: tracks = Object.values($project);
-  let items: DndItem[] = [{ id: 1 }];
-  let draggingItem: DndItem;
+  let items: DndItem[] = [dummyItem];
+  let draggingItem: DndItem | AudioFile;
 
   let considering = false;
   $: dndBg = considering ? "bg-orange-500" : "bg-transparent";
@@ -33,16 +36,20 @@
           (item: any) => item[SHADOW_ITEM_MARKER_PROPERTY_NAME]
         )
       );
-    draggingItem = e.detail.items[0];
+    const item = e.detail.items.find((item) => item?.id !== "dummy");
+    if (!!item) {
+      draggingItem = item;
+    } else {
+      draggingItem = dummyItem;
+    }
   }
 
-  function finalizeNewTrack(e: CustomEvent<DndEvent<DndItem>>) {
-    console.log("finalize items", e.detail.items);
+  function finalizeNewTrack(_e: CustomEvent<DndEvent<DndItem>>) {
     // FIXME: this needs to support clips also
-    const audioFile = draggingItem;
     considering = false;
-    items = [{ id: 1 }];
-    newTrackFromPoolItem(songId, audioFile);
+    if (draggingItem.id !== "dummy")
+      newTrackFromPoolItem(songId, draggingItem as AudioFile);
+    items = [{ id: "dummy", kind: "dummy" }];
   }
 </script>
 
