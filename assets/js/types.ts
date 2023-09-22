@@ -132,3 +132,9 @@ export interface User {
 export type HTMLInputEvent = Event & {
   currentTarget: EventTarget & HTMLInputElement;
 };
+
+interface PlaceHolderDndItem {
+  id: string;
+}
+
+export type DndItem = PlaceHolderDndItem | AudioFile | Clip;

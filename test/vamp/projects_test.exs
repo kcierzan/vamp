@@ -203,6 +203,20 @@ defmodule Vamp.ProjectsTest do
       assert audio_clip == Projects.get_audio_clip!(audio_clip.id)
     end
 
+    test "update_audio_clip/2 with a struct literal updates the audio_clip" do
+      audio_clip = audio_clip_fixture()
+
+      update_attrs = %{"name" => "new name", "type" => "new type", "playback_rate" => 123.2, "index" => 0}
+
+      assert {:ok, %AudioClip{} = audio_clip} =
+        Projects.update_audio_clip(%AudioClip{id: audio_clip.id}, update_attrs)
+
+      assert audio_clip.name == "new name"
+      assert audio_clip.type == "new type"
+      assert audio_clip.playback_rate == 123.2
+      assert audio_clip.index == 0
+    end
+
     test "delete_audio_clip/1 deletes the audio_clip" do
       audio_clip = audio_clip_fixture()
       assert {:ok, %AudioClip{}} = Projects.delete_audio_clip(audio_clip)

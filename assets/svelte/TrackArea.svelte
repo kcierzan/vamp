@@ -7,49 +7,51 @@
   import project from "js/stores/project";
   import Track from "./Track.svelte";
   import { newTrackFromPoolItem } from "js/stores/tracks/new";
-  import { AudioFile, Clip } from "js/types";
-
-  interface PlaceHolderDndItem {
-    id: string;
-    kind: string;
-  }
-
-  const dummyItem = { id: "dummy", kind: "dummy" };
-
-  type DndItem = PlaceHolderDndItem | AudioFile | Clip;
+  import { AudioFile, DndItem } from "js/types";
+  import { isAudioFile } from "js/audio-file";
 
   export let songId: string;
   $: tracks = Object.values($project);
+
+  const dummyItem = { id: "dummy" };
   let items: DndItem[] = [dummyItem];
   let draggingItem: DndItem | AudioFile;
-
   let considering = false;
   $: dndBg = considering ? "bg-orange-500" : "bg-transparent";
 
   function considerNewTrack(e: CustomEvent<DndEvent<DndItem>>) {
-    if (e.detail.info.trigger === TRIGGERS.DRAGGED_ENTERED) considering = true;
-    if (e.detail.info.trigger === TRIGGERS.DRAGGED_LEFT) considering = false;
-    items = e.detail.items
-      .filter((item: any) => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME])
-      .concat(
-        e.detail.items.filter(
-          (item: any) => item[SHADOW_ITEM_MARKER_PROPERTY_NAME]
-        )
-      );
-    const item = e.detail.items.find((item) => item?.id !== "dummy");
-    if (!!item) {
-      draggingItem = item;
-    } else {
-      draggingItem = dummyItem;
-    }
+    setConsidering(e.detail.info.trigger);
+    items = ensureDraggedItemFirst(e.detail.items);
+    setDraggedItem(e.detail.items);
   }
 
   function finalizeNewTrack(_e: CustomEvent<DndEvent<DndItem>>) {
     // FIXME: this needs to support clips also
     considering = false;
-    if (draggingItem.id !== "dummy")
-      newTrackFromPoolItem(songId, draggingItem as AudioFile);
-    items = [{ id: "dummy", kind: "dummy" }];
+    isAudioFile(draggingItem) && newTrackFromPoolItem(songId, draggingItem);
+    items = [dummyItem];
+  }
+
+  function setConsidering(trigger: TRIGGERS) {
+    if (trigger === TRIGGERS.DRAGGED_ENTERED) considering = true;
+    if (trigger === TRIGGERS.DRAGGED_LEFT) considering = false;
+  }
+
+  function ensureDraggedItemFirst(items: DndItem[]) {
+    return items
+      .filter((item: any) => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME])
+      .concat(
+        items.filter((item: any) => item[SHADOW_ITEM_MARKER_PROPERTY_NAME])
+      );
+  }
+
+  function setDraggedItem(items: DndItem[]) {
+    const item = items.find((item) => isAudioFile(item));
+    if (!!item) {
+      draggingItem = item;
+    } else {
+      draggingItem = dummyItem;
+    }
   }
 </script>
 
@@ -57,7 +59,7 @@
   <div
     use:dndzone={{
       items: items,
-      flipDurationMs: 0,
+      flipDurationMs: 100,
       morphDisabled: true,
       dragDisabled: true,
     }}

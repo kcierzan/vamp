@@ -2,7 +2,7 @@
   import pool from "js/stores/pool";
   import { dndzone } from "svelte-dnd-action";
   import PoolItem from "./PoolItem.svelte";
-    import { AudioFile } from "js/types";
+  import { AudioFile } from "js/types";
 
   $: items = $pool;
 
@@ -25,7 +25,7 @@
     items: items,
     dropFromOthersDisabled: true,
     morphDisabled: true,
-    flipDurationMs: 0,
+    flipDurationMs: 100,
   }}
   on:consider={handleDndConsider}
   on:finalize={handleDndFinalize}
