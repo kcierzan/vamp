@@ -82,7 +82,7 @@ defmodule VampWeb.LiveSetChannelTest do
       assert audio_clip.name == "some name"
 
       push(socket, "update_clip", Map.from_struct(%{audio_clip | name: "new name"}))
-      assert_broadcast "update_clip", %Vamp.Projects.AudioClip{name: "new name"}
+      assert_broadcast "update_clip", %Vamp.Projects.AudioClip{name: "new name", id: ^clip_id}
     end
   end
 
