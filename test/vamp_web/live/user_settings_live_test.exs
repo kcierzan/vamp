@@ -1,5 +1,5 @@
 defmodule VampWeb.UserSettingsLiveTest do
-  use VampWeb.ConnCase
+  use VampWeb.ConnCase, async: true
 
   alias Vamp.Accounts
   import Phoenix.LiveViewTest

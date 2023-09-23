@@ -74,15 +74,25 @@ defmodule VampWeb.LiveSetChannelTest do
     end
   end
 
-  describe "update_clip" do
-    test "update_clip updates the attributes of an audio_clip", %{socket: socket, song: song} do
+  describe "update_clips" do
+    test "update_clips updates the attributes of an audio_clip", %{socket: socket, song: song} do
       track = Vamp.ProjectsFixtures.track_fixture(%{song_id: song.id})
       audio_clip = Vamp.ProjectsFixtures.audio_clip_fixture(%{track_id: track.id})
       clip_id = audio_clip.id
       assert audio_clip.name == "some name"
 
-      push(socket, "update_clip", Map.from_struct(%{audio_clip | name: "new name"}))
-      assert_broadcast "update_clip", %Vamp.Projects.AudioClip{name: "new name", id: ^clip_id}
+      updated_attrs =
+        %{audio_clip | name: "new name"}
+        |> Map.from_struct()
+        |> Map.new(fn {k, v} -> {to_string(k), v} end)
+
+      push(socket, "update_clips", %{
+        "clips" => [updated_attrs]
+      })
+
+      assert_broadcast "update_clips", %{
+        "clips" => [%Vamp.Projects.AudioClip{name: "new name", id: ^clip_id}]
+      }
     end
   end
 

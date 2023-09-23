@@ -1,5 +1,5 @@
 defmodule Vamp.ProjectsTest do
-  use Vamp.DataCase
+  use Vamp.DataCase, async: true
 
   alias Vamp.Projects
 
@@ -189,8 +189,7 @@ defmodule Vamp.ProjectsTest do
       audio_clip = audio_clip_fixture()
       update_attrs = %{name: "some updated name", type: "some updated type", playback_rate: 456.7}
 
-      assert {:ok, %AudioClip{} = audio_clip} =
-               Projects.update_audio_clip(audio_clip, update_attrs)
+      assert %AudioClip{} = audio_clip = Projects.update_audio_clip!(audio_clip, update_attrs)
 
       assert audio_clip.name == "some updated name"
       assert audio_clip.type == "some updated type"
@@ -199,17 +198,27 @@ defmodule Vamp.ProjectsTest do
 
     test "update_audio_clip/2 with invalid data returns error changeset" do
       audio_clip = audio_clip_fixture() |> Repo.preload(:audio_file)
-      assert {:error, %Ecto.Changeset{}} = Projects.update_audio_clip(audio_clip, @invalid_attrs)
+
+      assert_raise Ecto.InvalidChangesetError, fn ->
+        Projects.update_audio_clip!(audio_clip, @invalid_attrs)
+      end
+
       assert audio_clip == Projects.get_audio_clip!(audio_clip.id)
     end
 
-    test "update_audio_clip/2 with a struct literal updates the audio_clip" do
+    test "update_audio_clip!/2 with a struct literal updates the audio_clip" do
       audio_clip = audio_clip_fixture()
 
-      update_attrs = %{"name" => "new name", "type" => "new type", "playback_rate" => 123.2, "index" => 0}
+      update_attrs = %{
+        "name" => "new name",
+        "type" => "new type",
+        "playback_rate" => 123.2,
+        "index" => 0
+      }
 
-      assert {:ok, %AudioClip{} = audio_clip} =
-        Projects.update_audio_clip(%AudioClip{id: audio_clip.id}, update_attrs)
+      assert %AudioClip{} =
+               audio_clip =
+               Projects.update_audio_clip!(%AudioClip{id: audio_clip.id}, update_attrs)
 
       assert audio_clip.name == "new name"
       assert audio_clip.type == "new type"

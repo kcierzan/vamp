@@ -1,5 +1,5 @@
 defmodule Vamp.SoundsTest do
-  use Vamp.DataCase
+  use Vamp.DataCase, async: true
 
   alias Vamp.Sounds
 

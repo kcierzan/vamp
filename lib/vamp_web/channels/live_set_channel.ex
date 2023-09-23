@@ -74,13 +74,14 @@ defmodule VampWeb.LiveSetChannel do
     end
   end
 
-  def handle_in("update_clip", attrs, socket) do
-    %{"id" => id} = attrs
-    with {:ok, updated_clip} <-
-           Vamp.Projects.update_audio_clip(%Vamp.Projects.AudioClip{id: id}, attrs) do
-      broadcast!(socket, "update_clip", updated_clip)
+  def handle_in("update_clips", attrs, socket) do
+    %{"clips" => clips} = attrs
+    updated = for clip <- clips do
+      %{"id" => id} = clip
+      Vamp.Projects.update_audio_clip!(%Vamp.Projects.AudioClip{id: id}, clip)
     end
 
+    broadcast!(socket, "update_clips", %{"clips" => updated})
     {:noreply, socket}
   end
 

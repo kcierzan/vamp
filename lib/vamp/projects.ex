@@ -337,10 +337,11 @@ defmodule Vamp.Projects do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_audio_clip(%AudioClip{} = audio_clip, attrs) do
+  def update_audio_clip!(%AudioClip{} = audio_clip, attrs) do
     audio_clip
     |> AudioClip.changeset(attrs)
-    |> Repo.update()
+    |> Repo.update!()
+    |> Repo.preload(:audio_file)
   end
 
   @doc """
