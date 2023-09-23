@@ -47,7 +47,7 @@ const listeners: Listeners = {
     remove_track: ({ id }: { id: TrackID }) =>
       receiveRemoveTrack({ trackId: id }),
     new_clip: (clip: Clip) => receiveNewClip(clip),
-    update_clip_properties: ({ clips }: { clips: Clip[] }) =>
+    update_clips: ({ clips }: { clips: Clip[] }) =>
       receiveUpdateClipProperties({ clips }),
   },
 };

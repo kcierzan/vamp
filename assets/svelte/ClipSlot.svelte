@@ -4,8 +4,9 @@
   import ClipComponent from "./Clip.svelte";
   import { AudioFile, Clip, Track, DndItem } from "js/types";
   import { newClipFromPool } from "js/stores/clips/new";
-  import { isClip } from "js/clip";
+  import { isClip, serialize } from "js/clip";
   import { isAudioFile } from "js/audio-file";
+  import { updateClipProperties } from "js/stores/clips/update";
 
   export let index: number;
   export let track: Track;
@@ -13,7 +14,7 @@
   let considering = false;
   $: dndBg = considering ? "bg-orange-500" : "bg-transparent";
   $: occupyingClip = Object.values($project[track.id].clips).find(
-    (clip) => clip.index === index
+    (clip) => clip.index === index,
   );
   $: items = !!occupyingClip ? [occupyingClip] : [];
 
@@ -29,10 +30,13 @@
     considering = false;
     items = e.detail.items;
     if (!!audioFile) {
-      newClipFromPool(dragged, track.id, index);
-    } else {
-      // TODO: change the track of the clip to this track
-
+      newClipFromPool(audioFile, track.id, index);
+    } else if (!!clip) {
+      project.update((store) => {
+        delete store[clip.track_id].clips[clip.id];
+        return store;
+      });
+      updateClipProperties(serialize({ ...clip, index, track_id: track.id }));
     }
   }
 
@@ -44,7 +48,7 @@
 </script>
 
 <div
-  class="box-content border-2 rounded h-8 w-36 {dndBg}"
+  class="box-content h-8 w-36 rounded border-2 {dndBg}"
   use:dndzone={options}
   on:consider={consider}
   on:finalize={finalize}
@@ -53,7 +57,7 @@
     {#if "audio_file" in clip}
       <ClipComponent {clip} />
     {:else}
-      <div class="h-8 w-36 placeholder" />
+      <div class="placeholder h-8 w-36" />
     {/if}
   {/each}
 </div>

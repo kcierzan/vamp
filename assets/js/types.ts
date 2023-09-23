@@ -95,7 +95,7 @@ export enum PrivateMessages {
 
 export enum SharedMessages {
   NewClip = "new_clip",
-  UpdateClipProperties = "update_clip_properties",
+  UpdateClips = "update_clips",
   NewTrack = "new_track",
   RemoveTrack = "remove_track",
 }

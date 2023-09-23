@@ -45,7 +45,7 @@
           }, time);
         },
         "1m",
-        `0:${currentBeat}`
+        `0:${currentBeat}`,
       );
     });
     events = [...events, ...scheduled];
