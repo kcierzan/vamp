@@ -1,9 +1,7 @@
 <script lang="ts">
   import { PlayState } from "js/types";
   import type { Clip, HTMLInputEvent } from "js/types";
-  import { playClips } from "js/stores/clips/play";
-  import { updateClipProperties } from "js/stores/clips/update";
-  import { serialize } from "js/clip";
+  import { playClips, updateClipProperties } from "js/clip";
 
   export let clip: Clip;
 
@@ -26,7 +24,7 @@
     const target = e.target;
     const val = (target as HTMLInputElement).value;
     updateClipProperties({
-      ...serialize(clip),
+      ...clip,
       playback_rate: parseFloat(val),
     });
   }
@@ -34,8 +32,8 @@
 
 <div class="flex flex-row">
   <button on:click={() => playClips([clip])} class={clipStyles}>
-    <span class="hero-play self-center ml-2 h-4 w-6" />
-    <span class="text-left self-center w-30 truncate">{clip.name}</span>
+    <span class="hero-play ml-2 h-4 w-6 self-center" />
+    <span class="w-30 self-center truncate text-left">{clip.name}</span>
   </button>
 </div>
 

@@ -2,11 +2,9 @@
   import { dndzone } from "svelte-dnd-action";
   import project from "js/stores/project";
   import ClipComponent from "./Clip.svelte";
-  import { AudioFile, Clip, Track, DndItem } from "js/types";
-  import { newClipFromPool } from "js/stores/clips/new";
-  import { isClip, serialize } from "js/clip";
+  import { Track, DndItem } from "js/types";
+  import { isClip, newClipFromPool, updateClipProperties } from "js/clip";
   import { isAudioFile } from "js/audio-file";
-  import { updateClipProperties } from "js/stores/clips/update";
 
   export let index: number;
   export let track: Track;
@@ -32,11 +30,8 @@
     if (!!audioFile) {
       newClipFromPool(audioFile, track.id, index);
     } else if (!!clip) {
-      project.update((store) => {
-        delete store[clip.track_id].clips[clip.id];
-        return store;
-      });
-      updateClipProperties(serialize({ ...clip, index, track_id: track.id }));
+      project.deleteClip(clip);
+      updateClipProperties({ ...clip, index, track_id: track.id });
     }
   }
 

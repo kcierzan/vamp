@@ -4,8 +4,8 @@ import project from "./project";
 import { Clip, PlayState } from "js/types";
 import { get, derived } from "svelte/store";
 import { tracksToClipArrays } from "../utils";
-import { playClips } from "./clips/play";
-import { stopTracks } from "./tracks/stop";
+import { playClips } from "js/clip";
+import { stopTracks } from "js/track";
 
 function scenesFromTracks(tracks: TrackStore): Scene[] {
   const scenes = [];

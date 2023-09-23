@@ -1,16 +1,85 @@
 import type { Time } from "tone/build/esm/core/type/Units";
 import { Draw, Transport } from "tone";
-import { ClipID, PlayState, Track } from "./types";
+import {
+  AudioFile,
+  Clip,
+  ClipID,
+  PlayState,
+  PrivateMessages,
+  SharedMessages,
+  Track,
+  TrackID,
+  TrackStore,
+} from "./types";
 import project from "js/stores/project";
 import * as Tone from "tone";
 import { playAudio, stopAudio } from "js/clip";
+import { get } from "svelte/store";
+import { pushShared } from "./channels";
+import quantization from "./stores/quantization";
+import { quantizedTransportTime } from "./utils";
 
-export function playClip(track: Track, clipId: ClipID, at: Time) {
+export function newTrackFromPoolItem(songId: string, audioFile: AudioFile) {
+  const trackCount = Object.keys(get(project)).length;
+  const trackWithClipAttrs = {
+    song_id: songId,
+    name: `Track ${trackCount + 1}`,
+    gain: 0.0,
+    panning: 0.0,
+    audio_clips: [
+      {
+        name: audioFile.name,
+        type: audioFile.media_type,
+        playback_rate: audioFile.bpm
+          ? Transport.bpm.value / audioFile.bpm
+          : 1.0,
+        index: 0,
+        audio_file_id: audioFile.id,
+      },
+    ],
+  };
+  pushShared(SharedMessages.NewTrack, trackWithClipAttrs);
+}
+
+export async function newTrack(
+  songId: string,
+  onOk: (res: any) => any = (_res) => { },
+): Promise<void> {
+  pushShared(SharedMessages.NewTrack, {
+    name: "new track",
+    gain: 0.0,
+    panning: 0.0,
+    song_id: songId,
+  })?.receive("ok", onOk);
+}
+
+export function removeTrack(id: TrackID) {
+  pushShared(SharedMessages.RemoveTrack, { id });
+}
+
+export function stopTracks(trackIds: TrackID[]): void {
+  pushShared(PrivateMessages.StopTrack, { trackIds });
+}
+
+export function stopAllTracks(): void {
+  const tracks = get(project);
+  stopTracks(Object.keys(tracks));
+}
+
+export function receiveStopTrack({ trackIds }: { trackIds: TrackID[] }): void {
+  const currentQuantization = get(quantization);
+  // FIXME: Either make quantization settings e2e reactive or pass a time w/ the stop event
+  const nextBarTT = quantizedTransportTime(currentQuantization);
+  const store: TrackStore = get(project);
+  for (const trackId of trackIds) {
+    stop(store[trackId], nextBarTT);
+  }
+}
+
+export function playClip(track: Track, clip: Clip, at: Time) {
+  track.playEvent !== null && Transport.clear(track.playEvent);
   Draw.schedule(() => {
-    project.update((store) => {
-      store[track.id].clips[clipId].state = PlayState.Queued;
-      return store;
-    });
+    project.setClipState(clip, PlayState.Queued);
   }, Tone.now());
 
   // HACK: sometimes we are too late when attempting scheduling
@@ -18,21 +87,19 @@ export function playClip(track: Track, clipId: ClipID, at: Time) {
   // Rather than fail entirely, we schedule ASAP...
   const launchTime = Transport.seconds > (at as number) ? "+0.01" : at;
   Transport.scheduleOnce((time) => {
-    stopTrackAudio(track, time);
     Draw.schedule(() => {
-      updateUIForPlay(track, clipId);
-      loopClip(track, clipId, "+1m", "1m");
+      updateUIForPlay(track, clip);
+      loopClip(track, clip.id, "+1m", "1m");
     }, time);
+    stopTrackAudio(track, time);
   }, launchTime);
 }
 
 export function stop(track: Track, at: Time) {
+  track.playEvent !== null && Transport.clear(track.playEvent);
   const launchTime = Transport.seconds > (at as number) ? "+0.01" : at;
   Transport.scheduleOnce((time) => {
     stopTrackAudio(track, time);
-    Draw.schedule(() => {
-      track.playEvent !== null && Transport.clear(track.playEvent);
-    }, time - 0.1);
     Draw.schedule(() => {
       updateUIForStop(track);
     }, time);
@@ -41,7 +108,7 @@ export function stop(track: Track, at: Time) {
 
 export function stopTrackAudio(track: Track, time: Time | undefined): void {
   if (track.currentlyPlaying && track.clips[track.currentlyPlaying]) {
-    stopAudio(track.clips[track.currentlyPlaying], time);
+    stopAudio(track.clips[track.currentlyPlaying], time)
   }
 }
 
@@ -51,34 +118,33 @@ function loopClip(
   endTime: Time,
   every: Time,
 ): void {
-  track.playEvent !== null && Transport.clear(track.playEvent);
-  track.playEvent = Transport.scheduleRepeat(
+  // track.playEvent !== null && Transport.clear(track.playEvent);
+  const playEvent = Transport.scheduleRepeat(
     (audioContextTime: number) => {
       playAudio(track.clips[clipId], audioContextTime, endTime);
     },
     every,
-    "+0.01",
+    "+0.005",
   );
+  project.setTrackPlayEvent(track, playEvent);
 }
 
 function updateUIForStop(track: Track): void {
-  project.update((store) => {
-    if (!!track.currentlyPlaying) {
-      store[track.id].clips[track.currentlyPlaying].state = PlayState.Stopped;
-    }
-    track.currentlyPlaying = null;
-    track.playEvent = null;
-    return store;
-  });
+  if (!!track.currentlyPlaying) {
+    project.setClipState(
+      track.clips[track.currentlyPlaying],
+      PlayState.Stopped,
+    );
+  }
+  project.setTrackStopped(track);
 }
 
-function updateUIForPlay(track: Track, clipId: ClipID): void {
-  project.update((store) => {
-    if (track.currentlyPlaying && track.currentlyPlaying !== clipId) {
-      store[track.id].clips[track.currentlyPlaying].state = PlayState.Stopped;
-    }
-    store[track.id].clips[clipId].state = PlayState.Playing;
-    track.currentlyPlaying = clipId;
-    return store;
-  });
+function updateUIForPlay(track: Track, clip: Clip): void {
+  if (track.currentlyPlaying && track.currentlyPlaying !== clip.id) {
+    project.setClipState(
+      track.clips[track.currentlyPlaying],
+      PlayState.Stopped,
+    );
+  }
+  project.setTrackPlaying(track, clip);
 }

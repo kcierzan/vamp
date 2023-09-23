@@ -6,7 +6,7 @@
   } from "svelte-dnd-action";
   import project from "js/stores/project";
   import Track from "./Track.svelte";
-  import { newTrackFromPoolItem } from "js/stores/tracks/new";
+  import { newTrackFromPoolItem } from "js/track";
   import { AudioFile, DndItem } from "js/types";
   import { isAudioFile } from "js/audio-file";
 
@@ -55,7 +55,7 @@
   }
 </script>
 
-<div class="flex flex-row-reverse w-2/3 h-4/6 overflow-scroll">
+<div class="flex h-4/6 w-2/3 flex-row-reverse overflow-scroll">
   <div
     use:dndzone={{
       items: items,
@@ -65,12 +65,12 @@
     }}
     on:consider={considerNewTrack}
     on:finalize={finalizeNewTrack}
-    class="flex justify-center items-center w-full {dndBg}"
+    class="flex w-full items-center justify-center {dndBg}"
   >
     {#each items as item, i (item.id)}
       {#if i == 0}
-        <div class="flex flex-col items-center w-40 gap-4">
-          <svg class="hero-plus-circle bg-slate-300 h-20 w-20" />
+        <div class="flex w-40 flex-col items-center gap-4">
+          <svg class="hero-plus-circle h-20 w-20 bg-slate-300" />
           <p class="text-center">Drag some files here to add a new track</p>
         </div>
       {:else}
