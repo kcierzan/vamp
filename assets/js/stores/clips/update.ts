@@ -1,10 +1,10 @@
 import { pushShared } from "js/channels";
 import project from "../project";
-import { Clip, SharedMessages } from "js/types";
+import { Clip, PlayState, SharedMessages } from "js/types";
 import { setupGrainPlayer } from "js/clip";
 
 export function updateClipProperties(...clips: Clip[]): void {
-  pushShared(SharedMessages.UpdateClipProperties, { clips });
+  pushShared(SharedMessages.UpdateClips, { clips });
 }
 
 export function receiveUpdateClipProperties({
@@ -14,8 +14,7 @@ export function receiveUpdateClipProperties({
 }): void {
   project.update((store) => {
     for (const clip of clips) {
-      setupGrainPlayer(clip);
-      store[clip.track_id].clips[clip.id] = clip;
+      store[clip.track_id].clips[clip.id] = setupGrainPlayer({...clip, state: PlayState.Stopped});
     }
     return store;
   });

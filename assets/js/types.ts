@@ -17,7 +17,7 @@ export interface Track extends TrackData {
 }
 
 export interface TrackData {
-  readonly id: string;
+  readonly id: TrackID;
   gain: number;
   panning: number;
   name: string;
@@ -95,7 +95,7 @@ export enum PrivateMessages {
 
 export enum SharedMessages {
   NewClip = "new_clip",
-  UpdateClipProperties = "update_clip_properties",
+  UpdateClips = "update_clips",
   NewTrack = "new_track",
   RemoveTrack = "remove_track",
 }
@@ -132,3 +132,9 @@ export interface User {
 export type HTMLInputEvent = Event & {
   currentTarget: EventTarget & HTMLInputElement;
 };
+
+interface PlaceHolderDndItem {
+  id: string;
+}
+
+export type DndItem = PlaceHolderDndItem | AudioFile | Clip;

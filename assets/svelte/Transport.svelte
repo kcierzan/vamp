@@ -23,7 +23,7 @@
           .toString()
           .split(":");
         playHeadPosition = `${bars}:${beats}:${Math.floor(
-          parseInt(sixteenths)
+          parseInt(sixteenths),
         )}`;
       }, time);
     }, "16n");

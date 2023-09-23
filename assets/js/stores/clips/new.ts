@@ -45,6 +45,7 @@ export async function newClip(
     type: file.type,
     track_id: trackId,
     playback_rate: Transport.bpm.value / bpm,
+    index: index,
   })?.receive("ok", async (id) => {
     const newBuf = await fileToArrayBuffer(file);
     pushFile(
@@ -61,11 +62,11 @@ export async function newClip(
 }
 
 export function receiveNewClip(newClip: Clip): void {
-  console.log("INCOMING CLIP", newClip);
-  const clip = { ...newClip, state: PlayState.Stopped };
-  setupGrainPlayer(clip);
   project.update((store) => {
-    store[clip.track_id].clips[clip.id] = clip;
+    store[newClip.track_id].clips[newClip.id] = setupGrainPlayer({
+      ...newClip,
+      state: PlayState.Stopped,
+    });
     return store;
   });
 }

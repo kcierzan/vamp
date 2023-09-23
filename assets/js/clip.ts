@@ -4,14 +4,17 @@ import { Clip } from "./types";
 
 export function setupGrainPlayer(clip: Clip) {
   if (clip.audio_file?.file.url) {
-    const grainPlayer = new GrainPlayer(decodeURI(clip.audio_file.file.url)).toDestination()
+    const grainPlayer = new GrainPlayer(
+      decodeURI(clip.audio_file.file.url),
+    ).toDestination();
     setGrainPlayer(clip, grainPlayer);
   }
+  return clip;
 }
 
 export function serialize(clip: Clip): Clip {
   const { grainPlayer, ...rest } = clip;
-  return rest
+  return rest;
 }
 
 export function setGrainPlayer(clip: Clip, grainPlayer: GrainPlayer) {
@@ -38,5 +41,10 @@ export function playAudio(clip: Clip, startTime: Time, stopTime: Time) {
 }
 
 export function isPlayable(clip: Clip): boolean {
-  return !!clip.grainPlayer
+  return !!clip.grainPlayer;
+}
+
+export function isClip(obj: any): obj is Clip {
+  if (!!!obj) return false;
+  return "id" in obj && "track_id" in obj && "audio_file" in obj;
 }

@@ -187,7 +187,7 @@ defmodule Vamp.Projects do
 
   """
   def get_track!(id) do
-    (from t in Track)
+    from(t in Track)
     |> preload(:audio_clips)
     |> Repo.get!(id)
   end
@@ -209,6 +209,12 @@ defmodule Vamp.Projects do
     |> Track.changeset(attrs)
     |> Repo.insert!()
     |> Repo.preload(audio_clips: [:audio_file])
+    |> add_urls_to_clips()
+  end
+
+  defp add_urls_to_clips(track) do
+    clips = Enum.map(track.audio_clips, &add_url_to_audio_clip/1)
+    put_in(track.audio_clips, clips)
   end
 
   @doc """
@@ -331,10 +337,11 @@ defmodule Vamp.Projects do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_audio_clip(%AudioClip{} = audio_clip, attrs) do
+  def update_audio_clip!(%AudioClip{} = audio_clip, attrs) do
     audio_clip
     |> AudioClip.changeset(attrs)
-    |> Repo.update()
+    |> Repo.update!()
+    |> Repo.preload(:audio_file)
   end
 
   @doc """

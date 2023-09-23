@@ -5,4 +5,4 @@ const quantization: Writable<QuantizationInterval> = writable(
   QuantizationInterval.OneBar,
 );
 
-export default quantization
+export default quantization;

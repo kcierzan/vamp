@@ -2,14 +2,15 @@
   import pool from "js/stores/pool";
   import { dndzone } from "svelte-dnd-action";
   import PoolItem from "./PoolItem.svelte";
+  import { AudioFile } from "js/types";
 
   $: items = $pool;
 
-  function handleDndConsider(e: any) {
+  function handleDndConsider(e: CustomEvent<DndEvent<AudioFile>>) {
     items = e.detail.items;
   }
 
-  function handleDndFinalize(e: any) {
+  function handleDndFinalize(e: CustomEvent<DndEvent<AudioFile>>) {
     if (e.detail.items.length < $pool.length) {
       items = $pool;
     } else {
@@ -19,8 +20,13 @@
 </script>
 
 <div
-  class="min-w-max flex flex-col gap-1"
-  use:dndzone={{ items: items, dropFromOthersDisabled: true }}
+  class="min-w-max flex border-2 border-slate-200 rounded p-2 flex-col gap-1"
+  use:dndzone={{
+    items: items,
+    dropFromOthersDisabled: true,
+    morphDisabled: true,
+    flipDurationMs: 100,
+  }}
   on:consider={handleDndConsider}
   on:finalize={handleDndFinalize}
 >

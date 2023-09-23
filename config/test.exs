@@ -20,10 +20,11 @@ config :vamp, Vamp.Repo,
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
+# N.B - ENABLED FOR WALLABY!
 config :vamp, VampWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   secret_key_base: "V2u04++vrxhVzT8hwyuc+h0iAffUTKfnweMNvfjm18y3trjENFiDYuv/SH6u3qAT",
-  server: false
+  server: true
 
 # In test we don't send emails.
 config :vamp, Vamp.Mailer, adapter: Swoosh.Adapters.Test
@@ -41,3 +42,7 @@ config :phoenix, :plug_init_mode, :runtime
 config :waffle, storage: Waffle.Storage.Local, asset_host: "http://localhost:4000"
 
 config :vamp, serve_local_files: true
+
+config :vamp, :sandbox, Ecto.Adapters.SQL.Sandbox
+config :wallaby, driver: Wallaby.Selenium
+config :wallaby, otp_app: :vamp

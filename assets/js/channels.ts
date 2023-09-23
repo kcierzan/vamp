@@ -1,5 +1,5 @@
 import { Channel, Socket } from "phoenix";
-import type { Clip, Token, TrackID, User } from "js/types";
+import type { Clip, Token, TrackData, TrackID, User } from "js/types";
 import { ChannelName, PrivateMessages, SharedMessages } from "js/types";
 import transport from "js/stores/transport";
 import { receivePlayClips } from "js/stores/clips/play";
@@ -43,11 +43,11 @@ const listeners: Listeners = {
       transport.receiveStopTransport({ waitMilliseconds }),
   },
   shared: {
-    new_track: (track: any) => receiveNewTrack(track),
+    new_track: (track: TrackData) => receiveNewTrack(track),
     remove_track: ({ id }: { id: TrackID }) =>
       receiveRemoveTrack({ trackId: id }),
     new_clip: (clip: Clip) => receiveNewClip(clip),
-    update_clip_properties: ({ clips }: { clips: Clip[] }) =>
+    update_clips: ({ clips }: { clips: Clip[] }) =>
       receiveUpdateClipProperties({ clips }),
   },
 };

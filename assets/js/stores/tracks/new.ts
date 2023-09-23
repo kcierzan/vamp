@@ -1,20 +1,43 @@
 import project from "../project";
-import * as Tone from "tone";
 import { pushShared } from "js/channels";
-import { Clip, SharedMessages, TrackClips } from "js/types";
-import { get } from "svelte/store"
+import {
+  AudioFile,
+  Clip,
+  PlayState,
+  SharedMessages,
+  TrackClips,
+  TrackData,
+} from "js/types";
+import { get } from "svelte/store";
+import { setupGrainPlayer } from "js/clip";
+import { Transport } from "tone";
 
-export function newTrackFromPoolItem(attrs: any) {
-  pushShared(SharedMessages.NewTrack, attrs);
+export function newTrackFromPoolItem(songId: string, audioFile: AudioFile) {
+  const trackCount = Object.keys(get(project)).length;
+  const trackWithClipAttrs = {
+    song_id: songId,
+    name: `Track ${trackCount + 1}`,
+    gain: 0.0,
+    panning: 0.0,
+    audio_clips: [
+      {
+        name: audioFile.name,
+        type: audioFile.media_type,
+        playback_rate: audioFile.bpm
+          ? Transport.bpm.value / audioFile.bpm
+          : 1.0,
+        index: 0,
+        audio_file_id: audioFile.id,
+      },
+    ],
+  };
+  pushShared(SharedMessages.NewTrack, trackWithClipAttrs);
 }
 
 export async function newTrack(
   songId: string,
-  onOk: (res: any) => any = (_res) => { },
+  onOk: (res: any) => any = (_res) => {},
 ): Promise<void> {
-  await Tone.start();
-  console.log("tone has started");
-
   pushShared(SharedMessages.NewTrack, {
     name: "new track",
     gain: 0.0,
@@ -23,15 +46,15 @@ export async function newTrack(
   })?.receive("ok", onOk);
 }
 
-export function receiveNewTrack(track: any): void {
-  console.log("incoming track", track);
+export function receiveNewTrack(track: TrackData): void {
   project.update((store) => {
     const clips = track.audio_clips.reduce((acc: TrackClips, clip: Clip) => {
-      acc[clip.id] = clip;
-      return acc
-    }, {})
-    return {...store, [track.id]: {...track, clips: clips}}
+      acc[clip.id] = setupGrainPlayer({ ...clip, state: PlayState.Stopped });
+      return acc;
+    }, {});
+    return {
+      ...store,
+      [track.id]: { ...track, playEvent: null, currentlyPlaying: null, clips },
+    };
   });
-
-  console.log("project store", get(project))
 }

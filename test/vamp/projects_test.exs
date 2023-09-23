@@ -1,5 +1,5 @@
 defmodule Vamp.ProjectsTest do
-  use Vamp.DataCase
+  use Vamp.DataCase, async: true
 
   alias Vamp.Projects
 
@@ -189,8 +189,7 @@ defmodule Vamp.ProjectsTest do
       audio_clip = audio_clip_fixture()
       update_attrs = %{name: "some updated name", type: "some updated type", playback_rate: 456.7}
 
-      assert {:ok, %AudioClip{} = audio_clip} =
-               Projects.update_audio_clip(audio_clip, update_attrs)
+      assert %AudioClip{} = audio_clip = Projects.update_audio_clip!(audio_clip, update_attrs)
 
       assert audio_clip.name == "some updated name"
       assert audio_clip.type == "some updated type"
@@ -199,8 +198,32 @@ defmodule Vamp.ProjectsTest do
 
     test "update_audio_clip/2 with invalid data returns error changeset" do
       audio_clip = audio_clip_fixture() |> Repo.preload(:audio_file)
-      assert {:error, %Ecto.Changeset{}} = Projects.update_audio_clip(audio_clip, @invalid_attrs)
+
+      assert_raise Ecto.InvalidChangesetError, fn ->
+        Projects.update_audio_clip!(audio_clip, @invalid_attrs)
+      end
+
       assert audio_clip == Projects.get_audio_clip!(audio_clip.id)
+    end
+
+    test "update_audio_clip!/2 with a struct literal updates the audio_clip" do
+      audio_clip = audio_clip_fixture()
+
+      update_attrs = %{
+        "name" => "new name",
+        "type" => "new type",
+        "playback_rate" => 123.2,
+        "index" => 0
+      }
+
+      assert %AudioClip{} =
+               audio_clip =
+               Projects.update_audio_clip!(%AudioClip{id: audio_clip.id}, update_attrs)
+
+      assert audio_clip.name == "new name"
+      assert audio_clip.type == "new type"
+      assert audio_clip.playback_rate == 123.2
+      assert audio_clip.index == 0
     end
 
     test "delete_audio_clip/1 deletes the audio_clip" do
@@ -212,6 +235,28 @@ defmodule Vamp.ProjectsTest do
     test "change_audio_clip/1 returns a audio_clip changeset" do
       audio_clip = audio_clip_fixture()
       assert %Ecto.Changeset{} = Projects.change_audio_clip(audio_clip)
+    end
+
+    test "create_file_for_clip/1 with valid data creates an associated audio file" do
+      audio_clip = audio_clip_fixture(%{audio_file_id: nil})
+
+      updated_clip =
+        Projects.create_file_for_clip!(%{
+          "clip_id" => audio_clip.id,
+          "bpm" => 128.0,
+          "name" => "my file",
+          "media_type" => "audio/wav",
+          "size" => 123,
+          "file" => %{
+            filename: "myfilename.wav",
+            binary: <<4, 8, 15, 16, 23, 42>>
+          }
+        })
+
+      assert updated_clip.audio_file.file.file_name == "myfilename.wav"
+
+      assert %Vamp.Sounds.AudioFile{bpm: 128.0, name: "my file", size: 123} =
+               Projects.get_audio_clip!(audio_clip.id).audio_file
     end
   end
 

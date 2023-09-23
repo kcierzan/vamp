@@ -2,6 +2,10 @@ defmodule VampWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :vamp
   require Logger
 
+  if sandbox = Application.compile_env(:vamp, :sandbox) do
+    plug Phoenix.Ecto.SQL.Sandbox, sandbox: sandbox
+  end
+
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
   # Set :encryption_salt if you would also like to encrypt it.
@@ -13,7 +17,9 @@ defmodule VampWeb.Endpoint do
     same_site: "Lax"
   ]
 
-  socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
+  socket "/live", Phoenix.LiveView.Socket,
+    websocket: [connect_info: [:user_agent, session: @session_options]]
+
   socket "/socket", VampWeb.UserSocket, websocket: true, longpoll: false
 
   # Serve at "/" the static files from "priv/static" directory.
