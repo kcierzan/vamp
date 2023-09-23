@@ -2,6 +2,7 @@ import type { Channel } from "phoenix";
 import type { Transport, GrainPlayer } from "tone";
 
 export interface Song {
+  id: string;
   title: string;
   description: string;
   time_signature: string;

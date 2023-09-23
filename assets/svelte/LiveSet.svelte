@@ -5,8 +5,9 @@
   import projectStore from "../js/stores/project";
   import latency from "../js/stores/latency";
   import { joinChannels } from "js/channels";
-  import { newTrack } from "../js/stores/tracks/new";
-  import { setInitialStateFromProps } from "js/stores/project/new";
+  import { newTrack } from "../js/track";
+  import transportStore from "js/stores/transport";
+  import poolStore from "js/stores/pool";
   import Scenes from "./Scenes.svelte";
   import Tempo from "./Tempo.svelte";
   import Metronome from "./Metronome.svelte";
@@ -23,6 +24,12 @@
 
   $: sessionEmpty = Object.keys($projectStore).length === 0;
 
+  function setInitialStateFromProps(props: Song) {
+    transportStore.setBpm(props.bpm);
+    projectStore.setFromProps(props);
+    poolStore.set(props.audio_files);
+  }
+
   onMount(async () => {
     Tone.getContext().lookAhead = 0;
 
@@ -33,7 +40,7 @@
 </script>
 
 <div class="flex flex-col items-center">
-  <h1 class="text-4xl underline bold">{project.title}</h1>
+  <h1 class="bold text-4xl underline">{project.title}</h1>
   <h2 class="text-2xl" class:invisible={!sessionEmpty}>
     Why don't you start by adding some tracks?
   </h2>
@@ -42,7 +49,7 @@
 
 <div class="flex flex-row space-x-4">
   <button class="add-track" on:click={() => newTrack(project.id)}>
-    <span class="hero-plus-circle self-center h-8 w-8" />
+    <span class="hero-plus-circle h-8 w-8 self-center" />
     <span class="self-center">Add track</span>
   </button>
   <Transport />
@@ -51,7 +58,7 @@
   <Metronome />
 </div>
 
-<div class="flex flex-row w-full justify-center gap-1">
+<div class="flex w-full flex-row justify-center gap-1">
   <Scenes />
   <TrackArea songId={project.id} />
   <Pool />
@@ -59,6 +66,6 @@
 
 <style lang="postcss">
   .add-track {
-    @apply flex justify-center space-x-4 rounded bg-green-500 text-white text-lg w-24 h-16 mb-4 flex-grow hover:bg-green-700;
+    @apply mb-4 flex h-16 w-24 flex-grow justify-center space-x-4 rounded bg-green-500 text-lg text-white hover:bg-green-700;
   }
 </style>

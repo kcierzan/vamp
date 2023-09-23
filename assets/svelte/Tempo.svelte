@@ -3,9 +3,8 @@
   import { tracksToClipArrays } from "js/utils";
   import transport from "js/stores/transport";
   import project from "js/stores/project";
-  import type { HTMLInputEvent } from "js/types";
-  import { updateClipProperties } from "js/stores/clips/update";
-  import { Clip, serialize, setPlaybackRate } from "js/clip";
+  import type { HTMLInputEvent, Clip } from "js/types";
+  import { setPlaybackRate, updateClipProperties } from "js/clip";
 
   const { setBpm } = transport;
 
@@ -15,11 +14,11 @@
     const clipsToStretch: Clip[] = [];
     for (const track of clipArrays) {
       for (const clip of track) {
-        if (!!clip.audio) {
-          const rate = bpm / clip.audio.bpm;
+        if (!!clip.audio_file) {
+          const rate = bpm / clip.audio_file.bpm;
           setPlaybackRate(clip, rate);
         }
-        clipsToStretch.push(serialize(clip));
+        clipsToStretch.push(clip);
       }
     }
     updateClipProperties(...clipsToStretch);
@@ -38,7 +37,7 @@
 <div class="flex flex-col items-center">
   <div class="mb-8">
     <input
-      class="text-lg w-22 h-16 border-4 rounded-lg"
+      class="w-22 h-16 rounded-lg border-4 text-lg"
       id="tempo"
       value={$transport.bpm}
       type="number"

@@ -2,12 +2,11 @@ import { Channel, Socket } from "phoenix";
 import type { Clip, Token, TrackData, TrackID, User } from "js/types";
 import { ChannelName, PrivateMessages, SharedMessages } from "js/types";
 import transport from "js/stores/transport";
-import { receivePlayClips } from "js/stores/clips/play";
-import { receiveStopTrack } from "js/stores/tracks/stop";
-import { receiveNewTrack } from "js/stores/tracks/new";
-import { receiveRemoveTrack } from "js/stores/tracks/remove";
-import { receiveNewClip } from "js/stores/clips/new";
-import { receiveUpdateClipProperties } from "js/stores/clips/update";
+import { receivePlayClips } from "js/clip";
+import {
+  receiveStopTrack,
+} from "js/track";
+import project from "./stores/project";
 
 const socketPath = "/socket";
 const livesetTopic = "liveset:shared";
@@ -43,12 +42,10 @@ const listeners: Listeners = {
       transport.receiveStopTransport({ waitMilliseconds }),
   },
   shared: {
-    new_track: (track: TrackData) => receiveNewTrack(track),
-    remove_track: ({ id }: { id: TrackID }) =>
-      receiveRemoveTrack({ trackId: id }),
-    new_clip: (clip: Clip) => receiveNewClip(clip),
-    update_clips: ({ clips }: { clips: Clip[] }) =>
-      receiveUpdateClipProperties({ clips }),
+    new_track: (track: TrackData) => project.setTrack(track),
+    remove_track: ({ id }: { id: TrackID }) => project.removeTrack(id),
+    new_clip: (clip: Clip) => project.setClips(clip),
+    update_clips: ({ clips }: { clips: Clip[] }) => project.setClips(...clips),
   },
 };
 

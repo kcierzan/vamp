@@ -1,6 +1,7 @@
 import { Clip, QuantizationInterval, TrackStore } from "js/types";
 import { Time, Transport } from "tone";
 import * as Tone from "tone";
+import { guess } from "web-audio-beat-detector";
 
 export async function fileToB64(file: File): Promise<string> {
   const bytes = await fileToByteArray(file);
@@ -55,4 +56,18 @@ export function debounce(func: (...args: any[]) => any, timeout: number = 300) {
       func.apply(this, args);
     }, timeout);
   };
+}
+
+export async function guessBPM(
+  file: File,
+): Promise<{ bpm: number; offset: number }> {
+  const arrayBuf = await fileToArrayBuffer(file);
+  const audioBuf = await Tone.getContext().decodeAudioData(arrayBuf);
+
+  try {
+    return await guess(audioBuf);
+  } catch {
+    // FIXME: this effectively skips stretching if bpm guess fails
+    return { bpm: Transport.bpm.value, offset: 0 };
+  }
 }
