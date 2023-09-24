@@ -2,6 +2,6 @@ import type { Writable } from "svelte/store";
 import { writable } from "svelte/store";
 import type { AudioFile } from "js/types";
 
-const pool: Writable<AudioFile[]> = writable([]);
+const poolStore: Writable<AudioFile[]> = writable([]);
 
-export default pool;
+export default poolStore;

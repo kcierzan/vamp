@@ -1,4 +1,4 @@
-import { Clip, QuantizationInterval, TrackStore } from "js/types";
+import { Clip, QuantizationInterval, Track, TrackData } from "js/types";
 import { Time, Transport } from "tone";
 import * as Tone from "tone";
 import { guess } from "web-audio-beat-detector";
@@ -23,11 +23,30 @@ export function b64ToAudioSrc(b64: string, type: string): string {
 
 export function tracksToClipArrays(clips: ClipStore): Clip[][] {
   return Object.values(clips).reduce((acc: Clip[][], clip: Clip) => {
-    const trackIndexForClip = acc.findIndex(track => !!track[0] && track[0].track_id === clip.track_id)
-    trackIndexForClip === -1 && acc.push([clip])
-    trackIndexForClip >= 0 && acc[trackIndexForClip].push(clip)
-    return acc
-  }, [])
+    const trackIndexForClip = acc.findIndex(
+      (track) => !!track[0] && track[0].track_id === clip.track_id,
+    );
+    trackIndexForClip === -1 && acc.push([clip]);
+    trackIndexForClip >= 0 && acc[trackIndexForClip].push(clip);
+    return acc;
+  }, []);
+}
+
+// TODO: move this to tracks?
+export function clipsToTracks(clips: ClipStore): TrackData[] {
+  return tracksToClipArrays(clips).reduce(
+    (acc: TrackData[], clipArr: Clip[]) => {
+      acc.push({
+        id: clipArr[0].track_id,
+        gain: 0,
+        panning: 0,
+        name: "track",
+        audio_clips: clipArr,
+      });
+      return acc;
+    },
+    [],
+  );
 }
 
 export function quantizedTransportTime(

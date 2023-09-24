@@ -1,5 +1,5 @@
 import type { Channel } from "phoenix";
-import type { Transport, GrainPlayer } from "tone";
+import type { Transport } from "tone";
 
 export interface Song {
   id: string;

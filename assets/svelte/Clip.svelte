@@ -1,4 +1,5 @@
 <svelte:options immutable />
+
 <script lang="ts">
   import { PlayState } from "js/types";
   import type { Clip, HTMLInputEvent } from "js/types";

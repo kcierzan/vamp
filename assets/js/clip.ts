@@ -10,15 +10,14 @@ import {
 import { pushFile, pushShared } from "./channels";
 import { fileToArrayBuffer, guessBPM, quantizedTransportTime } from "./utils";
 import { get } from "svelte/store";
-import quantization from "./stores/quantization";
+import quantizationStore from "./stores/quantization";
 import transportStore from "./stores/transport";
 import clipStore from "js/stores/clips";
-import { setupGrainPlayer } from "js/stores/players";
-import { setPlaybackRate as setRate } from "js/stores/players";
+import playerStore from "js/stores/players";
 
 export function newClipFromAPI(clip: Clip) {
   const newClip = { ...clip, state: PlayState.Stopped };
-  setupGrainPlayer(newClip);
+  playerStore.setupGrainPlayer(newClip);
   return newClip;
 }
 
@@ -83,7 +82,7 @@ export function receivePlayClips({
   clips: Clip[];
 }) {
   const nowCompensated = `+${waitMilliseconds / 1000 + 0.1}`;
-  const currentQuantization = get(quantization);
+  const currentQuantization = get(quantizationStore);
   // FIXME: Either make quantization settings e2e reactive or pass a time w/ the play event
   // (different clients will have different quantization values)
   const nextDivision = quantizedTransportTime(currentQuantization);
@@ -108,7 +107,15 @@ export function receivePlayClips({
 
 export function setPlaybackRate(clip: Clip, playbackRate: number) {
   clip.playback_rate = playbackRate;
-  setRate(clip, playbackRate);
+  playerStore.setPlaybackRate(clip, playbackRate);
+}
+
+export function receiveNewClip(clip: Clip) {
+  clipStore.setClips(clip);
+}
+
+export function receiveUpdateClips(...clips: Clip[]) {
+  clipStore.setClips(...clips);
 }
 
 export function isClip(obj: any): obj is Clip {

@@ -1,14 +1,14 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { tracksToClipArrays } from "js/utils";
-  import transport from "js/stores/transport";
-  import project from "js/stores/project";
+  import clipStore from "js/stores/clips";
+  import transportStore from "js/stores/transport";
   import type { HTMLInputEvent, Clip } from "js/types";
   import { setPlaybackRate, updateClipProperties } from "js/clip";
 
-  const { setBpm } = transport;
+  const { setBpm } = transportStore;
 
-  $: clipArrays = tracksToClipArrays($project);
+  $: clipArrays = tracksToClipArrays($clipStore);
 
   function stretchClipsToBpm(bpm: number) {
     const clipsToStretch: Clip[] = [];
@@ -39,7 +39,7 @@
     <input
       class="w-22 h-16 rounded-lg border-4 text-lg"
       id="tempo"
-      value={$transport.bpm}
+      value={$transportStore.bpm}
       type="number"
       min="40"
       max="250"

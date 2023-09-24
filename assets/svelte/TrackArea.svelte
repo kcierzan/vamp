@@ -4,14 +4,15 @@
     TRIGGERS,
     dndzone,
   } from "svelte-dnd-action";
-  import project from "js/stores/project";
   import Track from "./Track.svelte";
   import { newTrackFromPoolItem } from "js/track";
   import { AudioFile, DndItem } from "js/types";
   import { isAudioFile } from "js/audio-file";
+  import clipStore from "js/stores/clips"
+  import { clipsToTracks } from "js/utils"
 
   export let songId: string;
-  $: tracks = Object.values($project);
+  $: tracks = clipsToTracks($clipStore)
 
   const dummyItem = { id: "dummy" };
   let items: DndItem[] = [dummyItem];
@@ -22,13 +23,14 @@
   function considerNewTrack(e: CustomEvent<DndEvent<DndItem>>) {
     setConsidering(e.detail.info.trigger);
     items = ensureDraggedItemFirst(e.detail.items);
-    setDraggedItem(e.detail.items);
+    setDraggedItem(items);
   }
 
-  function finalizeNewTrack(_e: CustomEvent<DndEvent<DndItem>>) {
+  function finalizeNewTrack(e: CustomEvent<DndEvent<DndItem>>) {
     // FIXME: this needs to support clips also
     considering = false;
-    isAudioFile(draggingItem) && newTrackFromPoolItem(songId, draggingItem);
+    const audioFile = e.detail.items.find(item => isAudioFile(item))
+    !!audioFile && newTrackFromPoolItem(songId, audioFile as AudioFile);
     items = [dummyItem];
   }
 

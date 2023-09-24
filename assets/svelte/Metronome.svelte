@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Transport, Draw, Oscillator, AmplitudeEnvelope } from "tone";
+
   let beat: number = 1;
   let on = false;
   let events: number[] = [];

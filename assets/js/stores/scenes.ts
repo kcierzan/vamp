@@ -5,7 +5,7 @@ import { get, derived } from "svelte/store";
 import { tracksToClipArrays } from "../utils";
 import { playClips } from "js/clip";
 import { stopTracks } from "js/track";
-import clips from "js/stores/clips"
+import clipsStore from "js/stores/clips"
 import type { ClipStore } from "js/stores/clips";
 
 function scenesFromTracks(tracks: ClipStore): Scene[] {
@@ -51,7 +51,7 @@ function sceneCount(clipArrays: Clip[][]): number {
   return Math.max(...clips);
 }
 
-const scenes: Readable<SceneStore> = derived(clips, ($clips, set) => {
+const scenes: Readable<SceneStore> = derived(clipsStore, ($clips, set) => {
   const sceneArrays: Scene[] = scenesFromTracks($clips);
   set({
     states: sceneArraysToStates(sceneArrays),

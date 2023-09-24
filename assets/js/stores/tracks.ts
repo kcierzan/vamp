@@ -1,9 +1,10 @@
 import { Writable, writable } from "svelte/store";
-import { Clip, PlayState, TrackID } from "js/types";
+import { Clip, PlayState, Song, TrackData, TrackID } from "js/types";
 import { Draw, Transport } from "tone";
-import clips from "js/stores/clips";
+import clipsStore, { ClipStore } from "js/stores/clips";
 import { Time } from "tone/build/esm/core/type/Units";
-import { stopAudio } from "./players";
+import playerStore from "./players";
+import { newClipFromAPI } from "js/clip";
 
 interface Tracks {
   [key: TrackID]: {
@@ -14,8 +15,8 @@ interface Tracks {
   };
 }
 
-const tracks: Writable<Tracks> = writable({});
-const { subscribe, update } = tracks;
+const tracksStore: Writable<Tracks> = writable({});
+const { subscribe, update, set } = tracksStore;
 
 function cancelPlayingEvent(trackId: TrackID) {
   update((store) => {
@@ -49,8 +50,8 @@ function queueClip(clip: Clip) {
   cancelQueuedEvent(clip.track_id);
   update((store) => {
     const queued = store[clip.track_id].currentlyQueued;
-    !!queued && clips.setClipState(queued, PlayState.Stopped);
-    clips.setClipState(clip, PlayState.Queued);
+    !!queued && clipsStore.setClipState(queued, PlayState.Stopped);
+    clipsStore.setClipState(clip, PlayState.Queued);
     return store;
   });
 }
@@ -59,9 +60,9 @@ function setTrackClipStatesPlay(clip: Clip, event: number) {
   update((store) => {
     const playing = store[clip.track_id].currentlyPlaying;
     if (!!playing && playing?.id !== clip.id) {
-      clips.setClipState(playing, PlayState.Stopped);
+      clipsStore.setClipState(playing, PlayState.Stopped);
     }
-    clips.setClipState(clip, PlayState.Playing);
+    clipsStore.setClipState(clip, PlayState.Playing);
     store[clip.track_id].playingEvent = event;
     store[clip.track_id].currentlyPlaying = clip;
     if (store[clip.track_id].currentlyQueued === clip) {
@@ -78,9 +79,9 @@ function stopTrack(trackId: TrackID, at: Time) {
     const launchTime = Transport.seconds > (at as number) ? "+0.01" : at;
     Transport.scheduleOnce((time) => {
       const playing = store[trackId].currentlyPlaying;
-      !!playing && stopAudio(playing, time);
+      !!playing && playerStore.stopAudio(playing, time);
       Draw.schedule(() => {
-        !!playing && clips.setClipState(playing, PlayState.Stopped);
+        !!playing && clipsStore.setClipState(playing, PlayState.Stopped);
         store[trackId].currentlyPlaying = null;
         store[trackId].playingEvent = null;
       }, time);
@@ -99,7 +100,7 @@ function setTrackPlayEvent(trackId: TrackID, event: number) {
 function stopCurrentlyPlayingAudio(trackId: TrackID, time: Time | undefined) {
   update((store) => {
     if (!!store[trackId].currentlyPlaying) {
-      stopAudio(store[trackId].currentlyPlaying as Clip, time);
+      playerStore.stopAudio(store[trackId].currentlyPlaying as Clip, time);
     }
     return store;
   });
@@ -108,14 +109,59 @@ function stopCurrentlyPlayingAudio(trackId: TrackID, time: Time | undefined) {
 function stopAllTracksAudio() {
   update((store) => {
     for (const track of Object.values(store)) {
-      !!track.currentlyPlaying && stopAudio(track.currentlyPlaying, undefined);
+      !!track.currentlyPlaying && playerStore.stopAudio(track.currentlyPlaying, undefined);
     }
     return store;
   });
 }
 
+function createTrack(track: TrackData) {
+  update((store) => {
+    store[track.id] = {
+      currentlyPlaying: null,
+      currentlyQueued: null,
+      playingEvent: null,
+      queuedEvent: null,
+    };
+    return store;
+  });
+}
+
+function removeTrack(trackId: TrackID) {
+  stopCurrentlyPlayingAudio(trackId, undefined);
+  cancelPlayingEvent(trackId);
+  cancelQueuedEvent(trackId);
+  update((store) => {
+    delete store[trackId];
+    return store;
+  });
+}
+
+function setTracksFromProps(props: Song) {
+  const tracks = props.tracks.reduce((acc: Tracks, track: TrackData) => {
+    acc[track.id] = {
+      currentlyPlaying: null,
+      currentlyQueued: null,
+      playingEvent: null,
+      queuedEvent: null,
+    };
+    return acc;
+  }, {});
+  const newClips = props.tracks.reduce((acc: ClipStore, track: TrackData) => {
+    for (const clip of track.audio_clips) {
+      acc[clip.id] = newClipFromAPI(clip);
+    }
+    return acc;
+  }, {});
+  set(tracks);
+  console.log("initial tracks", tracks)
+  clipsStore.set(newClips);
+  console.log("initial clips", newClips)
+}
+
 export default {
   subscribe,
+  set,
   cancelPlayingEvent,
   cancelQueuedEvent,
   setCurrentlyQueued,
@@ -125,4 +171,7 @@ export default {
   stopTrack,
   queueClip,
   stopAllTracksAudio,
+  createTrack,
+  removeTrack,
+  setTracksFromProps,
 };

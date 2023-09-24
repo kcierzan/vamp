@@ -2,12 +2,13 @@
   import type { Song, Token, User } from "js/types";
   import * as Tone from "tone";
   import { onMount } from "svelte";
-  import projectStore from "../js/stores/project";
+  import clipStore from "js/stores/clips";
+  import trackStore from "js/stores/tracks";
   import latency from "../js/stores/latency";
   import { joinChannels } from "js/channels";
   import { newTrack } from "../js/track";
-  import transport from "js/stores/transport";
-  import pool from "js/stores/pool";
+  import transportStore from "js/stores/transport";
+  import poolStore from "js/stores/pool";
   import Scenes from "./Scenes.svelte";
   import Tempo from "./Tempo.svelte";
   import Metronome from "./Metronome.svelte";
@@ -22,18 +23,19 @@
 
   const { calculateLatency } = latency;
 
-  $: sessionEmpty = Object.keys($projectStore).length === 0;
+  $: sessionEmpty = Object.keys($clipStore).length === 0;
 
   function setInitialStateFromProps(props: Song) {
-    transport.setBpm(props.bpm);
-    projectStore.setFromProps(props);
-    pool.set(props.audio_files);
+    transportStore.setBpm(props.bpm);
+    trackStore.setTracksFromProps(props);
+    poolStore.set(props.audio_files);
   }
 
   onMount(async () => {
     Tone.getContext().lookAhead = 0;
 
     joinChannels(token, currentUser);
+    console.log("API", project);
     setInitialStateFromProps(project);
     calculateLatency();
   });

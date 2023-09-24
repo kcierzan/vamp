@@ -4,8 +4,8 @@ import type { Writable } from "svelte/store";
 import { GrainPlayer } from "tone";
 import { Time } from "tone/build/esm/core/type/Units";
 
-const players: Writable<PlayerStore> = writable({});
-const { subscribe, update } = players;
+const playersStore: Writable<PlayerStore> = writable({});
+const { subscribe, update } = playersStore;
 
 interface PlayerStore {
   [key: ClipID]: GrainPlayer;
@@ -47,7 +47,7 @@ function setupGrainPlayer(clip: Clip) {
   }
 }
 
-export { 
+export default {
   subscribe,
   playAudio,
   stopAudio,

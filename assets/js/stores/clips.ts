@@ -5,7 +5,7 @@ import { newClipFromAPI } from "js/clip";
 import { Time } from "tone/build/esm/core/type/Units";
 import { Draw, Transport } from "tone";
 import tracks from "js/stores/tracks";
-import { playAudio } from "./players";
+import playerStore from "./players";
 
 export interface ClipStore {
   [key: ClipID]: Clip;
@@ -23,17 +23,6 @@ function setClips(...clips: Clip[]) {
   });
 }
 
-function setFromProps(props: Song) {
-  set(
-    props.tracks.reduce((acc: ClipStore, track) => {
-      for (const clip of track.audio_clips) {
-        acc[clip.id] = newClipFromAPI(clip);
-      }
-      return acc;
-    }, {}),
-  );
-}
-
 function setClipState(clip: Clip, state: PlayState) {
   update((store) => {
     store[clip.id] = { ...clip, state };
@@ -43,15 +32,17 @@ function setClipState(clip: Clip, state: PlayState) {
 
 function removeTrack(trackId: TrackID) {
   update((store) => {
-    delete store[trackId];
-    return store;
+    const filtered = Object.entries(store).filter(([_clipId, clip]) => {
+      return clip.track_id !== trackId
+    })
+    return Object.fromEntries(filtered);
   });
 }
 
 function deleteClip(clip: Clip) {
   update((store) => {
-    delete store[clip.id];
-    return store;
+    const { [clip.id]: _clip, ...rest } = store
+    return rest;
   });
 }
 
@@ -84,7 +75,7 @@ function loopClip(
 ): void {
   const playEvent = Transport.scheduleRepeat(
     (audioContextTime: number) => {
-      playAudio(clip, audioContextTime, endTime);
+      playerStore.playAudio(clip, audioContextTime, endTime);
     },
     every,
     "+0.005",
@@ -94,8 +85,8 @@ function loopClip(
 
 export default {
   subscribe,
+  set,
   playClip,
-  setFromProps,
   setClips,
   setClipState,
   removeTrack,

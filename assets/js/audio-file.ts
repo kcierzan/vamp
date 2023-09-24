@@ -1,4 +1,4 @@
-import { AudioFile, DndItem } from "./types";
+import { AudioFile } from "./types";
 
 export function isAudioFile(item: any): item is AudioFile {
   if (!!!item) return false;

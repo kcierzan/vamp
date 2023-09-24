@@ -3,18 +3,18 @@ import {
   AudioFile,
   PrivateMessages,
   SharedMessages,
+  TrackData,
   TrackID,
 } from "./types";
 import { get } from "svelte/store";
 import { pushShared } from "./channels";
-import quantization from "./stores/quantization";
 import { quantizedTransportTime, tracksToClipArrays } from "./utils";
-import tracks from "js/stores/tracks";
-import clips from "js/stores/clips";
+import quantizationStore from "./stores/quantization";
+import tracksStore from "js/stores/tracks";
+import clipsStore from "js/stores/clips";
 
 export function newTrackFromPoolItem(songId: string, audioFile: AudioFile) {
-
-  const trackCount = tracksToClipArrays(get(clips)).length;
+  const trackCount = tracksToClipArrays(get(clipsStore)).length;
   const trackWithClipAttrs = {
     song_id: songId,
     name: `Track ${trackCount + 1}`,
@@ -56,15 +56,28 @@ export function stopTracks(trackIds: TrackID[]): void {
 }
 
 export function stopAllTracks(): void {
-  const trackIds = tracksToClipArrays(get(clips)).map((track) => track[0].track_id)
+  const trackIds = tracksToClipArrays(get(clipsStore)).map(
+    (track) => track[0].track_id,
+  );
   stopTracks(trackIds);
 }
 
 export function receiveStopTrack({ trackIds }: { trackIds: TrackID[] }): void {
-  const currentQuantization = get(quantization);
+  const currentQuantization = get(quantizationStore);
   // FIXME: Either make quantization settings e2e reactive or pass a time w/ the stop event
   const nextBarTT = quantizedTransportTime(currentQuantization);
   for (const trackId of trackIds) {
-    tracks.stopTrack(trackId, nextBarTT);
+    tracksStore.stopTrack(trackId, nextBarTT);
   }
+}
+
+export function receiveRemoveTrack(trackId: TrackID) {
+  clipsStore.removeTrack(trackId);
+  tracksStore.removeTrack(trackId);
+}
+
+// TODO: add DB properties to the track store!
+export function receiveNewTrack(track: TrackData) {
+  clipsStore.setClips(...track.audio_clips);
+  tracksStore.createTrack(track);
 }

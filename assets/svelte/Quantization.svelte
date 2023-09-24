@@ -1,5 +1,5 @@
 <script>
-  import quantization from "js/stores/quantization";
+  import quantizationStore from "js/stores/quantization";
   import { QuantizationInterval } from "js/types";
 
   const options = {
@@ -14,7 +14,7 @@
   };
 </script>
 
-<select class="h-16" bind:value={$quantization}>
+<select class="h-16" bind:value={$quantizationStore}>
   {#each Object.entries(options) as [value, label] (value)}
     <option {value}>{label}</option>
   {/each}

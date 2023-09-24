@@ -1,11 +1,11 @@
 <script lang="ts">
   import { PlayState } from "js/types";
-  import scenes from "js/stores/scenes";
+  import scenesStore from "js/stores/scenes";
 
   export let index: number;
   export let state: PlayState;
 
-  const { playScene, stopScene } = scenes;
+  const { playScene, stopScene } = scenesStore;
 
   function sceneAction() {
     switch (state) {

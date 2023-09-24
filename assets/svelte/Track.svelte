@@ -1,9 +1,9 @@
 <svelte:options immutable />
 <script lang="ts">
-  import type { Track } from "js/types";
+  import type { TrackData } from "js/types";
   import ClipSlot from "./ClipSlot.svelte";
 
-  export let track: Track;
+  export let track: TrackData;
   const NUMBER_OF_ROWS = 12;
   const slots = Array.from({ length: NUMBER_OF_ROWS }, (_, i) => ({
     id: i * NUMBER_OF_ROWS,

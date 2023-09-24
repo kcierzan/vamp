@@ -1,18 +1,18 @@
 <script lang="ts">
   import { dndzone } from "svelte-dnd-action";
-  import project from "js/stores/project";
+  import clipStore from "js/stores/clips";
   import ClipComponent from "./Clip.svelte";
-  import { Track, DndItem } from "js/types";
+  import { DndItem, TrackData } from "js/types";
   import { isClip, newClipFromPool, updateClipProperties } from "js/clip";
   import { isAudioFile } from "js/audio-file";
 
   export let index: number;
-  export let track: Track;
+  export let track: TrackData;
   let items: DndItem[];
   let considering = false;
   $: dndBg = considering ? "bg-orange-500" : "bg-transparent";
-  $: occupyingClip = Object.values($project[track.id].clips).find(
-    (clip) => clip.index === index,
+  $: occupyingClip = Object.values($clipStore).find(
+    (clip) => clip.index === index && track.id === clip.track_id,
   );
   $: items = !!occupyingClip ? [occupyingClip] : [];
 
@@ -31,8 +31,8 @@
       // create a new clip from the pool
       newClipFromPool(audioFile, track.id, index);
     } else if (isClip(clip)) {
-      // move the clip
-      project.deleteClip(clip);
+      // move the clip optimistically
+      clipStore.deleteClip(clip);
       updateClipProperties({ ...clip, index, track_id: track.id });
     }
   }
