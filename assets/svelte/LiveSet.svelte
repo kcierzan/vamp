@@ -32,10 +32,9 @@
   }
 
   onMount(async () => {
-    Tone.getContext().lookAhead = 0;
+    Tone.getContext().lookAhead = 0.05;
 
     joinChannels(token, currentUser);
-    console.log("API", project);
     setInitialStateFromProps(project);
     calculateLatency();
   });

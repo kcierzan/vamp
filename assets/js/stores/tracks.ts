@@ -1,8 +1,8 @@
 import { Writable, writable } from "svelte/store";
 import { Clip, PlayState, Song, TrackData, TrackID } from "js/types";
+import { Time } from "tone/build/esm/core/type/Units";
 import { Draw, Transport } from "tone";
 import clipsStore, { ClipStore } from "js/stores/clips";
-import { Time } from "tone/build/esm/core/type/Units";
 import playerStore from "./players";
 import { newClipFromAPI } from "js/clip";
 
@@ -47,22 +47,22 @@ function setCurrentlyQueued(clip: Clip, event: number) {
 }
 
 function queueClip(clip: Clip) {
+  clipsStore.setClipState(clip, PlayState.Queued);
   cancelQueuedEvent(clip.track_id);
   update((store) => {
     const queued = store[clip.track_id].currentlyQueued;
     !!queued && clipsStore.setClipState(queued, PlayState.Stopped);
-    clipsStore.setClipState(clip, PlayState.Queued);
     return store;
   });
 }
 
 function setTrackClipStatesPlay(clip: Clip, event: number) {
+  clipsStore.setClipState(clip, PlayState.Playing);
   update((store) => {
     const playing = store[clip.track_id].currentlyPlaying;
     if (!!playing && playing?.id !== clip.id) {
       clipsStore.setClipState(playing, PlayState.Stopped);
     }
-    clipsStore.setClipState(clip, PlayState.Playing);
     store[clip.track_id].playingEvent = event;
     store[clip.track_id].currentlyPlaying = clip;
     if (store[clip.track_id].currentlyQueued === clip) {
@@ -109,7 +109,8 @@ function stopCurrentlyPlayingAudio(trackId: TrackID, time: Time | undefined) {
 function stopAllTracksAudio() {
   update((store) => {
     for (const track of Object.values(store)) {
-      !!track.currentlyPlaying && playerStore.stopAudio(track.currentlyPlaying, undefined);
+      !!track.currentlyPlaying &&
+        playerStore.stopAudio(track.currentlyPlaying, undefined);
     }
     return store;
   });
@@ -132,8 +133,8 @@ function removeTrack(trackId: TrackID) {
   cancelPlayingEvent(trackId);
   cancelQueuedEvent(trackId);
   update((store) => {
-    delete store[trackId];
-    return store;
+    const { [trackId]: _track, ...rest } = store;
+    return rest;
   });
 }
 
@@ -154,9 +155,7 @@ function setTracksFromProps(props: Song) {
     return acc;
   }, {});
   set(tracks);
-  console.log("initial tracks", tracks)
   clipsStore.set(newClips);
-  console.log("initial clips", newClips)
 }
 
 export default {

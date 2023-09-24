@@ -1,5 +1,5 @@
 import type { Writable } from "svelte/store";
-import { Clip, ClipID, PlayState, Song, TrackID } from "js/types";
+import { Clip, ClipID, PlayState, TrackID } from "js/types";
 import { writable } from "svelte/store";
 import { newClipFromAPI } from "js/clip";
 import { Time } from "tone/build/esm/core/type/Units";
