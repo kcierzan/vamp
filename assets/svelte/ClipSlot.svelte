@@ -16,20 +16,22 @@
   );
   $: items = !!occupyingClip ? [occupyingClip] : [];
 
-  function consider(e: CustomEvent<DndEvent<any>>) {
+  function consider(e: CustomEvent<DndEvent<DndItem>>) {
     considering = !!e.detail.items.length;
     items = e.detail.items;
   }
 
-  function finalize(e: CustomEvent<DndEvent<any>>) {
+  function finalize(e: CustomEvent<DndEvent<DndItem>>) {
     const audioFile = e.detail.items.find((item) => isAudioFile(item));
     const clip = e.detail.items.find((item) => isClip(item));
 
     considering = false;
     items = e.detail.items;
-    if (!!audioFile) {
+    if (isAudioFile(audioFile)) {
+      // create a new clip from the pool
       newClipFromPool(audioFile, track.id, index);
-    } else if (!!clip) {
+    } else if (isClip(clip)) {
+      // move the clip
       project.deleteClip(clip);
       updateClipProperties({ ...clip, index, track_id: track.id });
     }

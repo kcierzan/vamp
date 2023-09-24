@@ -1,6 +1,6 @@
 <script lang="ts">
   import { PlayState } from "js/types";
-  import scenes from "../js/stores/scenes";
+  import scenes from "js/stores/scenes";
 
   export let index: number;
   export let state: PlayState;

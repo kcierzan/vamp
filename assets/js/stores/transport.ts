@@ -4,9 +4,7 @@ import { writable } from "svelte/store";
 import * as Tone from "tone";
 import { PlayState, PrivateMessages, TransportStore } from "js/types";
 import { pushShared } from "js/channels";
-import { get } from "svelte/store";
-import project from "js/stores/project";
-import { stopTrackAudio } from "js/track";
+import tracks from "js/stores/tracks";
 
 const initialState = {
   transport: Tone.Transport,
@@ -37,11 +35,7 @@ function receiveStopTransport({
   update((store) => {
     store.transport.stop(`+${waitMilliseconds / 1000 + 0.1}`);
     store.state = PlayState.Stopped;
-    const tracks = Object.values(get(project));
-
-    for (const track of tracks) {
-      stopTrackAudio(track, undefined);
-    }
+    tracks.stopAllTracksAudio();
     return store;
   });
 }
@@ -75,7 +69,7 @@ function setBpm(bpm: number): void {
 function rampToBpm(bpm: number): void {
   update((store) => {
     if (store.transport?.bpm?.value) {
-      store.transport.bpm.setValueAtTime(bpm, "+0.1");
+      store.transport.bpm.setValueAtTime(bpm, "+0.5");
     }
     store.bpm = bpm;
     return store;

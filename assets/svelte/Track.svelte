@@ -1,3 +1,4 @@
+<svelte:options immutable />
 <script lang="ts">
   import type { Track } from "js/types";
   import ClipSlot from "./ClipSlot.svelte";

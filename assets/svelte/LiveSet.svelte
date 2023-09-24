@@ -6,8 +6,8 @@
   import latency from "../js/stores/latency";
   import { joinChannels } from "js/channels";
   import { newTrack } from "../js/track";
-  import transportStore from "js/stores/transport";
-  import poolStore from "js/stores/pool";
+  import transport from "js/stores/transport";
+  import pool from "js/stores/pool";
   import Scenes from "./Scenes.svelte";
   import Tempo from "./Tempo.svelte";
   import Metronome from "./Metronome.svelte";
@@ -25,9 +25,9 @@
   $: sessionEmpty = Object.keys($projectStore).length === 0;
 
   function setInitialStateFromProps(props: Song) {
-    transportStore.setBpm(props.bpm);
+    transport.setBpm(props.bpm);
     projectStore.setFromProps(props);
-    poolStore.set(props.audio_files);
+    pool.set(props.audio_files);
   }
 
   onMount(async () => {

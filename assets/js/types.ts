@@ -30,7 +30,6 @@ export interface Clip {
   readonly track_id: TrackID;
   name: string;
   playback_rate: number;
-  grainPlayer?: GrainPlayer;
   index: number;
   state: PlayState;
   type: string;

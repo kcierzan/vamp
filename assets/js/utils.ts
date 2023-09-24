@@ -2,6 +2,7 @@ import { Clip, QuantizationInterval, TrackStore } from "js/types";
 import { Time, Transport } from "tone";
 import * as Tone from "tone";
 import { guess } from "web-audio-beat-detector";
+import { ClipStore } from "./stores/clips";
 
 export async function fileToB64(file: File): Promise<string> {
   const bytes = await fileToByteArray(file);
@@ -20,8 +21,13 @@ export function b64ToAudioSrc(b64: string, type: string): string {
   return URL.createObjectURL(blob);
 }
 
-export function tracksToClipArrays(tracks: TrackStore): Clip[][] {
-  return Object.values(tracks).map((track) => Object.values(track.clips));
+export function tracksToClipArrays(clips: ClipStore): Clip[][] {
+  return Object.values(clips).reduce((acc: Clip[][], clip: Clip) => {
+    const trackIndexForClip = acc.findIndex(track => !!track[0] && track[0].track_id === clip.track_id)
+    trackIndexForClip === -1 && acc.push([clip])
+    trackIndexForClip >= 0 && acc[trackIndexForClip].push(clip)
+    return acc
+  }, [])
 }
 
 export function quantizedTransportTime(

@@ -16,6 +16,7 @@ const project: Writable<TrackStore> = writable({});
 
 const { subscribe, update, set } = project;
 
+// TODO: move this into stores/clips
 function setClips(...clips: Clip[]) {
   update((store) => {
     for (const clip of clips) {
@@ -48,11 +49,12 @@ function clipsFromProps(track: TrackData) {
 
 function setClipState(clip: Clip, state: PlayState) {
   update((store) => {
-    store[clip.track_id].clips[clip.id].state = state;
+    store[clip.track_id].clips[clip.id] = {...clip, state}
     return store;
   });
 }
 
+// TODO: move this into stores/tracks
 function setTrack(track: TrackData) {
   update((store) => {
     const clips = track.audio_clips.reduce((acc: TrackClips, clip: Clip) => {
@@ -66,6 +68,7 @@ function setTrack(track: TrackData) {
   });
 }
 
+// TODO: move this into stores/tracks
 function removeTrack(trackId: TrackID) {
   update((store) => {
     delete store[trackId];
