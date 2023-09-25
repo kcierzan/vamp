@@ -1,17 +1,20 @@
+<!-- <svelte:options immutable /> -->
+
 <script lang="ts">
   import { dndzone } from "svelte-dnd-action";
-  import clipStore from "js/stores/clips";
   import ClipComponent from "./Clip.svelte";
   import { DndItem, TrackData } from "js/types";
   import { isClip, newClipFromPool, updateClipProperties } from "js/clip";
   import { isAudioFile } from "js/audio-file";
+  import trackDataStore from "js/stores/track-data";
 
   export let index: number;
   export let track: TrackData;
   let items: DndItem[];
   let considering = false;
+  let element: HTMLElement;
   $: dndBg = considering ? "bg-orange-500" : "bg-transparent";
-  $: occupyingClip = Object.values($clipStore).find(
+  $: occupyingClip = track.audio_clips.find(
     (clip) => clip.index === index && track.id === clip.track_id,
   );
   $: items = !!occupyingClip ? [occupyingClip] : [];
@@ -32,7 +35,7 @@
       newClipFromPool(audioFile, track.id, index);
     } else if (isClip(clip)) {
       // move the clip optimistically
-      clipStore.deleteClip(clip);
+      trackDataStore.deleteClip(clip);
       updateClipProperties({ ...clip, index, track_id: track.id });
     }
   }
@@ -42,6 +45,7 @@
     items: items,
     flipDurationMs: 100,
   };
+  // afterUpdate(() => flash(element));
 </script>
 
 <div
@@ -49,6 +53,7 @@
   use:dndzone={options}
   on:consider={consider}
   on:finalize={finalize}
+  bind:this={element}
 >
   {#each items as clip (clip.id)}
     {#if "audio_file" in clip}

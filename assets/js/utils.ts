@@ -1,8 +1,7 @@
-import { Clip, QuantizationInterval, Track, TrackData } from "js/types";
+import { QuantizationInterval } from "js/types";
 import { Time, Transport } from "tone";
 import * as Tone from "tone";
 import { guess } from "web-audio-beat-detector";
-import { ClipStore } from "./stores/clips";
 
 export async function fileToB64(file: File): Promise<string> {
   const bytes = await fileToByteArray(file);
@@ -19,34 +18,6 @@ export function b64ToAudioSrc(b64: string, type: string): string {
   const arr = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
   const blob = new Blob([arr], { type: type });
   return URL.createObjectURL(blob);
-}
-
-export function tracksToClipArrays(clips: ClipStore): Clip[][] {
-  return Object.values(clips).reduce((acc: Clip[][], clip: Clip) => {
-    const trackIndexForClip = acc.findIndex(
-      (track) => !!track[0] && track[0].track_id === clip.track_id,
-    );
-    trackIndexForClip === -1 && acc.push([clip]);
-    trackIndexForClip >= 0 && acc[trackIndexForClip].push(clip);
-    return acc;
-  }, []);
-}
-
-// TODO: move this to tracks?
-export function clipsToTracks(clips: ClipStore): TrackData[] {
-  return tracksToClipArrays(clips).reduce(
-    (acc: TrackData[], clipArr: Clip[]) => {
-      acc.push({
-        id: clipArr[0].track_id,
-        gain: 0,
-        panning: 0,
-        name: "track",
-        audio_clips: clipArr,
-      });
-      return acc;
-    },
-    [],
-  );
 }
 
 export function quantizedTransportTime(
@@ -95,4 +66,18 @@ export async function guessBPM(
     // FIXME: this effectively skips stretching if bpm guess fails
     return { bpm: Transport.bpm.value, offset: 0 };
   }
+}
+
+export function flash(element: HTMLElement) {
+  requestAnimationFrame(() => {
+    element.style.transition = "none";
+    element.style.color = "rgba(255,62,0,1)";
+    element.style.backgroundColor = "rgba(255,62,0,0.2)";
+
+    setTimeout(() => {
+      element.style.transition = "color 1s, background 1s";
+      element.style.color = "";
+      element.style.backgroundColor = "";
+    });
+  });
 }

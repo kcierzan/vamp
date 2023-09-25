@@ -8,13 +8,13 @@ import {
 } from "./types";
 import { get } from "svelte/store";
 import { pushShared } from "./channels";
-import { quantizedTransportTime, tracksToClipArrays } from "./utils";
+import { quantizedTransportTime } from "./utils";
 import quantizationStore from "./stores/quantization";
 import tracksStore from "js/stores/tracks";
-import clipsStore from "js/stores/clips";
+import trackDataStore from "js/stores/track-data"
 
 export function newTrackFromPoolItem(songId: string, audioFile: AudioFile) {
-  const trackCount = tracksToClipArrays(get(clipsStore)).length;
+  const trackCount = get(trackDataStore).length;
   const trackWithClipAttrs = {
     song_id: songId,
     name: `Track ${trackCount + 1}`,
@@ -56,9 +56,7 @@ export function stopTracks(trackIds: TrackID[]): void {
 }
 
 export function stopAllTracks(): void {
-  const trackIds = tracksToClipArrays(get(clipsStore)).map(
-    (track) => track[0].track_id,
-  );
+  const trackIds = get(trackDataStore).map((track) => track.id);
   stopTracks(trackIds);
 }
 
@@ -72,12 +70,10 @@ export function receiveStopTrack({ trackIds }: { trackIds: TrackID[] }): void {
 }
 
 export function receiveRemoveTrack(trackId: TrackID) {
-  clipsStore.removeTrack(trackId);
-  tracksStore.removeTrack(trackId);
+  trackDataStore.removeTrack(trackId);
 }
 
 // TODO: add DB properties to the track store!
 export function receiveNewTrack(track: TrackData) {
-  clipsStore.setClips(...track.audio_clips);
-  tracksStore.createTrack(track);
+  trackDataStore.createTrack(track);
 }

@@ -1,21 +1,22 @@
 import { Writable, writable } from "svelte/store";
-import { Clip, PlayState, Song, TrackData, TrackID } from "js/types";
+import { Clip, PlayState, TrackData, TrackID } from "js/types";
 import { Time } from "tone/build/esm/core/type/Units";
 import { Draw, Transport } from "tone";
-import clipsStore, { ClipStore } from "js/stores/clips";
 import playerStore from "./players";
-import { newClipFromAPI } from "js/clip";
 
-interface Tracks {
-  [key: TrackID]: {
-    currentlyPlaying: Clip | null;
-    currentlyQueued: Clip | null;
-    playingEvent: number | null;
-    queuedEvent: number | null;
-  };
+export interface TrackState {
+  id: TrackID;
+  currentlyPlaying: Clip | null;
+  currentlyQueued: Clip | null;
+  playingEvent: number | null;
+  queuedEvent: number | null;
 }
 
-const tracksStore: Writable<Tracks> = writable({});
+export interface TrackStateStore {
+  [key: TrackID]: TrackState;
+}
+
+const tracksStore: Writable<TrackStateStore> = writable({});
 const { subscribe, update, set } = tracksStore;
 
 function cancelPlayingEvent(trackId: TrackID) {
@@ -47,21 +48,21 @@ function setCurrentlyQueued(clip: Clip, event: number) {
 }
 
 function queueClip(clip: Clip) {
-  clipsStore.setClipState(clip, PlayState.Queued);
+  playerStore.setClipState(clip, PlayState.Queued);
   cancelQueuedEvent(clip.track_id);
   update((store) => {
     const queued = store[clip.track_id].currentlyQueued;
-    !!queued && clipsStore.setClipState(queued, PlayState.Stopped);
+    !!queued && playerStore.setClipState(queued, PlayState.Stopped);
     return store;
   });
 }
 
 function setTrackClipStatesPlay(clip: Clip, event: number) {
-  clipsStore.setClipState(clip, PlayState.Playing);
+  playerStore.setClipState(clip, PlayState.Playing);
   update((store) => {
     const playing = store[clip.track_id].currentlyPlaying;
     if (!!playing && playing?.id !== clip.id) {
-      clipsStore.setClipState(playing, PlayState.Stopped);
+      playerStore.setClipState(playing, PlayState.Stopped);
     }
     store[clip.track_id].playingEvent = event;
     store[clip.track_id].currentlyPlaying = clip;
@@ -81,18 +82,11 @@ function stopTrack(trackId: TrackID, at: Time) {
       const playing = store[trackId].currentlyPlaying;
       !!playing && playerStore.stopAudio(playing, time);
       Draw.schedule(() => {
-        !!playing && clipsStore.setClipState(playing, PlayState.Stopped);
+        !!playing && playerStore.setClipState(playing, PlayState.Stopped);
         store[trackId].currentlyPlaying = null;
         store[trackId].playingEvent = null;
       }, time);
     }, launchTime);
-    return store;
-  });
-}
-
-function setTrackPlayEvent(trackId: TrackID, event: number) {
-  update((store) => {
-    store[trackId].playingEvent = event;
     return store;
   });
 }
@@ -116,31 +110,43 @@ function stopAllTracksAudio() {
   });
 }
 
-function createTrack(track: TrackData) {
-  update((store) => {
-    store[track.id] = {
-      currentlyPlaying: null,
-      currentlyQueued: null,
-      playingEvent: null,
-      queuedEvent: null,
-    };
-    return store;
-  });
+function playClip(clip: Clip, at: Time) {
+  const tooLate = Transport.seconds > (at as number);
+  queueClip(clip);
+  // either the next division or 50ms in the future
+  const launchTime = tooLate ? "+0.05" : at;
+  // 50ms before the next division or immediately
+  const clearTime = tooLate ? 0 : (at as number) - 0.05;
+  Transport.scheduleOnce((time) => {
+    Draw.schedule(() => {
+      cancelPlayingEvent(clip.track_id);
+    }, time);
+  }, clearTime);
+
+  const queuedEvent = Transport.scheduleOnce((time) => {
+    Draw.schedule(() => {
+      loopClip(clip, "+1m", "1m");
+    }, time);
+    stopCurrentlyPlayingAudio(clip.track_id, time);
+  }, launchTime);
+  setCurrentlyQueued(clip, queuedEvent);
 }
 
-function removeTrack(trackId: TrackID) {
-  stopCurrentlyPlayingAudio(trackId, undefined);
-  cancelPlayingEvent(trackId);
-  cancelQueuedEvent(trackId);
-  update((store) => {
-    const { [trackId]: _track, ...rest } = store;
-    return rest;
-  });
+function loopClip(clip: Clip, endTime: Time, every: Time): void {
+  const playEvent = Transport.scheduleRepeat(
+    (audioContextTime: number) => {
+      playerStore.playAudio(clip, audioContextTime, endTime);
+    },
+    every,
+    "+0.005",
+  );
+  setTrackClipStatesPlay(clip, playEvent);
 }
 
-function setTracksFromProps(props: Song) {
-  const tracks = props.tracks.reduce((acc: Tracks, track: TrackData) => {
+function setFromProps(tracks: TrackData[]) {
+  const state = tracks.reduce((acc: TrackStateStore, track: TrackData) => {
     acc[track.id] = {
+      id: track.id,
       currentlyPlaying: null,
       currentlyQueued: null,
       playingEvent: null,
@@ -148,29 +154,16 @@ function setTracksFromProps(props: Song) {
     };
     return acc;
   }, {});
-  const newClips = props.tracks.reduce((acc: ClipStore, track: TrackData) => {
-    for (const clip of track.audio_clips) {
-      acc[clip.id] = newClipFromAPI(clip);
-    }
-    return acc;
-  }, {});
-  set(tracks);
-  clipsStore.set(newClips);
+  set(state);
 }
 
 export default {
   subscribe,
-  set,
+  playClip,
+  stopTrack,
+  stopAllTracksAudio,
+  stopCurrentlyPlayingAudio,
   cancelPlayingEvent,
   cancelQueuedEvent,
-  setCurrentlyQueued,
-  setTrackClipStatesPlay,
-  setTrackPlayEvent,
-  stopCurrentlyPlayingAudio,
-  stopTrack,
-  queueClip,
-  stopAllTracksAudio,
-  createTrack,
-  removeTrack,
-  setTracksFromProps,
+  setFromProps
 };

@@ -12,8 +12,9 @@ import { fileToArrayBuffer, guessBPM, quantizedTransportTime } from "./utils";
 import { get } from "svelte/store";
 import quantizationStore from "./stores/quantization";
 import transportStore from "./stores/transport";
-import clipStore from "js/stores/clips";
 import playerStore from "js/stores/players";
+import trackStore from "js/stores/tracks"
+import trackDataStore from "js/stores/track-data"
 
 export function newClipFromAPI(clip: Clip) {
   const newClip = { ...clip, state: PlayState.Stopped };
@@ -90,7 +91,7 @@ export function receivePlayClips({
 
   if (transport.state === PlayState.Stopped) {
     for (const clip of clips) {
-      clipStore.playClip(clip, 0);
+      trackStore.playClip(clip, 0);
     }
     transportStore.startLocal(nowCompensated);
   } else {
@@ -98,7 +99,7 @@ export function receivePlayClips({
     Transport.scheduleOnce((time) => {
       Draw.schedule(() => {
         for (const clip of clips) {
-          clipStore.playClip(clip, nextDivision);
+          trackStore.playClip(clip, nextDivision);
         }
       }, time);
     }, nowCompensated);
@@ -111,11 +112,11 @@ export function setPlaybackRate(clip: Clip, playbackRate: number) {
 }
 
 export function receiveNewClip(clip: Clip) {
-  clipStore.setClips(clip);
+  trackDataStore.setClips(clip);
 }
 
 export function receiveUpdateClips(...clips: Clip[]) {
-  clipStore.setClips(...clips);
+  trackDataStore.setClips(...clips);
 }
 
 export function isClip(obj: any): obj is Clip {

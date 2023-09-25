@@ -1,19 +1,16 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { tracksToClipArrays } from "js/utils";
-  import clipStore from "js/stores/clips";
   import transportStore from "js/stores/transport";
   import type { HTMLInputEvent, Clip } from "js/types";
   import { setPlaybackRate, updateClipProperties } from "js/clip";
+  import trackDataStore from "js/stores/track-data";
 
   const { setBpm } = transportStore;
 
-  $: clipArrays = tracksToClipArrays($clipStore);
-
   function stretchClipsToBpm(bpm: number) {
     const clipsToStretch: Clip[] = [];
-    for (const track of clipArrays) {
-      for (const clip of track) {
+    for (const track of $trackDataStore) {
+      for (const clip of track.audio_clips) {
         if (!!clip.audio_file) {
           const rate = bpm / clip.audio_file.bpm;
           setPlaybackRate(clip, rate);

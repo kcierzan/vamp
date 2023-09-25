@@ -1,7 +1,12 @@
 <svelte:options immutable />
+
 <script lang="ts">
   import type { TrackData } from "js/types";
   import ClipSlot from "./ClipSlot.svelte";
+  import { afterUpdate } from "svelte";
+  import { flash } from "js/utils";
+  let element: HTMLElement;
+  afterUpdate(() => flash(element));
 
   export let track: TrackData;
   const NUMBER_OF_ROWS = 12;
@@ -15,7 +20,8 @@
   // }
 </script>
 
-<div class="flex flex-col gap-1 w-30">
+<div class="flex flex-col gap-1 w-30" bind:this={element}>
+  <div>{track.name}</div>
   {#each slots as slot, i (slot.id)}
     <ClipSlot index={i} {track} />
   {/each}

@@ -4,15 +4,13 @@
     TRIGGERS,
     dndzone,
   } from "svelte-dnd-action";
-  import Track from "./Track.svelte";
+  import TrackComponent from "./Track.svelte";
   import { newTrackFromPoolItem } from "js/track";
   import { AudioFile, DndItem } from "js/types";
   import { isAudioFile } from "js/audio-file";
-  import clipStore from "js/stores/clips"
-  import { clipsToTracks } from "js/utils"
+  import trackDataStore from "js/stores/track-data";
 
   export let songId: string;
-  $: tracks = clipsToTracks($clipStore)
 
   const dummyItem = { id: "dummy" };
   let items: DndItem[] = [dummyItem];
@@ -29,7 +27,7 @@
   function finalizeNewTrack(e: CustomEvent<DndEvent<DndItem>>) {
     // FIXME: this needs to support clips also
     considering = false;
-    const audioFile = e.detail.items.find(item => isAudioFile(item))
+    const audioFile = e.detail.items.find((item) => isAudioFile(item));
     !!audioFile && newTrackFromPoolItem(songId, audioFile as AudioFile);
     items = [dummyItem];
   }
@@ -81,8 +79,8 @@
     {/each}
   </div>
   <div class="flex flex-row">
-    {#each tracks as track (track.id)}
-      <Track {track} />
+    {#each $trackDataStore as track (track.id)}
+      <TrackComponent {track} />
     {/each}
   </div>
 </div>

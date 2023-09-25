@@ -1,14 +1,16 @@
-import type { Scene, SceneStore, TrackID } from "js/types";
+import type { Scene, SceneStore, TrackData, TrackID } from "js/types";
 import type { Readable } from "svelte/store";
 import { Clip, PlayState } from "js/types";
 import { get, derived } from "svelte/store";
-import { tracksToClipArrays } from "../utils";
 import { playClips } from "js/clip";
 import { stopTracks } from "js/track";
-import clipsStore from "js/stores/clips"
-import type { ClipStore } from "js/stores/clips";
+import trackDataStore from "js/stores/track-data"
 
-function scenesFromTracks(tracks: ClipStore): Scene[] {
+function tracksToClipArrays(tracks: TrackData[]) {
+  return tracks.map((track) => track.audio_clips);
+}
+
+function scenesFromTracks(tracks: TrackData[]): Scene[] {
   const scenes = [];
   const clipArrays: Clip[][] = tracksToClipArrays(tracks);
   // starting at the highest scene (bottom up)
@@ -45,14 +47,12 @@ function sceneArraysToStates(sceneArrays: Scene[]): PlayState[] {
 }
 
 function sceneCount(clipArrays: Clip[][]): number {
-  const clips = clipArrays.map(
-    (track) => track.length,
-  );
+  const clips = clipArrays.map((track) => track.length);
   return Math.max(...clips);
 }
 
-const scenes: Readable<SceneStore> = derived(clipsStore, ($clips, set) => {
-  const sceneArrays: Scene[] = scenesFromTracks($clips);
+const scenes: Readable<SceneStore> = derived(trackDataStore, ($tracks, set) => {
+  const sceneArrays: Scene[] = scenesFromTracks($tracks);
   set({
     states: sceneArraysToStates(sceneArrays),
     scenes: sceneArrays,

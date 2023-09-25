@@ -5,6 +5,7 @@
   import type { Clip, HTMLInputEvent } from "js/types";
   import { playClips, updateClipProperties } from "js/clip";
   import { Transport } from "tone";
+  import playersStore from "js/stores/players"
 
   export let clip: Clip;
   let button: HTMLButtonElement;
@@ -34,7 +35,7 @@
     }
   }
 
-  $: handleQueueAnimation(clip.state);
+  $: handleQueueAnimation($playersStore[clip.id].state);
 
   // TODO: extract this to PlayableButton or something
   const baseStyles = "flex text-base w-36 h-8 text-white rounded";
@@ -46,7 +47,7 @@
 
   function computeStyles(clip: Clip) {
     const base = baseStyles + " ";
-    return base + stateStyles[clip.state];
+    return base + stateStyles[$playersStore[clip.id].state];
   }
 
   $: clipStyles = computeStyles(clip);

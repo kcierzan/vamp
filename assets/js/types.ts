@@ -11,12 +11,6 @@ export interface Song {
   audio_files: AudioFile[];
 }
 
-export interface Track extends TrackData {
-  currentlyPlaying: ClipID | null;
-  clips: TrackClips;
-  playEvent: number | null;
-}
-
 export interface TrackData {
   readonly id: TrackID;
   gain: number;
@@ -57,13 +51,25 @@ export enum PlayState {
   Queued = "QUEUED",
 }
 
-export interface TrackStore {
-  [key: TrackID]: Track;
-}
-
 export interface ChannelStore {
   shared: Channel | null;
   private: Channel | null;
+}
+
+export interface Track {
+  id: TrackID;
+  name: string;
+  gain: number;
+  panning: number;
+  currentlyPlaying: Clip | null;
+  currentlyQueued: Clip | null;
+  playingEvent: number | null;
+  queuedEvent: number | null;
+  audio_clips: Clip[];
+}
+
+export interface TrackStore {
+  [key: TrackID]: Track;
 }
 
 export interface TransportStore {
