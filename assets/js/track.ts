@@ -11,7 +11,9 @@ import { pushShared } from "./channels";
 import { quantizedTransportTime } from "./utils";
 import quantizationStore from "./stores/quantization";
 import tracksStore from "js/stores/tracks";
-import trackDataStore from "js/stores/track-data"
+import trackDataStore from "js/stores/track-data";
+import playerStore from "js/stores/players";
+import clipsStore from "js/stores/clips";
 
 export function newTrackFromPoolItem(songId: string, audioFile: AudioFile) {
   const trackCount = get(trackDataStore).length;
@@ -70,10 +72,13 @@ export function receiveStopTrack({ trackIds }: { trackIds: TrackID[] }): void {
 }
 
 export function receiveRemoveTrack(trackId: TrackID) {
+  // TODO: remove clipStates and GrainPlayers
   trackDataStore.removeTrack(trackId);
 }
 
 // TODO: add DB properties to the track store!
 export function receiveNewTrack(track: TrackData) {
+  playerStore.initializeGrainPlayers(...track.audio_clips);
+  clipsStore.initializeClipStates(...track.audio_clips);
   trackDataStore.createTrack(track);
 }

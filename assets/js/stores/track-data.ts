@@ -1,6 +1,6 @@
-import { Clip, Song, TrackData, TrackID } from "js/types";
+import { Clip, TrackData, TrackID } from "js/types";
 import { Writable, writable } from "svelte/store";
-import tracksStore from "js/stores/tracks"
+import tracksStore from "js/stores/tracks";
 
 const trackData: Writable<TrackData[]> = writable([]);
 const { subscribe, update, set } = trackData;
@@ -13,30 +13,36 @@ function createTrack(track: TrackData) {
 }
 
 function removeTrack(trackId: TrackID) {
-  // TODO: move these to playback state stores
   tracksStore.stopCurrentlyPlayingAudio(trackId, undefined);
   tracksStore.cancelPlayingEvent(trackId);
   tracksStore.cancelQueuedEvent(trackId);
   update((store) => {
-    return store.filter((track) => track.id !== trackId);
+    const indexToRemove = store.findIndex((track) => track.id === trackId);
+    store.splice(indexToRemove, 1);
+    return store;
   });
 }
 
-function setFromProps(props: Song) {
-  set(props.tracks);
+function setFromProps(trackProps: TrackData[]) {
+  set(trackProps);
 }
 
-function setClips(...clips: Clip[]) {
-  // TODO: setup clip states
+// PERF: this should create new clip objects for any clips passed in
+// and should preserve any unmodified clip objects
+function createClips(...clips: Clip[]) {
   update((store) => {
     for (const newClip of clips) {
-      const track = store.find((track) => track.id === newClip.track_id);
-      if (!!track) {
-        const newClips = track.audio_clips.filter(
-          (clip) => clip.id !== newClip.id,
-        );
-        track.audio_clips = [...newClips, newClip];
-      }
+      const trackIndex = store.findIndex(
+        (track: TrackData) => track.id === newClip.track_id,
+      );
+      const unmodifiedClips = store[trackIndex].audio_clips.filter(
+        (clip) => clip.id !== newClip.id,
+      );
+      const newTrack = {
+        ...store[trackIndex],
+        audio_clips: [...unmodifiedClips, newClip],
+      };
+      store.splice(trackIndex, 1, newTrack);
     }
     return store;
   });
@@ -46,9 +52,10 @@ function deleteClip(clip: Clip) {
   update((store) => {
     const track = store.find((track) => track.id === clip.track_id);
     if (!!track) {
-      track.audio_clips = track?.audio_clips.filter(
-        (clip) => clip.id !== clip.id,
+      const indexToRemove = track.audio_clips.findIndex(
+        (existingClip) => existingClip.id === clip.id,
       );
+      track.audio_clips.splice(indexToRemove, 1);
     }
     return store;
   });
@@ -59,6 +66,6 @@ export default {
   createTrack,
   removeTrack,
   setFromProps,
-  setClips,
+  createClips,
   deleteClip,
 };

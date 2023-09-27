@@ -3,6 +3,7 @@ import { Clip, PlayState, TrackData, TrackID } from "js/types";
 import { Time } from "tone/build/esm/core/type/Units";
 import { Draw, Transport } from "tone";
 import playerStore from "./players";
+import clipStore from "js/stores/clips";
 
 export interface TrackState {
   id: TrackID;
@@ -48,21 +49,21 @@ function setCurrentlyQueued(clip: Clip, event: number) {
 }
 
 function queueClip(clip: Clip) {
-  playerStore.setClipState(clip, PlayState.Queued);
+  clipStore.setClipState(clip, PlayState.Queued);
   cancelQueuedEvent(clip.track_id);
   update((store) => {
     const queued = store[clip.track_id].currentlyQueued;
-    !!queued && playerStore.setClipState(queued, PlayState.Stopped);
+    !!queued && clipStore.setClipState(queued, PlayState.Stopped);
     return store;
   });
 }
 
 function setTrackClipStatesPlay(clip: Clip, event: number) {
-  playerStore.setClipState(clip, PlayState.Playing);
+  clipStore.setClipState(clip, PlayState.Playing);
   update((store) => {
     const playing = store[clip.track_id].currentlyPlaying;
     if (!!playing && playing?.id !== clip.id) {
-      playerStore.setClipState(playing, PlayState.Stopped);
+      clipStore.setClipState(playing, PlayState.Stopped);
     }
     store[clip.track_id].playingEvent = event;
     store[clip.track_id].currentlyPlaying = clip;
@@ -82,7 +83,7 @@ function stopTrack(trackId: TrackID, at: Time) {
       const playing = store[trackId].currentlyPlaying;
       !!playing && playerStore.stopAudio(playing, time);
       Draw.schedule(() => {
-        !!playing && playerStore.setClipState(playing, PlayState.Stopped);
+        !!playing && clipStore.setClipState(playing, PlayState.Stopped);
         store[trackId].currentlyPlaying = null;
         store[trackId].playingEvent = null;
       }, time);
@@ -110,7 +111,7 @@ function stopAllTracksAudio() {
   });
 }
 
-function playClip(clip: Clip, at: Time) {
+function playTrackClip(clip: Clip, at: Time) {
   const tooLate = Transport.seconds > (at as number);
   queueClip(clip);
   // either the next division or 50ms in the future
@@ -159,11 +160,11 @@ function setFromProps(tracks: TrackData[]) {
 
 export default {
   subscribe,
-  playClip,
+  playTrackClip,
   stopTrack,
   stopAllTracksAudio,
   stopCurrentlyPlayingAudio,
   cancelPlayingEvent,
   cancelQueuedEvent,
-  setFromProps
+  setFromProps,
 };

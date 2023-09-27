@@ -13,8 +13,9 @@ import { get } from "svelte/store";
 import quantizationStore from "./stores/quantization";
 import transportStore from "./stores/transport";
 import playerStore from "js/stores/players";
-import trackStore from "js/stores/tracks"
-import trackDataStore from "js/stores/track-data"
+import trackStore from "js/stores/tracks";
+import trackDataStore from "js/stores/track-data";
+import clipStore from "js/stores/clips";
 
 export function newClipFromAPI(clip: Clip) {
   const newClip = { ...clip, state: PlayState.Stopped };
@@ -91,17 +92,17 @@ export function receivePlayClips({
 
   if (transport.state === PlayState.Stopped) {
     for (const clip of clips) {
-      trackStore.playClip(clip, 0);
+      trackStore.playTrackClip(clip, 0);
     }
     transportStore.startLocal(nowCompensated);
   } else {
     // fire the event with delay compensation
     Transport.scheduleOnce((time) => {
-      Draw.schedule(() => {
-        for (const clip of clips) {
-          trackStore.playClip(clip, nextDivision);
-        }
-      }, time);
+      for (const clip of clips) {
+        Draw.schedule(() => {
+          trackStore.playTrackClip(clip, nextDivision);
+        }, time);
+      }
     }, nowCompensated);
   }
 }
@@ -112,11 +113,15 @@ export function setPlaybackRate(clip: Clip, playbackRate: number) {
 }
 
 export function receiveNewClip(clip: Clip) {
-  trackDataStore.setClips(clip);
+  playerStore.initializeGrainPlayers(clip);
+  clipStore.initializeClipStates(clip);
+  trackDataStore.createClips(clip);
 }
 
 export function receiveUpdateClips(...clips: Clip[]) {
-  trackDataStore.setClips(...clips);
+  playerStore.initializeGrainPlayers(...clips);
+  clipStore.initializeClipStates(...clips);
+  trackDataStore.createClips(...clips);
 }
 
 export function isClip(obj: any): obj is Clip {

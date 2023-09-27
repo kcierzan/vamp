@@ -1,11 +1,9 @@
-<svelte:options immutable />
-
 <script lang="ts">
   import { PlayState } from "js/types";
   import type { Clip, HTMLInputEvent } from "js/types";
   import { playClips, updateClipProperties } from "js/clip";
   import { Transport } from "tone";
-  import playersStore from "js/stores/players"
+  import clipsStore from "js/stores/clips";
 
   export let clip: Clip;
   let button: HTMLButtonElement;
@@ -35,7 +33,7 @@
     }
   }
 
-  $: handleQueueAnimation($playersStore[clip.id].state);
+  $: handleQueueAnimation($clipsStore[clip.id].state);
 
   // TODO: extract this to PlayableButton or something
   const baseStyles = "flex text-base w-36 h-8 text-white rounded";
@@ -45,12 +43,12 @@
     [PlayState.Queued]: "",
   };
 
-  function computeStyles(clip: Clip) {
+  function computeStyles(state: PlayState) {
     const base = baseStyles + " ";
-    return base + stateStyles[$playersStore[clip.id].state];
+    return base + stateStyles[state];
   }
 
-  $: clipStyles = computeStyles(clip);
+  $: clipStyles = computeStyles($clipsStore[clip.id].state);
 
   function changeTempo(e: HTMLInputEvent) {
     const target = e.target;

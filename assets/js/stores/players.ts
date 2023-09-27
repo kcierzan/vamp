@@ -1,5 +1,5 @@
 import { writable } from "svelte/store";
-import { Clip, ClipID, PlayState, TrackData } from "js/types";
+import { Clip, ClipID, TrackData } from "js/types";
 import type { Writable } from "svelte/store";
 import { GrainPlayer } from "tone";
 import { Time } from "tone/build/esm/core/type/Units";
@@ -9,7 +9,6 @@ const { subscribe, update, set } = playersStore;
 
 interface PlaybackData {
   grainPlayer: GrainPlayer | null;
-  state: PlayState;
 }
 
 interface PlayerStore {
@@ -67,24 +66,25 @@ function setupGrainPlayer(clip: Clip) {
   }
 }
 
-function setClipState(clip: Clip, state: PlayState) {
-  update((store) => {
-    store[clip.id].state = state;
-    return store;
-  });
-}
-
 function setFromProps(tracks: TrackData[]) {
   const newState = tracks.reduce((acc: PlayerStore, track) => {
     for (const clip of track.audio_clips) {
       acc[clip.id] = {
         grainPlayer: createGrainPlayer(clip),
-        state: PlayState.Stopped,
       };
     }
     return acc;
   }, {});
   set(newState);
+}
+
+function initializeGrainPlayers(...clips: Clip[]) {
+  update((store) => {
+    for (const clip of clips) {
+      store[clip.id] = { grainPlayer: createGrainPlayer(clip) };
+    }
+    return store;
+  });
 }
 
 export default {
@@ -93,6 +93,6 @@ export default {
   stopAudio,
   setPlaybackRate,
   setupGrainPlayer,
-  setClipState,
   setFromProps,
+  initializeGrainPlayers,
 };

@@ -28,6 +28,7 @@ export interface Clip {
   state: PlayState;
   type: string;
   audio_file: AudioFile | null;
+  isDndShadowItem?: boolean;
 }
 
 export interface StaticFile {

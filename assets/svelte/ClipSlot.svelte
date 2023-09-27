@@ -1,4 +1,4 @@
-<!-- <svelte:options immutable /> -->
+<svelte:options immutable />
 
 <script lang="ts">
   import { dndzone } from "svelte-dnd-action";
@@ -7,6 +7,8 @@
   import { isClip, newClipFromPool, updateClipProperties } from "js/clip";
   import { isAudioFile } from "js/audio-file";
   import trackDataStore from "js/stores/track-data";
+  import { flash } from "js/utils";
+  import { afterUpdate } from "svelte";
 
   export let index: number;
   export let track: TrackData;
@@ -29,7 +31,9 @@
     const clip = e.detail.items.find((item) => isClip(item));
 
     considering = false;
-    items = e.detail.items;
+    const newItem = clip ?? audioFile;
+    items = newItem ? [newItem] : [];
+
     if (isAudioFile(audioFile)) {
       // create a new clip from the pool
       newClipFromPool(audioFile, track.id, index);
@@ -45,7 +49,7 @@
     items: items,
     flipDurationMs: 100,
   };
-  // afterUpdate(() => flash(element));
+  afterUpdate(() => flash(element));
 </script>
 
 <div
@@ -56,7 +60,7 @@
   bind:this={element}
 >
   {#each items as clip (clip.id)}
-    {#if "audio_file" in clip}
+    {#if "audio_file" in clip && !clip.isDndShadowItem}
       <ClipComponent {clip} />
     {:else}
       <div class="placeholder h-8 w-36" />

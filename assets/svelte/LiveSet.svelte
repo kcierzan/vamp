@@ -19,8 +19,9 @@
   import { afterUpdate } from "svelte";
   import { flash } from "js/utils";
   import trackDataStore from "js/stores/track-data";
-  import playersStore from "js/stores/players"
-  import tracksStore from "js/stores/tracks"
+  import playersStore from "js/stores/players";
+  import tracksStore from "js/stores/tracks";
+  import clipStore from "js/stores/clips";
 
   export let currentUser: User;
   export let token: Token;
@@ -34,10 +35,11 @@
 
   function setInitialStateFromProps(props: Song) {
     transportStore.setBpm(props.bpm);
-    trackDataStore.setFromProps(props);
-    tracksStore.setFromProps(props.tracks)
+    trackDataStore.setFromProps(props.tracks);
+    tracksStore.setFromProps(props.tracks);
     playersStore.setFromProps(props.tracks);
     poolStore.set(props.audio_files);
+    clipStore.setFromProps(props.tracks);
   }
 
   onMount(async () => {
