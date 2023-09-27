@@ -114,5 +114,5 @@ export function receiveUpdateClips(...clips: Clip[]) {
 
 export function isClip(obj: any): obj is Clip {
   if (!!!obj) return false;
-  return "id" in obj && "track_id" in obj && "audio_file" in obj;
+  return "id" in obj && "track_id" in obj && "audio_file" in obj && !obj.isDndShadowItem;
 }

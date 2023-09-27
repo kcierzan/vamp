@@ -1,5 +1,3 @@
-<svelte:options immutable />
-
 <script lang="ts">
   import TrackComponent from "./Track.svelte";
   import NewTrackDndZone from "./NewTrackDndZone.svelte";

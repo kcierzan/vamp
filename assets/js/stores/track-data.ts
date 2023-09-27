@@ -7,8 +7,7 @@ const { subscribe, update, set } = trackData;
 
 function createTrack(track: TrackData) {
   update((store) => {
-    store.push(track);
-    return store;
+    return [...store, track];
   });
 }
 

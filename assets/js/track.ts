@@ -14,6 +14,7 @@ import tracksStore from "js/stores/tracks";
 import trackDataStore from "js/stores/track-data";
 import playerStore from "js/stores/players";
 import clipsStore from "js/stores/clips";
+import trackPlaybackStore from "js/stores/tracks"
 
 export function pushCreateTrackFromAudioFile(songId: string, audioFile: AudioFile) {
   const trackCount = get(trackDataStore).length;
@@ -78,6 +79,7 @@ export function receiveRemoveTrack(trackId: TrackID) {
 
 // TODO: add DB properties to the track store!
 export function receiveNewTrack(track: TrackData) {
+  trackPlaybackStore.initializeTrackPlaybackState(track);
   playerStore.initializeGrainPlayers(...track.audio_clips);
   clipsStore.initializeClipStates(...track.audio_clips);
   trackDataStore.createTrack(track);

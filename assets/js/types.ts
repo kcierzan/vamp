@@ -42,6 +42,7 @@ export interface AudioFile {
   name: string;
   description: string;
   file: StaticFile;
+  isDndShadowItem?: boolean;
   readonly size: number;
   readonly media_type: string;
 }

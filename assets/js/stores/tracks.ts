@@ -19,6 +19,12 @@ export interface TrackStateStore {
 
 const tracksStore: Writable<TrackStateStore> = writable({});
 const { subscribe, update, set } = tracksStore;
+const INIT_TRACK_STATE = {
+  currentlyPlaying: null,
+  currentlyQueued: null,
+  playingEvent: null,
+  queuedEvent: null,
+};
 
 function cancelPlayingEvent(trackId: TrackID) {
   update((store) => {
@@ -147,15 +153,22 @@ function loopClip(clip: Clip, endTime: Time, every: Time): void {
 function setFromProps(tracks: TrackData[]) {
   const state = tracks.reduce((acc: TrackStateStore, track: TrackData) => {
     acc[track.id] = {
+      ...INIT_TRACK_STATE,
       id: track.id,
-      currentlyPlaying: null,
-      currentlyQueued: null,
-      playingEvent: null,
-      queuedEvent: null,
     };
     return acc;
   }, {});
   set(state);
+}
+
+function initializeTrackPlaybackState(track: TrackData) {
+  update((store) => {
+    store[track.id] = {
+      ...INIT_TRACK_STATE,
+      id: track.id,
+    };
+    return store;
+  });
 }
 
 export default {
@@ -167,4 +180,5 @@ export default {
   cancelPlayingEvent,
   cancelQueuedEvent,
   setFromProps,
+  initializeTrackPlaybackState,
 };

@@ -39,7 +39,7 @@
     return items
       .filter((item: any) => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME])
       .concat(
-        items.filter((item: any) => item[SHADOW_ITEM_MARKER_PROPERTY_NAME])
+        items.filter((item: any) => item[SHADOW_ITEM_MARKER_PROPERTY_NAME]),
       );
   }
 </script>
