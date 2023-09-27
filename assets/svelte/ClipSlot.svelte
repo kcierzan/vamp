@@ -49,7 +49,7 @@
   }
 
   $: options = {
-    dropFromOthersDisabled: !!occupyingClip,
+    dropFromOthersDisabled: items.length,
     items: items,
     flipDurationMs: 100,
   };
