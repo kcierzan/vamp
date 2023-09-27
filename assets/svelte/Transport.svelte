@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Transport, Draw } from "tone";
   import { onMount } from "svelte";
-  import transport from "js/stores/transport";
+  import transportStore from "js/stores/transport";
   import { PlayState } from "js/types";
 
   const zero = 0;
@@ -11,7 +11,7 @@
   let seconds = zeroPadded;
   let stopHeldStyle = "";
 
-  $: playing = $transport.state === PlayState.Playing;
+  $: playing = $transportStore.state === PlayState.Playing;
 
   const buttonStyles =
     "text-base bg-gray-400  w-24 h-16 text-black rounded-lg mr-4";
@@ -19,7 +19,7 @@
   function measurePlayhead() {
     Transport.scheduleRepeat((time) => {
       Draw.schedule(() => {
-        const [bars, beats, sixteenths] = $transport.transport.position
+        const [bars, beats, sixteenths] = $transportStore.transport.position
           .toString()
           .split(":");
         playHeadPosition = `${bars}:${beats}:${Math.floor(
@@ -33,7 +33,7 @@
     Transport.scheduleRepeat((time) => {
       Draw.schedule(() => {
         const now =
-          Math.round(($transport.transport.seconds + Number.EPSILON) * 100) /
+          Math.round(($transportStore.transport.seconds + Number.EPSILON) * 100) /
           100;
         seconds = now.toFixed(2);
       }, time);
@@ -43,7 +43,7 @@
   function start() {
     playHeadPosition = zeroPosition;
     seconds = zeroPadded;
-    transport.start();
+    transportStore.start();
   }
 
   onMount(async () => {
@@ -69,7 +69,7 @@
   >
   <button
     class={buttonStyles + " " + stopHeldStyle}
-    on:click={() => transport.stop()}
+    on:click={() => transportStore.stop()}
     on:mousedown={holdStop}
     on:mouseup={releaseStop}>Stop</button
   >

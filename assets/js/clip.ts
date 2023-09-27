@@ -1,5 +1,4 @@
-import type { Time } from "tone/build/esm/core/type/Units";
-import { Draw, GrainPlayer, Transport } from "tone";
+import { Draw, Transport } from "tone";
 import {
   AudioFile,
   Clip,
@@ -10,17 +9,15 @@ import {
 } from "./types";
 import { pushFile, pushShared } from "./channels";
 import { fileToArrayBuffer, guessBPM, quantizedTransportTime } from "./utils";
-import project from "./stores/project";
 import { get } from "svelte/store";
-import quantization from "./stores/quantization";
+import quantizationStore from "./stores/quantization";
 import transportStore from "./stores/transport";
-import { playClip } from "./track";
+import playerStore from "js/stores/players";
+import trackPlaybackStore from "js/stores/tracks";
+import trackDataStore from "js/stores/track-data";
+import clipStore from "js/stores/clips";
 
-export function newClipFromAPI(clip: Clip) {
-  return setupGrainPlayer({ ...clip, state: PlayState.Stopped });
-}
-
-export function newClipFromPool(
+export function pushCreateClipFromPool(
   audio: AudioFile,
   trackId: TrackID,
   index: number,
@@ -35,7 +32,7 @@ export function newClipFromPool(
   });
 }
 
-export async function newClip(
+export async function pushCreateClipFromFile(
   file: File,
   trackId: TrackID,
   index: number,
@@ -62,14 +59,12 @@ export async function newClip(
   });
 }
 
-export function updateClipProperties(...clips: Clip[]): void {
-  const serialized = clips.map((clip) => serialize(clip));
-  pushShared(SharedMessages.UpdateClips, { clips: serialized });
+export function pushUpdateClip(...clips: Clip[]): void {
+  pushShared(SharedMessages.UpdateClips, { clips });
 }
 
-export function playClips(clips: Clip[]) {
-  const clipInfos = clips.map((clip) => serialize(clip));
-  pushShared(PrivateMessages.PlayClip, { clips: clipInfos });
+export function pushPlayClips(...clips: Clip[]) {
+  pushShared(PrivateMessages.PlayClip, { clips });
 }
 
 // FIXME: lots of calls to `get` probably makes this slow.
@@ -83,73 +78,41 @@ export function receivePlayClips({
   clips: Clip[];
 }) {
   const nowCompensated = `+${waitMilliseconds / 1000 + 0.1}`;
-  const currentQuantization = get(quantization);
+  const currentQuantization = get(quantizationStore);
   // FIXME: Either make quantization settings e2e reactive or pass a time w/ the play event
   // (different clients will have different quantization values)
   const nextDivision = quantizedTransportTime(currentQuantization);
   const transport = get(transportStore);
-  const store = get(project);
 
   if (transport.state === PlayState.Stopped) {
     for (const clip of clips) {
-      // TODO: change this to only take a clip
-      playClip(store[clip.track_id], clip, 0);
+      trackPlaybackStore.playTrackClip(clip, 0);
     }
     transportStore.startLocal(nowCompensated);
   } else {
+    // fire the event with delay compensation
     Transport.scheduleOnce((time) => {
-      Draw.schedule(() => {
-        for (const clip of clips) {
-          playClip(store[clip.track_id], clip, nextDivision);
-        }
-      }, time);
+      for (const clip of clips) {
+        Draw.schedule(() => {
+          trackPlaybackStore.playTrackClip(clip, nextDivision);
+        }, time);
+      }
     }, nowCompensated);
   }
 }
 
-function setupGrainPlayer(clip: Clip) {
-  if (clip.audio_file?.file.url) {
-    const grainPlayer = new GrainPlayer(
-      decodeURI(clip.audio_file.file.url),
-    ).toDestination();
-    setGrainPlayer(clip, grainPlayer);
-  }
-  return clip;
+export function receiveNewClip(clip: Clip) {
+  playerStore.initializeGrainPlayers(clip);
+  clipStore.initializeClipStates(clip);
+  trackDataStore.createClips(clip);
 }
 
-export function serialize(clip: Clip): Clip {
-  const { grainPlayer, ...rest } = clip;
-  return rest;
-}
-
-export function setGrainPlayer(clip: Clip, grainPlayer: GrainPlayer) {
-  clip.grainPlayer = grainPlayer;
-  clip.grainPlayer.grainSize = 0.2;
-  clip.grainPlayer.overlap = 0.05;
-  clip.grainPlayer.playbackRate = clip.playback_rate;
-}
-
-export function setPlaybackRate(clip: Clip, playbackRate: number) {
-  clip.playback_rate = playbackRate;
-
-  if (clip.grainPlayer !== undefined) {
-    clip.grainPlayer.playbackRate = playbackRate;
-  }
-}
-
-export function stopAudio(clip: Clip, time: Time | undefined) {
-  clip.grainPlayer?.stop(time);
-}
-
-export function playAudio(clip: Clip, startTime: Time, stopTime: Time) {
-  clip.grainPlayer?.start(startTime).stop(stopTime);
-}
-
-export function isPlayable(clip: Clip): boolean {
-  return !!clip.grainPlayer;
+export function receiveUpdateClips(...clips: Clip[]) {
+  playerStore.updateGrainPlayers(...clips);
+  trackDataStore.createClips(...clips);
 }
 
 export function isClip(obj: any): obj is Clip {
   if (!!!obj) return false;
-  return "id" in obj && "track_id" in obj && "audio_file" in obj;
+  return "id" in obj && "track_id" in obj && "audio_file" in obj && !obj.isDndShadowItem;
 }

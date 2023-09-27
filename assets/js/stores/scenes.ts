@@ -1,17 +1,20 @@
-import type { TrackStore, Scene, SceneStore, TrackID } from "js/types";
+import type { Scene, SceneStore, TrackData, TrackID } from "js/types";
 import type { Readable } from "svelte/store";
-import project from "./project";
 import { Clip, PlayState } from "js/types";
 import { get, derived } from "svelte/store";
-import { tracksToClipArrays } from "../utils";
-import { playClips } from "js/clip";
-import { stopTracks } from "js/track";
+import { pushPlayClips } from "js/clip";
+import { pushStopTracks } from "js/track";
+import trackDataStore from "js/stores/track-data";
 
-function scenesFromTracks(tracks: TrackStore): Scene[] {
+function tracksToClipArrays(tracks: TrackData[]) {
+  return tracks.map((track) => track.audio_clips);
+}
+
+function scenesFromTracks(tracks: TrackData[]): Scene[] {
   const scenes = [];
   const clipArrays: Clip[][] = tracksToClipArrays(tracks);
   // starting at the highest scene (bottom up)
-  for (let row = sceneCount(tracks) - 1; row >= 0; row--) {
+  for (let row = sceneCount(clipArrays) - 1; row >= 0; row--) {
     const scene: Scene = {};
     for (const track of clipArrays) {
       const nonemptyTrack = track.find((clip) => !!clip);
@@ -43,14 +46,12 @@ function sceneArraysToStates(sceneArrays: Scene[]): PlayState[] {
   });
 }
 
-function sceneCount(tracks: TrackStore): number {
-  const clips = Object.values(tracks).map(
-    (track) => Object.keys(track.clips).length,
-  );
+function sceneCount(clipArrays: Clip[][]): number {
+  const clips = clipArrays.map((track) => track.length);
   return Math.max(...clips);
 }
 
-const scenes: Readable<SceneStore> = derived(project, ($tracks, set) => {
+const scenes: Readable<SceneStore> = derived(trackDataStore, ($tracks, set) => {
   const sceneArrays: Scene[] = scenesFromTracks($tracks);
   set({
     states: sceneArraysToStates(sceneArrays),
@@ -72,8 +73,8 @@ function playScene(index: number): void {
       tracksToStop.push(trackId);
     }
   }
-  playClips(clipsToPlay);
-  stopTracks(tracksToStop);
+  pushPlayClips(...clipsToPlay);
+  pushStopTracks(tracksToStop);
 }
 
 function stopScene(index: number): void {
@@ -84,7 +85,7 @@ function stopScene(index: number): void {
   for (const trackId of Object.keys(scene)) {
     tracksToStop.push(trackId);
   }
-  stopTracks(tracksToStop);
+  pushStopTracks(tracksToStop);
 }
 
 export default {

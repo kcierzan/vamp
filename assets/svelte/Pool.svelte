@@ -1,18 +1,18 @@
 <script lang="ts">
-  import pool from "js/stores/pool";
+  import poolStore from "js/stores/pool";
   import { dndzone } from "svelte-dnd-action";
   import PoolItem from "./PoolItem.svelte";
   import { AudioFile } from "js/types";
 
-  $: items = $pool;
+  $: items = $poolStore;
 
   function handleDndConsider(e: CustomEvent<DndEvent<AudioFile>>) {
     items = e.detail.items;
   }
 
   function handleDndFinalize(e: CustomEvent<DndEvent<AudioFile>>) {
-    if (e.detail.items.length < $pool.length) {
-      items = $pool;
+    if (e.detail.items.length < $poolStore.length) {
+      items = $poolStore;
     } else {
       items = e.detail.items;
     }

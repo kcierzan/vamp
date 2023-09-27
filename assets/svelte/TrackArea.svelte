@@ -1,86 +1,16 @@
 <script lang="ts">
-  import {
-    SHADOW_ITEM_MARKER_PROPERTY_NAME,
-    TRIGGERS,
-    dndzone,
-  } from "svelte-dnd-action";
-  import project from "js/stores/project";
-  import Track from "./Track.svelte";
-  import { newTrackFromPoolItem } from "js/track";
-  import { AudioFile, DndItem } from "js/types";
-  import { isAudioFile } from "js/audio-file";
+  import TrackComponent from "./Track.svelte";
+  import NewTrackDndZone from "./NewTrackDndZone.svelte";
+  import trackDataStore from "js/stores/track-data";
 
   export let songId: string;
-  $: tracks = Object.values($project);
-
-  const dummyItem = { id: "dummy" };
-  let items: DndItem[] = [dummyItem];
-  let draggingItem: DndItem | AudioFile;
-  let considering = false;
-  $: dndBg = considering ? "bg-orange-500" : "bg-transparent";
-
-  function considerNewTrack(e: CustomEvent<DndEvent<DndItem>>) {
-    setConsidering(e.detail.info.trigger);
-    items = ensureDraggedItemFirst(e.detail.items);
-    setDraggedItem(e.detail.items);
-  }
-
-  function finalizeNewTrack(_e: CustomEvent<DndEvent<DndItem>>) {
-    // FIXME: this needs to support clips also
-    considering = false;
-    isAudioFile(draggingItem) && newTrackFromPoolItem(songId, draggingItem);
-    items = [dummyItem];
-  }
-
-  function setConsidering(trigger: TRIGGERS) {
-    if (trigger === TRIGGERS.DRAGGED_ENTERED) considering = true;
-    if (trigger === TRIGGERS.DRAGGED_LEFT) considering = false;
-  }
-
-  function ensureDraggedItemFirst(items: DndItem[]) {
-    return items
-      .filter((item: any) => !item[SHADOW_ITEM_MARKER_PROPERTY_NAME])
-      .concat(
-        items.filter((item: any) => item[SHADOW_ITEM_MARKER_PROPERTY_NAME]),
-      );
-  }
-
-  function setDraggedItem(items: DndItem[]) {
-    const item = items.find((item) => isAudioFile(item));
-    if (!!item) {
-      draggingItem = item;
-    } else {
-      draggingItem = dummyItem;
-    }
-  }
 </script>
 
 <div class="flex h-4/6 w-2/3 flex-row-reverse overflow-scroll">
-  <div
-    use:dndzone={{
-      items: items,
-      flipDurationMs: 100,
-      morphDisabled: true,
-      dragDisabled: true,
-    }}
-    on:consider={considerNewTrack}
-    on:finalize={finalizeNewTrack}
-    class="flex w-full items-center justify-center {dndBg}"
-  >
-    {#each items as item, i (item.id)}
-      {#if i == 0}
-        <div class="flex w-40 flex-col items-center gap-4">
-          <svg class="hero-plus-circle h-20 w-20 bg-slate-300" />
-          <p class="text-center">Drag some files here to add a new track</p>
-        </div>
-      {:else}
-        <span />
-      {/if}
-    {/each}
-  </div>
+  <NewTrackDndZone {songId} />
   <div class="flex flex-row">
-    {#each tracks as track (track.id)}
-      <Track {track} />
+    {#each $trackDataStore as track (track.id)}
+      <TrackComponent {track} />
     {/each}
   </div>
 </div>

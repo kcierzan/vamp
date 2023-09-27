@@ -1,5 +1,5 @@
 import type { Channel } from "phoenix";
-import type { Transport, GrainPlayer } from "tone";
+import type { Transport } from "tone";
 
 export interface Song {
   id: string;
@@ -9,12 +9,6 @@ export interface Song {
   bpm: number;
   tracks: TrackData[];
   audio_files: AudioFile[];
-}
-
-export interface Track extends TrackData {
-  currentlyPlaying: ClipID | null;
-  clips: TrackClips;
-  playEvent: number | null;
 }
 
 export interface TrackData {
@@ -30,11 +24,11 @@ export interface Clip {
   readonly track_id: TrackID;
   name: string;
   playback_rate: number;
-  grainPlayer?: GrainPlayer;
   index: number;
   state: PlayState;
   type: string;
   audio_file: AudioFile | null;
+  isDndShadowItem?: boolean;
 }
 
 export interface StaticFile {
@@ -48,6 +42,7 @@ export interface AudioFile {
   name: string;
   description: string;
   file: StaticFile;
+  isDndShadowItem?: boolean;
   readonly size: number;
   readonly media_type: string;
 }
@@ -58,13 +53,21 @@ export enum PlayState {
   Queued = "QUEUED",
 }
 
-export interface TrackStore {
-  [key: TrackID]: Track;
-}
-
 export interface ChannelStore {
   shared: Channel | null;
   private: Channel | null;
+}
+
+export interface Track {
+  id: TrackID;
+  name: string;
+  gain: number;
+  panning: number;
+  currentlyPlaying: Clip | null;
+  currentlyQueued: Clip | null;
+  playingEvent: number | null;
+  queuedEvent: number | null;
+  audio_clips: Clip[];
 }
 
 export interface TransportStore {
@@ -76,10 +79,6 @@ export interface TransportStore {
 export interface SceneStore {
   states: PlayState[];
   scenes: Scene[];
-}
-
-export interface TrackClips {
-  [key: ClipID]: Clip;
 }
 
 export enum ChannelName {

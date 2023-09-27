@@ -1,4 +1,4 @@
-import { Clip, QuantizationInterval, TrackStore } from "js/types";
+import { QuantizationInterval } from "js/types";
 import { Time, Transport } from "tone";
 import * as Tone from "tone";
 import { guess } from "web-audio-beat-detector";
@@ -18,10 +18,6 @@ export function b64ToAudioSrc(b64: string, type: string): string {
   const arr = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
   const blob = new Blob([arr], { type: type });
   return URL.createObjectURL(blob);
-}
-
-export function tracksToClipArrays(tracks: TrackStore): Clip[][] {
-  return Object.values(tracks).map((track) => Object.values(track.clips));
 }
 
 export function quantizedTransportTime(
@@ -70,4 +66,18 @@ export async function guessBPM(
     // FIXME: this effectively skips stretching if bpm guess fails
     return { bpm: Transport.bpm.value, offset: 0 };
   }
+}
+
+export function flash(element: HTMLElement) {
+  requestAnimationFrame(() => {
+    element.style.transition = "none";
+    element.style.color = "rgba(255,62,0,1)";
+    element.style.backgroundColor = "rgba(255,62,0,0.2)";
+
+    setTimeout(() => {
+      element.style.transition = "color 1s, background 1s";
+      element.style.color = "";
+      element.style.backgroundColor = "";
+    });
+  });
 }

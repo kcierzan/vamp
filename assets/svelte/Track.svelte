@@ -1,8 +1,14 @@
-<script lang="ts">
-  import type { Track } from "js/types";
-  import ClipSlot from "./ClipSlot.svelte";
+<svelte:options immutable />
 
-  export let track: Track;
+<script lang="ts">
+  import type { TrackData } from "js/types";
+  import ClipSlot from "./ClipSlot.svelte";
+  import { afterUpdate } from "svelte";
+  import { flash } from "js/utils";
+  let element: HTMLElement;
+  afterUpdate(() => flash(element));
+
+  export let track: TrackData;
   const NUMBER_OF_ROWS = 12;
   const slots = Array.from({ length: NUMBER_OF_ROWS }, (_, i) => ({
     id: i * NUMBER_OF_ROWS,
@@ -10,11 +16,12 @@
 
   // function uploadClip(e: HTMLInputEvent) {
   //   if (!e.currentTarget.files) return;
-  //   newClip(e.currentTarget.files[0], track.id);
+  //   pushCreateClipFromFile(e.currentTarget.files[0], track.id);
   // }
 </script>
 
-<div class="flex flex-col gap-1 w-30">
+<div class="flex flex-col gap-1 w-30" bind:this={element}>
+  <div>{track.name}</div>
   {#each slots as slot, i (slot.id)}
     <ClipSlot index={i} {track} />
   {/each}

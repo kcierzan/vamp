@@ -1,11 +1,12 @@
+<svelte:options immutable />
+
 <script lang="ts">
   import type { Song, Token, User } from "js/types";
   import * as Tone from "tone";
   import { onMount } from "svelte";
-  import projectStore from "../js/stores/project";
   import latency from "../js/stores/latency";
   import { joinChannels } from "js/channels";
-  import { newTrack } from "../js/track";
+  import { pushCreateEmptyTrack } from "../js/track";
   import transportStore from "js/stores/transport";
   import poolStore from "js/stores/pool";
   import Scenes from "./Scenes.svelte";
@@ -15,23 +16,34 @@
   import Quantization from "./Quantization.svelte";
   import Pool from "./Pool.svelte";
   import TrackArea from "./TrackArea.svelte";
+  import { afterUpdate } from "svelte";
+  import { flash } from "js/utils";
+  import trackDataStore from "js/stores/track-data";
+  import playersStore from "js/stores/players";
+  import trackPlaybackStore from "js/stores/tracks";
+  import clipStore from "js/stores/clips";
 
   export let currentUser: User;
   export let token: Token;
   export let project: Song;
 
   const { calculateLatency } = latency;
+  let element: HTMLElement;
+  afterUpdate(() => flash(element));
 
-  $: sessionEmpty = Object.keys($projectStore).length === 0;
+  $: sessionEmpty = $trackDataStore.length === 0;
 
   function setInitialStateFromProps(props: Song) {
     transportStore.setBpm(props.bpm);
-    projectStore.setFromProps(props);
+    trackDataStore.setFromProps(props.tracks);
+    trackPlaybackStore.setFromProps(props.tracks);
+    playersStore.setFromProps(props.tracks);
     poolStore.set(props.audio_files);
+    clipStore.setFromProps(props.tracks);
   }
 
   onMount(async () => {
-    Tone.getContext().lookAhead = 0;
+    Tone.getContext().lookAhead = 0.05;
 
     joinChannels(token, currentUser);
     setInitialStateFromProps(project);
@@ -47,8 +59,8 @@
   <h3>Your latency is {$latency} ms!</h3>
 </div>
 
-<div class="flex flex-row space-x-4">
-  <button class="add-track" on:click={() => newTrack(project.id)}>
+<div class="flex flex-row space-x-4" bind:this={element}>
+  <button class="add-track" on:click={() => pushCreateEmptyTrack(project.id)}>
     <span class="hero-plus-circle h-8 w-8 self-center" />
     <span class="self-center">Add track</span>
   </button>
