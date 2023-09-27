@@ -1,6 +1,7 @@
 import { Transport } from "tone";
 import {
   AudioFile,
+  Clip,
   PrivateMessages,
   SharedMessages,
   TrackData,
@@ -50,6 +51,18 @@ export async function pushCreateEmptyTrack(
     panning: 0.0,
     song_id: songId,
   })?.receive("ok", onOk);
+}
+
+export function pushCreateTrackFromClip(songId: string, clip: Clip) {
+  const trackCount = get(trackDataStore).length;
+  const trackWithClipAttrs = {
+    song_id: songId,
+    name: `Track ${trackCount + 1}`,
+    gain: 0.0,
+    panning: 0.0,
+    audio_clips: [clip]
+  };
+  pushShared(SharedMessages.NewTrackFromClip, trackWithClipAttrs);
 }
 
 export function pushRemoveTrack(id: TrackID) {
