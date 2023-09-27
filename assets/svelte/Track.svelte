@@ -16,7 +16,7 @@
 
   // function uploadClip(e: HTMLInputEvent) {
   //   if (!e.currentTarget.files) return;
-  //   newClip(e.currentTarget.files[0], track.id);
+  //   pushCreateClipFromFile(e.currentTarget.files[0], track.id);
   // }
 </script>
 

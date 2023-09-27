@@ -2,9 +2,9 @@ import type { Scene, SceneStore, TrackData, TrackID } from "js/types";
 import type { Readable } from "svelte/store";
 import { Clip, PlayState } from "js/types";
 import { get, derived } from "svelte/store";
-import { playClips } from "js/clip";
-import { stopTracks } from "js/track";
-import trackDataStore from "js/stores/track-data"
+import { pushPlayClips } from "js/clip";
+import { pushStopTracks } from "js/track";
+import trackDataStore from "js/stores/track-data";
 
 function tracksToClipArrays(tracks: TrackData[]) {
   return tracks.map((track) => track.audio_clips);
@@ -73,8 +73,8 @@ function playScene(index: number): void {
       tracksToStop.push(trackId);
     }
   }
-  playClips(...clipsToPlay);
-  stopTracks(tracksToStop);
+  pushPlayClips(...clipsToPlay);
+  pushStopTracks(tracksToStop);
 }
 
 function stopScene(index: number): void {
@@ -85,7 +85,7 @@ function stopScene(index: number): void {
   for (const trackId of Object.keys(scene)) {
     tracksToStop.push(trackId);
   }
-  stopTracks(tracksToStop);
+  pushStopTracks(tracksToStop);
 }
 
 export default {

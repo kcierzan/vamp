@@ -6,7 +6,7 @@
   import { onMount } from "svelte";
   import latency from "../js/stores/latency";
   import { joinChannels } from "js/channels";
-  import { newTrack } from "../js/track";
+  import { pushCreateEmptyTrack } from "../js/track";
   import transportStore from "js/stores/transport";
   import poolStore from "js/stores/pool";
   import Scenes from "./Scenes.svelte";
@@ -60,7 +60,7 @@
 </div>
 
 <div class="flex flex-row space-x-4" bind:this={element}>
-  <button class="add-track" on:click={() => newTrack(project.id)}>
+  <button class="add-track" on:click={() => pushCreateEmptyTrack(project.id)}>
     <span class="hero-plus-circle h-8 w-8 self-center" />
     <span class="self-center">Add track</span>
   </button>

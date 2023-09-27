@@ -87,6 +87,17 @@ function initializeGrainPlayers(...clips: Clip[]) {
   });
 }
 
+function updateGrainPlayers(...clips: Clip[]) {
+  update((store) => {
+    for (const clip of clips) {
+      if (!!store[clip.id].grainPlayer) {
+        store[clip.id].grainPlayer!.playbackRate = clip.playback_rate;
+      }
+    }
+    return store;
+  });
+}
+
 export default {
   subscribe,
   playAudio,
@@ -95,4 +106,5 @@ export default {
   setupGrainPlayer,
   setFromProps,
   initializeGrainPlayers,
+  updateGrainPlayers,
 };

@@ -17,13 +17,7 @@ import trackStore from "js/stores/tracks";
 import trackDataStore from "js/stores/track-data";
 import clipStore from "js/stores/clips";
 
-export function newClipFromAPI(clip: Clip) {
-  const newClip = { ...clip, state: PlayState.Stopped };
-  playerStore.setupGrainPlayer(newClip);
-  return newClip;
-}
-
-export function newClipFromPool(
+export function pushCreateClipFromPool(
   audio: AudioFile,
   trackId: TrackID,
   index: number,
@@ -38,7 +32,7 @@ export function newClipFromPool(
   });
 }
 
-export async function newClip(
+export async function pushCreateClipFromFile(
   file: File,
   trackId: TrackID,
   index: number,
@@ -65,11 +59,11 @@ export async function newClip(
   });
 }
 
-export function updateClipProperties(...clips: Clip[]): void {
+export function pushUpdateClip(...clips: Clip[]): void {
   pushShared(SharedMessages.UpdateClips, { clips });
 }
 
-export function playClips(...clips: Clip[]) {
+export function pushPlayClips(...clips: Clip[]) {
   pushShared(PrivateMessages.PlayClip, { clips });
 }
 
@@ -107,11 +101,6 @@ export function receivePlayClips({
   }
 }
 
-export function setPlaybackRate(clip: Clip, playbackRate: number) {
-  clip.playback_rate = playbackRate;
-  playerStore.setPlaybackRate(clip, playbackRate);
-}
-
 export function receiveNewClip(clip: Clip) {
   playerStore.initializeGrainPlayers(clip);
   clipStore.initializeClipStates(clip);
@@ -119,8 +108,7 @@ export function receiveNewClip(clip: Clip) {
 }
 
 export function receiveUpdateClips(...clips: Clip[]) {
-  playerStore.initializeGrainPlayers(...clips);
-  clipStore.initializeClipStates(...clips);
+  playerStore.updateGrainPlayers(...clips);
   trackDataStore.createClips(...clips);
 }
 

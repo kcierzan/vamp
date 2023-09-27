@@ -6,7 +6,7 @@
     TRIGGERS,
     dndzone,
   } from "svelte-dnd-action";
-  import { newTrackFromPoolItem } from "js/track";
+  import { pushCreateTrackFromAudioFile } from "js/track";
   import { AudioFile, DndItem } from "js/types";
   import { isAudioFile } from "js/audio-file";
 
@@ -26,7 +26,7 @@
     // FIXME: this needs to support clips also
     considering = false;
     const audioFile = e.detail.items.find((item) => isAudioFile(item));
-    !!audioFile && newTrackFromPoolItem(songId, audioFile as AudioFile);
+    !!audioFile && pushCreateTrackFromAudioFile(songId, audioFile as AudioFile);
     items = [dummyItem];
   }
 

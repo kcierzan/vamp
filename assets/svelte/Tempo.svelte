@@ -2,8 +2,9 @@
   import { onMount } from "svelte";
   import transportStore from "js/stores/transport";
   import type { HTMLInputEvent, Clip } from "js/types";
-  import { setPlaybackRate, updateClipProperties } from "js/clip";
+  import { pushUpdateClip } from "js/clip";
   import trackDataStore from "js/stores/track-data";
+  import playerStore from "js/stores/players"
 
   const { setBpm } = transportStore;
 
@@ -13,12 +14,13 @@
       for (const clip of track.audio_clips) {
         if (!!clip.audio_file) {
           const rate = bpm / clip.audio_file.bpm;
-          setPlaybackRate(clip, rate);
+          // optimistically change rate locally first
+          playerStore.setPlaybackRate(clip, rate);
+          clipsToStretch.push({ ...clip, playback_rate: rate });
         }
-        clipsToStretch.push(clip);
       }
     }
-    updateClipProperties(...clipsToStretch);
+    pushUpdateClip(...clipsToStretch);
   }
 
   function setTransportBpm(e: HTMLInputEvent) {

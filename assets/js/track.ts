@@ -15,7 +15,7 @@ import trackDataStore from "js/stores/track-data";
 import playerStore from "js/stores/players";
 import clipsStore from "js/stores/clips";
 
-export function newTrackFromPoolItem(songId: string, audioFile: AudioFile) {
+export function pushCreateTrackFromAudioFile(songId: string, audioFile: AudioFile) {
   const trackCount = get(trackDataStore).length;
   const trackWithClipAttrs = {
     song_id: songId,
@@ -37,7 +37,7 @@ export function newTrackFromPoolItem(songId: string, audioFile: AudioFile) {
   pushShared(SharedMessages.NewTrack, trackWithClipAttrs);
 }
 
-export async function newTrack(
+export async function pushCreateEmptyTrack(
   songId: string,
   onOk: (res: any) => any = (_res) => {},
 ): Promise<void> {
@@ -49,17 +49,17 @@ export async function newTrack(
   })?.receive("ok", onOk);
 }
 
-export function removeTrack(id: TrackID) {
+export function pushRemoveTrack(id: TrackID) {
   pushShared(SharedMessages.RemoveTrack, { id });
 }
 
-export function stopTracks(trackIds: TrackID[]): void {
+export function pushStopTracks(trackIds: TrackID[]): void {
   pushShared(PrivateMessages.StopTrack, { trackIds });
 }
 
-export function stopAllTracks(): void {
+export function pushStopAllTracks(): void {
   const trackIds = get(trackDataStore).map((track) => track.id);
-  stopTracks(trackIds);
+  pushStopTracks(trackIds);
 }
 
 export function receiveStopTrack({ trackIds }: { trackIds: TrackID[] }): void {
