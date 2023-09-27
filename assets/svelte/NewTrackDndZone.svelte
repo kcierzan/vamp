@@ -1,4 +1,4 @@
-<!-- <svelte:options immutable /> -->
+<svelte:options immutable />
 
 <script lang="ts">
   import {
