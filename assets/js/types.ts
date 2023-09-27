@@ -69,10 +69,6 @@ export interface Track {
   audio_clips: Clip[];
 }
 
-export interface TrackStore {
-  [key: TrackID]: Track;
-}
-
 export interface TransportStore {
   transport: typeof Transport;
   state: PlayState;
@@ -82,10 +78,6 @@ export interface TransportStore {
 export interface SceneStore {
   states: PlayState[];
   scenes: Scene[];
-}
-
-export interface TrackClips {
-  [key: ClipID]: Clip;
 }
 
 export enum ChannelName {
