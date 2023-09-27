@@ -17,8 +17,8 @@ export interface TrackStateStore {
   [key: TrackID]: TrackState;
 }
 
-const tracksStore: Writable<TrackStateStore> = writable({});
-const { subscribe, update, set } = tracksStore;
+const trackPlaybackStore: Writable<TrackStateStore> = writable({});
+const { subscribe, update, set } = trackPlaybackStore;
 const INIT_TRACK_STATE = {
   currentlyPlaying: null,
   currentlyQueued: null,

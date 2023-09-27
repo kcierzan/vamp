@@ -13,7 +13,7 @@ import { get } from "svelte/store";
 import quantizationStore from "./stores/quantization";
 import transportStore from "./stores/transport";
 import playerStore from "js/stores/players";
-import trackStore from "js/stores/tracks";
+import trackPlaybackStore from "js/stores/tracks";
 import trackDataStore from "js/stores/track-data";
 import clipStore from "js/stores/clips";
 
@@ -86,7 +86,7 @@ export function receivePlayClips({
 
   if (transport.state === PlayState.Stopped) {
     for (const clip of clips) {
-      trackStore.playTrackClip(clip, 0);
+      trackPlaybackStore.playTrackClip(clip, 0);
     }
     transportStore.startLocal(nowCompensated);
   } else {
@@ -94,7 +94,7 @@ export function receivePlayClips({
     Transport.scheduleOnce((time) => {
       for (const clip of clips) {
         Draw.schedule(() => {
-          trackStore.playTrackClip(clip, nextDivision);
+          trackPlaybackStore.playTrackClip(clip, nextDivision);
         }, time);
       }
     }, nowCompensated);

@@ -20,7 +20,7 @@
   import { flash } from "js/utils";
   import trackDataStore from "js/stores/track-data";
   import playersStore from "js/stores/players";
-  import tracksStore from "js/stores/tracks";
+  import trackPlaybackStore from "js/stores/tracks";
   import clipStore from "js/stores/clips";
 
   export let currentUser: User;
@@ -36,7 +36,7 @@
   function setInitialStateFromProps(props: Song) {
     transportStore.setBpm(props.bpm);
     trackDataStore.setFromProps(props.tracks);
-    tracksStore.setFromProps(props.tracks);
+    trackPlaybackStore.setFromProps(props.tracks);
     playersStore.setFromProps(props.tracks);
     poolStore.set(props.audio_files);
     clipStore.setFromProps(props.tracks);

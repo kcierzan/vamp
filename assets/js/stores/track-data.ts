@@ -1,6 +1,5 @@
 import { Clip, TrackData, TrackID } from "js/types";
 import { Writable, writable } from "svelte/store";
-import tracksStore from "js/stores/tracks";
 
 const trackData: Writable<TrackData[]> = writable([]);
 const { subscribe, update, set } = trackData;
@@ -12,11 +11,8 @@ function createTrack(track: TrackData) {
 }
 
 function removeTrack(trackId: TrackID) {
-  tracksStore.stopCurrentlyPlayingAudio(trackId, undefined);
-  tracksStore.cancelPlayingEvent(trackId);
-  tracksStore.cancelQueuedEvent(trackId);
   update((store) => {
-    return store.filter(track => track.id !== trackId);
+    return store.filter((track) => track.id !== trackId);
   });
 }
 

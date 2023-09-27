@@ -10,13 +10,15 @@ import { get } from "svelte/store";
 import { pushShared } from "./channels";
 import { quantizedTransportTime } from "./utils";
 import quantizationStore from "./stores/quantization";
-import tracksStore from "js/stores/tracks";
 import trackDataStore from "js/stores/track-data";
 import playerStore from "js/stores/players";
 import clipsStore from "js/stores/clips";
-import trackPlaybackStore from "js/stores/tracks"
+import trackPlaybackStore from "js/stores/tracks";
 
-export function pushCreateTrackFromAudioFile(songId: string, audioFile: AudioFile) {
+export function pushCreateTrackFromAudioFile(
+  songId: string,
+  audioFile: AudioFile,
+) {
   const trackCount = get(trackDataStore).length;
   const trackWithClipAttrs = {
     song_id: songId,
@@ -68,12 +70,15 @@ export function receiveStopTrack({ trackIds }: { trackIds: TrackID[] }): void {
   // FIXME: Either make quantization settings e2e reactive or pass a time w/ the stop event
   const nextBarTT = quantizedTransportTime(currentQuantization);
   for (const trackId of trackIds) {
-    tracksStore.stopTrack(trackId, nextBarTT);
+    trackPlaybackStore.stopTrack(trackId, nextBarTT);
   }
 }
 
 export function receiveRemoveTrack(trackId: TrackID) {
   // TODO: remove clipStates and GrainPlayers
+  trackPlaybackStore.stopCurrentlyPlayingAudio(trackId, undefined);
+  trackPlaybackStore.cancelPlayingEvent(trackId);
+  trackPlaybackStore.cancelQueuedEvent(trackId);
   trackDataStore.removeTrack(trackId);
 }
 
