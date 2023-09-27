@@ -51,21 +51,6 @@ function createGrainPlayer(clip: Clip): GrainPlayer | null {
   return null;
 }
 
-function setupGrainPlayer(clip: Clip) {
-  if (clip.audio_file?.file.url) {
-    const grainPlayer = new GrainPlayer(
-      decodeURI(clip.audio_file.file.url),
-    ).toDestination();
-    grainPlayer.grainSize = 0.2;
-    grainPlayer.overlap = 0.05;
-    grainPlayer.playbackRate = clip.playback_rate;
-    update((store) => {
-      store[clip.id].grainPlayer = grainPlayer;
-      return store;
-    });
-  }
-}
-
 function setFromProps(tracks: TrackData[]) {
   const newState = tracks.reduce((acc: PlayerStore, track) => {
     for (const clip of track.audio_clips) {
@@ -103,7 +88,6 @@ export default {
   playAudio,
   stopAudio,
   setPlaybackRate,
-  setupGrainPlayer,
   setFromProps,
   initializeGrainPlayers,
   updateGrainPlayers,
