@@ -16,9 +16,7 @@ function removeTrack(trackId: TrackID) {
   tracksStore.cancelPlayingEvent(trackId);
   tracksStore.cancelQueuedEvent(trackId);
   update((store) => {
-    const indexToRemove = store.findIndex((track) => track.id === trackId);
-    store.splice(indexToRemove, 1);
-    return store;
+    return store.filter(track => track.id !== trackId);
   });
 }
 
