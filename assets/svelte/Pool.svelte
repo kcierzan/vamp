@@ -20,7 +20,7 @@
 </script>
 
 <div
-  class="min-w-max flex border-2 border-slate-200 rounded p-2 flex-col gap-1"
+  class="flex w-full h-2/3 flex-col gap-1 rounded border-2 border-slate-200 p-2"
   use:dndzone={{
     items: items,
     dropFromOthersDisabled: true,
@@ -35,13 +35,6 @@
       <PoolItem {audioFile} />
     {/each}
   {:else}
-    <div class="h-8 w-20 empty" />
+    <div class="placeholder h-8 w-20" />
   {/if}
 </div>
-
-<style lang="postcss">
-  .empty::after {
-    content: "\200B";
-    visibility: hidden;
-  }
-</style>

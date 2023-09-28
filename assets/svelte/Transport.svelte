@@ -13,8 +13,7 @@
 
   $: playing = $transportStore.state === PlayState.Playing;
 
-  const buttonStyles =
-    "text-base bg-gray-400  w-24 h-16 text-black rounded-lg mr-4";
+  const buttonStyles = "text-base bg-gray-400 w-16 h-8 text-black rounded-lg";
 
   function measurePlayhead() {
     Transport.scheduleRepeat((time) => {
@@ -33,8 +32,9 @@
     Transport.scheduleRepeat((time) => {
       Draw.schedule(() => {
         const now =
-          Math.round(($transportStore.transport.seconds + Number.EPSILON) * 100) /
-          100;
+          Math.round(
+            ($transportStore.transport.seconds + Number.EPSILON) * 100,
+          ) / 100;
         seconds = now.toFixed(2);
       }, time);
     }, "10hz");
@@ -60,7 +60,7 @@
   }
 </script>
 
-<div class="flex flex-row">
+<div class="flex flex-row space-x-4 items-center">
   <button
     class={buttonStyles}
     class:bg-green-500={playing}
@@ -73,8 +73,8 @@
     on:mousedown={holdStop}
     on:mouseup={releaseStop}>Stop</button
   >
-  <div class="flex-column justify-center w-32">
-    <div class="pt-2">Transport: {playHeadPosition}</div>
+  <div class="flex-column w-32 justify-center">
+    <div>Transport: {playHeadPosition}</div>
     <div>Seconds: {seconds}</div>
   </div>
 </div>

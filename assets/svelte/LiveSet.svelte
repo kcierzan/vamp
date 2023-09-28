@@ -6,22 +6,18 @@
   import { onMount } from "svelte";
   import latency from "../js/stores/latency";
   import { joinChannels } from "js/channels";
-  import { pushCreateEmptyTrack } from "../js/track";
   import transportStore from "js/stores/transport";
   import poolStore from "js/stores/pool";
   import Scenes from "./Scenes.svelte";
-  import Tempo from "./Tempo.svelte";
-  import Metronome from "./Metronome.svelte";
-  import Transport from "./Transport.svelte";
-  import Quantization from "./Quantization.svelte";
-  import Pool from "./Pool.svelte";
   import TrackArea from "./TrackArea.svelte";
+  import MediaBay from "./MediaBay.svelte";
   import { afterUpdate } from "svelte";
   import { flash } from "js/utils";
   import trackDataStore from "js/stores/track-data";
   import playersStore from "js/stores/players";
   import trackPlaybackStore from "js/stores/tracks";
   import clipStore from "js/stores/clips";
+  import SongNav from "./SongNav.svelte";
 
   export let currentUser: User;
   export let token: Token;
@@ -59,25 +55,12 @@
   <h3>Your latency is {$latency} ms!</h3>
 </div>
 
-<div class="flex flex-row space-x-4" bind:this={element}>
-  <button class="add-track" on:click={() => pushCreateEmptyTrack(project.id)}>
-    <span class="hero-plus-circle h-8 w-8 self-center" />
-    <span class="self-center">Add track</span>
-  </button>
-  <Transport />
-  <Tempo />
-  <Quantization />
-  <Metronome />
-</div>
+<SongNav {project} />
 
-<div class="flex w-full flex-row justify-center gap-1">
+<div class="flex w-full flex-row items-center justify-center gap-1">
   <Scenes />
-  <TrackArea songId={project.id} />
-  <Pool />
+  <div class="flex h-5/6 w-10/12 justify-between">
+    <TrackArea songId={project.id} />
+    <MediaBay />
+  </div>
 </div>
-
-<style lang="postcss">
-  .add-track {
-    @apply mb-4 flex h-16 w-24 flex-grow justify-center space-x-4 rounded bg-green-500 text-lg text-white hover:bg-green-700;
-  }
-</style>

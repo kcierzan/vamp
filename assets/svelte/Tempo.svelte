@@ -4,7 +4,7 @@
   import type { HTMLInputEvent, Clip } from "js/types";
   import { pushUpdateClip } from "js/clip";
   import trackDataStore from "js/stores/track-data";
-  import playerStore from "js/stores/players"
+  import playerStore from "js/stores/players";
 
   const { setBpm } = transportStore;
 
@@ -34,16 +34,14 @@
 </script>
 
 <div class="flex flex-col items-center">
-  <div class="mb-8">
-    <input
-      class="w-22 h-16 rounded-lg border-4 text-lg"
-      id="tempo"
-      value={$transportStore.bpm}
-      type="number"
-      min="40"
-      max="250"
-      step="1"
-      on:change={setTransportBpm}
-    />
-  </div>
+  <input
+    class="h-8 w-24 rounded-lg border-2 text-lg"
+    id="tempo"
+    value={$transportStore.bpm}
+    type="number"
+    min="40"
+    max="250"
+    step="1"
+    on:change={setTransportBpm}
+  />
 </div>

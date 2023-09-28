@@ -9,7 +9,7 @@
   afterUpdate(() => flash(element));
 
   export let track: TrackData;
-  const NUMBER_OF_ROWS = 12;
+  const NUMBER_OF_ROWS = 16;
   const slots = Array.from({ length: NUMBER_OF_ROWS }, (_, i) => ({
     id: i * NUMBER_OF_ROWS,
   }));
