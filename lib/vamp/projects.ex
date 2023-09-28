@@ -212,6 +212,24 @@ defmodule Vamp.Projects do
     |> add_urls_to_clips()
   end
 
+  def create_track_and_associate_clip!(attrs \\ %{}) do
+    with {[audio_clip], attrs} <- Map.pop(attrs, "audio_clips", []),
+         {:ok, track} <-
+           Repo.transaction(fn ->
+             track = create_track!(attrs)
+
+             new_clip =
+               update_audio_clip!(
+                 %Vamp.Projects.AudioClip{id: audio_clip["id"]},
+                 Map.merge(audio_clip, %{"track_id" => track.id})
+               )
+
+             %{track | audio_clips: [new_clip | track.audio_clips]}
+           end) do
+      add_urls_to_clips(track)
+    end
+  end
+
   defp add_urls_to_clips(track) do
     clips = Enum.map(track.audio_clips, &add_url_to_audio_clip/1)
     put_in(track.audio_clips, clips)
@@ -342,6 +360,15 @@ defmodule Vamp.Projects do
     |> AudioClip.changeset(attrs)
     |> Repo.update!()
     |> Repo.preload(:audio_file)
+  end
+
+  def update_audio_clips!(audio_clips) do
+    Repo.transaction(fn ->
+      for clip <- audio_clips do
+        %{"id" => id} = clip
+        update_audio_clip!(%AudioClip{id: id}, clip)
+      end
+    end)
   end
 
   @doc """

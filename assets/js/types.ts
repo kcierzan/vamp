@@ -97,6 +97,7 @@ export enum SharedMessages {
   NewClip = "new_clip",
   UpdateClips = "update_clips",
   NewTrack = "new_track",
+  NewTrackFromClip = "new_track_from_clip",
   RemoveTrack = "remove_track",
 }
 

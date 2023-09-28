@@ -6,9 +6,13 @@
     TRIGGERS,
     dndzone,
   } from "svelte-dnd-action";
-  import { pushCreateTrackFromAudioFile } from "js/track";
-  import { AudioFile, DndItem } from "js/types";
+  import {
+    pushCreateTrackFromAudioFile,
+    pushCreateTrackFromClip,
+  } from "js/track";
+  import { DndItem } from "js/types";
   import { isAudioFile } from "js/audio-file";
+  import { isClip } from "js/clip";
 
   export let songId: string;
 
@@ -23,11 +27,15 @@
   }
 
   function finalizeNewTrack(e: CustomEvent<DndEvent<DndItem>>) {
-    // FIXME: this needs to support clips also
     considering = false;
     const audioFile = e.detail.items.find((item) => isAudioFile(item));
-    !!audioFile && pushCreateTrackFromAudioFile(songId, audioFile as AudioFile);
+    const clip = e.detail.items.find((item) => isClip(item));
     items = [dummyItem];
+    if (isAudioFile(audioFile)) {
+      pushCreateTrackFromAudioFile(songId, audioFile);
+    } else if (isClip(clip)) {
+      pushCreateTrackFromClip(songId, clip);
+    }
   }
 
   function setConsidering(trigger: TRIGGERS) {

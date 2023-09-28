@@ -113,6 +113,30 @@ defmodule Vamp.ProjectsTest do
       assert_raise Ecto.InvalidChangesetError, fn -> Projects.create_track!(@invalid_attrs) end
     end
 
+    test "create_track_and_associate_clip!/1 creates a track and updates the clip association" do
+      track = track_fixture()
+      clip = audio_clip_fixture(%{track_id: track.id})
+
+      existing_clip_attrs =
+        Map.from_struct(clip)
+        |> Map.delete(:__meta__)
+        |> Map.new(fn {k, v} -> {to_string(k), v} end)
+
+      valid_attrs =
+        %{
+          "name" => "new cool name",
+          "gain" => 120.5,
+          "panning" => 120.5,
+          "song_id" => track.song_id,
+          "audio_clips" => [existing_clip_attrs]
+        }
+
+      %Track{} = new_track = Projects.create_track_and_associate_clip!(valid_attrs)
+      assert new_track.name == "new cool name"
+      assert length(new_track.audio_clips) == 1
+      assert Repo.get!(Vamp.Projects.AudioClip, clip.id).track_id == new_track.id
+    end
+
     test "update_track/2 with valid data updates the track" do
       track = track_fixture()
       update_attrs = %{name: "some updated name", gain: 456.7, panning: 456.7}

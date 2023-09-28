@@ -73,7 +73,7 @@
 </script>
 
 <button
-  class="text-base bg-gray-400 w-24 h-16 text-black rounded-lg"
+  class="text-base bg-gray-400 w-16 h-8 text-black rounded-lg"
   class:bg-yellow-500={on}
   on:click={toggle}>{beat}</button
 >

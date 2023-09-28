@@ -4,11 +4,7 @@
   import { dndzone } from "svelte-dnd-action";
   import ClipComponent from "./Clip.svelte";
   import { DndItem, TrackData } from "js/types";
-  import {
-    isClip,
-    pushCreateClipFromPool,
-    pushUpdateClip,
-  } from "js/clip";
+  import { isClip, pushCreateClipFromPool, pushUpdateClip } from "js/clip";
   import { isAudioFile } from "js/audio-file";
   import trackDataStore from "js/stores/track-data";
   import { flash } from "js/utils";
@@ -49,7 +45,7 @@
   }
 
   $: options = {
-    dropFromOthersDisabled: !!occupyingClip,
+    dropFromOthersDisabled: !!items.length,
     items: items,
     flipDurationMs: 100,
   };
