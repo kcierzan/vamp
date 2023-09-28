@@ -1,7 +1,7 @@
 <script lang="ts">
   import { PlayState } from "js/types";
   import type { Clip, HTMLInputEvent } from "js/types";
-  import { pushPlayClips, pushUpdateClip } from "js/clip";
+  import clipMessage from "js/clip";
   import { Transport } from "tone";
   import clipsStore from "js/stores/clips";
 
@@ -53,7 +53,7 @@
   function changeTempo(e: HTMLInputEvent) {
     const target = e.target;
     const val = (target as HTMLInputElement).value;
-    pushUpdateClip({
+    clipMessage.push.updateClips({
       ...clip,
       playback_rate: parseFloat(val),
     });
@@ -62,7 +62,7 @@
 
 <div class="flex flex-row">
   <button
-    on:click={() => pushPlayClips(clip)}
+    on:click={() => clipMessage.push.playClips(clip)}
     class={clipStyles}
     bind:this={button}
   >

@@ -17,7 +17,7 @@ import trackPlaybackStore from "js/stores/tracks";
 import trackDataStore from "js/stores/track-data";
 import clipStore from "js/stores/clips";
 
-export function pushCreateClipFromPool(
+function pushCreateClipFromPool(
   audio: AudioFile,
   trackId: TrackID,
   index: number,
@@ -32,7 +32,7 @@ export function pushCreateClipFromPool(
   });
 }
 
-export async function pushCreateClipFromFile(
+async function pushCreateClipFromFile(
   file: File,
   trackId: TrackID,
   index: number,
@@ -59,18 +59,18 @@ export async function pushCreateClipFromFile(
   });
 }
 
-export function pushUpdateClip(...clips: Clip[]): void {
+function pushUpdateClips(...clips: Clip[]): void {
   pushShared(SharedMessages.UpdateClips, { clips });
 }
 
-export function pushPlayClips(...clips: Clip[]) {
+function pushPlayClips(...clips: Clip[]) {
   pushShared(PrivateMessages.PlayClip, { clips });
 }
 
 // FIXME: lots of calls to `get` probably makes this slow.
 // Consider moving this to a derived store that derives from
 // quantization, transport, and project.
-export function receivePlayClips({
+function receivePlayClips({
   waitMilliseconds,
   clips,
 }: {
@@ -101,18 +101,37 @@ export function receivePlayClips({
   }
 }
 
-export function receiveNewClip(clip: Clip) {
+function receiveNewClip(clip: Clip) {
   playerStore.initializeGrainPlayers(clip);
   clipStore.initializeClipStates(clip);
   trackDataStore.createClips(clip);
 }
 
-export function receiveUpdateClips(...clips: Clip[]) {
+function receiveUpdateClips(...clips: Clip[]) {
   playerStore.updateGrainPlayers(...clips);
   trackDataStore.createClips(...clips);
 }
 
 export function isClip(obj: any): obj is Clip {
   if (!!!obj) return false;
-  return "id" in obj && "track_id" in obj && "audio_file" in obj && !obj.isDndShadowItem;
+  return (
+    "id" in obj &&
+    "track_id" in obj &&
+    "audio_file" in obj &&
+    !obj.isDndShadowItem
+  );
 }
+
+export default {
+  push: {
+    createFromPool: pushCreateClipFromPool,
+    createFromFile: pushCreateClipFromFile,
+    playClips: pushPlayClips,
+    updateClips: pushUpdateClips,
+  },
+  receive: {
+    updateClips: receiveUpdateClips,
+    new: receiveNewClip,
+    playClips: receivePlayClips,
+  },
+};

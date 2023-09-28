@@ -1,12 +1,15 @@
 <svelte:options immutable />
 
 <script lang="ts">
-  import { pushCreateEmptyTrack } from "js/track";
   import { Song } from "js/types";
+  import trackMessage from "js/track";
   export let project: Song;
 </script>
 
-<button class="add-track" on:click={() => pushCreateEmptyTrack(project.id)}>
+<button
+  class="add-track"
+  on:click={() => trackMessage.push.createEmpty(project.id)}
+>
   <span class="hero-plus-circle h-full w-1/4 self-center" />
   <span class="self-center">Add track</span>
 </button>

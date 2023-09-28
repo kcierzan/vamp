@@ -6,10 +6,7 @@
     TRIGGERS,
     dndzone,
   } from "svelte-dnd-action";
-  import {
-    pushCreateTrackFromAudioFile,
-    pushCreateTrackFromClip,
-  } from "js/track";
+  import trackMessage from "js/track";
   import { DndItem } from "js/types";
   import { isAudioFile } from "js/audio-file";
   import { isClip } from "js/clip";
@@ -32,9 +29,9 @@
     const clip = e.detail.items.find((item) => isClip(item));
     items = [dummyItem];
     if (isAudioFile(audioFile)) {
-      pushCreateTrackFromAudioFile(songId, audioFile);
+      trackMessage.push.createFromAudioFile(songId, audioFile);
     } else if (isClip(clip)) {
-      pushCreateTrackFromClip(songId, clip);
+      trackMessage.push.createFromClip(songId, clip);
     }
   }
 
