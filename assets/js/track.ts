@@ -28,7 +28,7 @@ export function pushCreateTrackFromAudioFile(
     panning: 0.0,
     audio_clips: [
       {
-        name: audioFile.name,
+        name: audioFile.file.file_name,
         type: audioFile.media_type,
         playback_rate: audioFile.bpm
           ? Transport.bpm.value / audioFile.bpm
