@@ -362,6 +362,15 @@ defmodule Vamp.Projects do
     |> Repo.preload(:audio_file)
   end
 
+  def update_audio_clips!(audio_clips) do
+    Repo.transaction(fn ->
+      for clip <- audio_clips do
+        %{"id" => id} = clip
+        update_audio_clip!(%AudioClip{id: id}, clip)
+      end
+    end)
+  end
+
   @doc """
   Deletes a audio_clip.
 
