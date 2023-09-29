@@ -7,7 +7,7 @@
 </script>
 
 <div
-  class="flex w-3/4 flex-row-reverse p-2 overflow-scroll border-2 border-slate-200"
+  class="flex w-3/4 flex-row-reverse overflow-scroll rounded border-2 border-slate-200 p-2"
 >
   <NewTrackDndZone {songId} />
   <div class="flex flex-row">

@@ -1,4 +1,5 @@
 <svelte:options immutable />
+
 <script lang="ts">
   import { afterUpdate } from "svelte";
   import { Song } from "js/types";
@@ -15,7 +16,7 @@
 </script>
 
 <div
-  class="flex flex-row items-center justify-center space-x-4"
+  class="my-4 flex flex-row items-center justify-center space-x-4"
   bind:this={element}
 >
   <AddTrackButton {project} />

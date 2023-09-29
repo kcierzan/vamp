@@ -24,8 +24,8 @@
   export let project: Song;
 
   const { calculateLatency } = latency;
-  let element: HTMLElement;
-  afterUpdate(() => flash(element));
+  // let element: HTMLElement;
+  // afterUpdate(() => flash(element));
 
   $: sessionEmpty = $trackDataStore.length === 0;
 
@@ -58,8 +58,8 @@
 <SongNav {project} />
 
 <div class="flex w-full flex-row items-center justify-center gap-1">
-  <Scenes />
   <div class="flex h-5/6 w-10/12 justify-between">
+    <Scenes />
     <TrackArea songId={project.id} />
     <MediaBay />
   </div>

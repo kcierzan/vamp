@@ -76,9 +76,13 @@ export interface TransportStore {
   bpm: number;
 }
 
+export interface SceneStates {
+  [key: string]: PlayState
+}
+
 export interface SceneStore {
-  states: PlayState[];
-  scenes: Scene[];
+  states: SceneStates;
+  scenes: Scenes;
 }
 
 export enum ChannelName {
@@ -113,8 +117,8 @@ export enum QuantizationInterval {
   SixteenthNote = "@16n",
 }
 
-export interface Scene {
-  [key: TrackID]: Clip | null;
+export interface Scenes {
+  [key: string]: Clip[];
 }
 
 export type ClipID = string;
