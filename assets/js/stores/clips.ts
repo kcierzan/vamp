@@ -2,7 +2,7 @@ import { Clip, ClipID, PlayState, TrackData } from "js/types";
 import { writable } from "svelte/store";
 import type { Writable } from "svelte/store";
 
-interface ClipStore {
+export interface ClipStore {
   [key: ClipID]: {
     state: PlayState
   }

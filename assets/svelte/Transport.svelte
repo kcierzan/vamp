@@ -60,7 +60,7 @@
   }
 </script>
 
-<div class="flex flex-row space-x-4 items-center">
+<div class="flex flex-row items-center space-x-4">
   <button
     class={buttonStyles}
     class:bg-green-500={playing}
@@ -73,7 +73,7 @@
     on:mousedown={holdStop}
     on:mouseup={releaseStop}>Stop</button
   >
-  <div class="flex-column w-32 justify-center">
+  <div class="flex-column w-32 justify-center text-xs">
     <div>Transport: {playHeadPosition}</div>
     <div>Seconds: {seconds}</div>
   </div>

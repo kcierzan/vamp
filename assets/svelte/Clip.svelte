@@ -36,7 +36,7 @@
   $: handleQueueAnimation($clipsStore[clip.id].state);
 
   // TODO: extract this to PlayableButton or something
-  const baseStyles = "flex text-base w-36 h-8 text-white rounded";
+  const baseStyles = "flex text-base w-full h-8 text-white rounded";
   const stateStyles = {
     [PlayState.Playing]: "bg-sky-400",
     [PlayState.Stopped]: "bg-blue-500",
@@ -70,10 +70,3 @@
     <span class="w-30 self-center truncate text-left">{clip.name}</span>
   </button>
 </div>
-
-<style>
-  .empty::after {
-    content: "\200B";
-    visibility: hidden;
-  }
-</style>
