@@ -27,7 +27,7 @@
   // let element: HTMLElement;
   // afterUpdate(() => flash(element));
 
-  $: sessionEmpty = $trackDataStore.length === 0;
+  const sessionEmpty = project.tracks.length === 0;
 
   function setInitialStateFromProps(props: Song) {
     transportStore.setBpm(props.bpm);
