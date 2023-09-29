@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import transportStore from "js/stores/transport";
   import type { HTMLInputEvent, Clip } from "js/types";
-  import { pushUpdateClip } from "js/clip";
+  import clipMessage from "js/clip";
   import trackDataStore from "js/stores/track-data";
   import playerStore from "js/stores/players";
 
@@ -20,7 +20,7 @@
         }
       }
     }
-    pushUpdateClip(...clipsToStretch);
+    clipMessage.push.updateClips(...clipsToStretch);
   }
 
   function setTransportBpm(e: HTMLInputEvent) {

@@ -2,8 +2,8 @@ import type { Scene, SceneStore, TrackData, TrackID } from "js/types";
 import type { Readable } from "svelte/store";
 import { Clip, PlayState } from "js/types";
 import { get, derived } from "svelte/store";
-import { pushPlayClips } from "js/clip";
-import { pushStopTracks } from "js/track";
+import clipMessage from "js/clip";
+import trackMessage from "js/track";
 import trackDataStore from "js/stores/track-data";
 
 function tracksToClipArrays(tracks: TrackData[]) {
@@ -59,6 +59,7 @@ const scenes: Readable<SceneStore> = derived(trackDataStore, ($tracks, set) => {
   });
 });
 
+// TODO: move to the component
 function playScene(index: number): void {
   const scenesValue = get(scenes);
 
@@ -73,10 +74,11 @@ function playScene(index: number): void {
       tracksToStop.push(trackId);
     }
   }
-  pushPlayClips(...clipsToPlay);
-  pushStopTracks(tracksToStop);
+  clipMessage.push.playClips(...clipsToPlay);
+  trackMessage.push.stop(tracksToStop);
 }
 
+// TODO: move to the component
 function stopScene(index: number): void {
   const scenesValue = get(scenes);
   if (!scenesValue) return;
@@ -85,7 +87,7 @@ function stopScene(index: number): void {
   for (const trackId of Object.keys(scene)) {
     tracksToStop.push(trackId);
   }
-  pushStopTracks(tracksToStop);
+  trackMessage.push.stop(tracksToStop);
 }
 
 export default {

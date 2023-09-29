@@ -16,10 +16,7 @@ import playerStore from "js/stores/players";
 import clipsStore from "js/stores/clips";
 import trackPlaybackStore from "js/stores/tracks";
 
-export function pushCreateTrackFromAudioFile(
-  songId: string,
-  audioFile: AudioFile,
-) {
+function pushCreateTrackFromAudioFile(songId: string, audioFile: AudioFile) {
   const trackCount = get(trackDataStore).length;
   const trackWithClipAttrs = {
     song_id: songId,
@@ -41,7 +38,7 @@ export function pushCreateTrackFromAudioFile(
   pushShared(SharedMessages.NewTrack, trackWithClipAttrs);
 }
 
-export async function pushCreateEmptyTrack(
+async function pushCreateEmptyTrack(
   songId: string,
   onOk: (res: any) => any = (_res) => {},
 ): Promise<void> {
@@ -53,32 +50,32 @@ export async function pushCreateEmptyTrack(
   })?.receive("ok", onOk);
 }
 
-export function pushCreateTrackFromClip(songId: string, clip: Clip) {
+function pushCreateTrackFromClip(songId: string, clip: Clip) {
   const trackCount = get(trackDataStore).length;
   const trackWithClipAttrs = {
     song_id: songId,
     name: `Track ${trackCount + 1}`,
     gain: 0.0,
     panning: 0.0,
-    audio_clips: [clip]
+    audio_clips: [clip],
   };
   pushShared(SharedMessages.NewTrackFromClip, trackWithClipAttrs);
 }
 
-export function pushRemoveTrack(id: TrackID) {
+function pushRemoveTrack(id: TrackID) {
   pushShared(SharedMessages.RemoveTrack, { id });
 }
 
-export function pushStopTracks(trackIds: TrackID[]): void {
+function pushStopTracks(trackIds: TrackID[]): void {
   pushShared(PrivateMessages.StopTrack, { trackIds });
 }
 
-export function pushStopAllTracks(): void {
+function pushStopAllTracks(): void {
   const trackIds = get(trackDataStore).map((track) => track.id);
   pushStopTracks(trackIds);
 }
 
-export function receiveStopTrack({ trackIds }: { trackIds: TrackID[] }): void {
+function receiveStopTrack({ trackIds }: { trackIds: TrackID[] }): void {
   const currentQuantization = get(quantizationStore);
   // FIXME: Either make quantization settings e2e reactive or pass a time w/ the stop event
   const nextBarTT = quantizedTransportTime(currentQuantization);
@@ -87,7 +84,7 @@ export function receiveStopTrack({ trackIds }: { trackIds: TrackID[] }): void {
   }
 }
 
-export function receiveRemoveTrack(trackId: TrackID) {
+function receiveRemoveTrack(trackId: TrackID) {
   // TODO: remove clipStates and GrainPlayers
   trackPlaybackStore.stopCurrentlyPlayingAudio(trackId, undefined);
   trackPlaybackStore.cancelPlayingEvent(trackId);
@@ -96,9 +93,25 @@ export function receiveRemoveTrack(trackId: TrackID) {
 }
 
 // TODO: add DB properties to the track store!
-export function receiveNewTrack(track: TrackData) {
+function receiveNewTrack(track: TrackData) {
   trackPlaybackStore.initializeTrackPlaybackState(track);
   playerStore.initializeGrainPlayers(...track.audio_clips);
   clipsStore.initializeClipStates(...track.audio_clips);
   trackDataStore.createTrack(track);
 }
+
+export default {
+  push: {
+    createFromAudioFile: pushCreateTrackFromAudioFile,
+    createFromClip: pushCreateTrackFromClip,
+    createEmpty: pushCreateEmptyTrack,
+    remove: pushRemoveTrack,
+    stop: pushStopTracks,
+    stopAll: pushStopAllTracks,
+  },
+  receive: {
+    stop: receiveStopTrack,
+    remove: receiveRemoveTrack,
+    new: receiveNewTrack,
+  },
+};

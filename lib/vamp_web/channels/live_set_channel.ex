@@ -60,7 +60,7 @@ defmodule VampWeb.LiveSetChannel do
 
   def handle_in("new_track_from_clip", attrs, socket) do
     track = Vamp.Projects.create_track_and_associate_clip!(attrs)
-    broadcast!(socket, "new_track", track)
+    broadcast!(socket, "new_track_from_clip", track)
 
     {:noreply, socket}
   end
