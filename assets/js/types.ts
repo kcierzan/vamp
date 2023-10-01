@@ -77,7 +77,7 @@ export interface TransportStore {
 }
 
 export interface SceneStates {
-  [key: string]: PlayState
+  [key: string]: PlayState;
 }
 
 export interface SceneStore {
@@ -103,6 +103,7 @@ export enum SharedMessages {
   NewTrack = "new_track",
   NewTrackFromClip = "new_track_from_clip",
   RemoveTrack = "remove_track",
+  NewPoolFile = "new_pool_file",
 }
 
 export enum QuantizationInterval {

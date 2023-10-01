@@ -16,9 +16,9 @@ defmodule Vamp.Pools.PoolFile do
   @doc false
   def changeset(pool_file, attrs) do
     pool_file
+    |> cast(attrs, [:song_id, :audio_file_id])
     |> assoc_constraint(:song)
     |> assoc_constraint(:audio_file)
-    |> cast(attrs, [:song_id, :audio_file_id])
     |> validate_required([:song_id])
   end
 end

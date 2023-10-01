@@ -20,7 +20,7 @@
 </script>
 
 <div
-  class="flex w-full h-2/3 flex-col gap-1 rounded border-2 border-slate-200 p-2"
+  class="flex h-2/3 w-full flex-col gap-1 rounded border-2 border-slate-200 p-2"
   use:dndzone={{
     items: items,
     dropFromOthersDisabled: true,

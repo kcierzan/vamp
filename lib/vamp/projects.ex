@@ -13,6 +13,12 @@ defmodule Vamp.Projects do
     Song |> first() |> Repo.one!()
   end
 
+  def get_song_by_id!(song_id) do
+    Song
+    |> Repo.get!(song_id)
+    |> Repo.preload(:audio_files)
+  end
+
   @doc """
   Returns a full project for a user
   """
@@ -43,16 +49,10 @@ defmodule Vamp.Projects do
         update_in(
           track,
           [Access.key(:audio_clips, []), Access.all(), Access.key(:audio_file)],
-          &add_url_to_audio_file/1
+          &Vamp.Sounds.add_url_to_audio_file/1
         )
       end
     )
-  end
-
-  defp add_url_to_audio_file(nil), do: nil
-
-  defp add_url_to_audio_file(audio_file) do
-    put_in(audio_file.file[:url], Vamp.AudioFile.url(audio_file.file[:file_name], audio_file))
   end
 
   @doc """
@@ -329,18 +329,8 @@ defmodule Vamp.Projects do
     |> add_url_to_audio_clip()
   end
 
-  def create_file_for_clip!(attrs \\ %{}) do
-    audio_file_attrs = Vamp.Sounds.AudioFile.changeset(%Vamp.Sounds.AudioFile{}, attrs)
-
-    get_audio_clip!(attrs["clip_id"])
-    |> Ecto.Changeset.change()
-    |> Ecto.Changeset.put_assoc(:audio_file, audio_file_attrs)
-    |> Repo.update!()
-    |> add_url_to_audio_clip()
-  end
-
-  defp add_url_to_audio_clip(audio_clip) do
-    put_in(audio_clip.audio_file, add_url_to_audio_file(audio_clip.audio_file))
+  def add_url_to_audio_clip(audio_clip) do
+    put_in(audio_clip.audio_file, Vamp.Sounds.add_url_to_audio_file(audio_clip.audio_file))
   end
 
   @doc """
@@ -369,6 +359,14 @@ defmodule Vamp.Projects do
         update_audio_clip!(%AudioClip{id: id}, clip)
       end
     end)
+  end
+
+  def associate_audio_clip_audio_file!(audio_clip_id, audio_file_id) do
+    %Vamp.Projects.AudioClip{id: audio_clip_id}
+    |> Ecto.Changeset.cast(%{"audio_file_id" => audio_file_id}, [:audio_file_id])
+    |> Repo.update!(returning: true)
+    |> Repo.preload(:audio_file)
+    |> Vamp.Projects.add_url_to_audio_clip()
   end
 
   @doc """

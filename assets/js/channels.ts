@@ -1,9 +1,10 @@
 import { Channel, Socket } from "phoenix";
-import type { Clip, Token, TrackData, TrackID, User } from "js/types";
+import type { AudioFile, Clip, Token, TrackData, TrackID, User } from "js/types";
 import { ChannelName, PrivateMessages, SharedMessages } from "js/types";
 import transportStore from "js/stores/transport";
 import clipMessage from "js/clip";
 import trackMessage from "js/track";
+import audioFileMessage from "js/audio-file";
 
 const socketPath = "/socket";
 const livesetTopic = "liveset:shared";
@@ -45,6 +46,8 @@ const listeners: Listeners = {
     new_clip: (clip: Clip) => clipMessage.receive.new(clip),
     update_clips: ({ clips }: { clips: Clip[] }) =>
       clipMessage.receive.updateClips(...clips),
+    new_pool_file: (file: AudioFile) =>
+      audioFileMessage.receive.createPoolItem(file),
   },
 };
 
@@ -64,11 +67,13 @@ export function pushShared(message: string, data: object) {
 
 export function pushFile(
   audioFileAttrs: {
-    clip_id: string;
+    clip_id?: string;
     media_type: string;
     size: number;
     name: string;
-    description: string;
+    bpm: number;
+    description?: string;
+    song_id: string;
   },
   data: ArrayBuffer,
 ) {

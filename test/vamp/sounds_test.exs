@@ -7,6 +7,7 @@ defmodule Vamp.SoundsTest do
     alias Vamp.Sounds.AudioFile
 
     import Vamp.SoundsFixtures
+    import Vamp.ProjectsFixtures
 
     @invalid_attrs %{name: nil, size: nil, file: nil, description: nil, media_type: nil}
 
@@ -45,6 +46,63 @@ defmodule Vamp.SoundsTest do
 
     test "create_audio_file/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} = Sounds.create_audio_file(@invalid_attrs)
+    end
+
+    test "create_audio_file_with_associations/1 with valid data creates an audio file and returns the clip" do
+      song = song_fixture()
+      track = track_fixture(%{song_id: song.id})
+      clip = audio_clip_fixture(%{track_id: track.id, audio_file_id: nil})
+
+      file = %Plug.Upload{
+        filename: "100action.wav",
+        path: "test/support/fixtures/samples/100action.wav",
+        content_type: "audio/wav"
+      }
+
+      valid_attrs = %{
+        "name" => "new amazing file",
+        "size" => 42,
+        "file" => file,
+        "media_type" => "audio/wav",
+        "bpm" => 128,
+        "song_id" => song.id,
+        "clip_id" => clip.id
+      }
+
+      assert %Vamp.Projects.AudioClip{} =
+               audio_clip = Sounds.create_audio_file_with_associations(valid_attrs)
+
+      assert audio_clip.audio_file.name === "new amazing file"
+
+      song_audio_files = Vamp.Projects.get_song_by_id!(song.id).audio_files
+      [%{id: song_audio_file_id} | _tail] = song_audio_files
+      assert song_audio_file_id == audio_clip.audio_file.id
+    end
+
+    test " create_audio_file_with_associations/1 without a clip_id returns an audio file" do
+      song = song_fixture()
+
+      file = %Plug.Upload{
+        filename: "100action.wav",
+        path: "test/support/fixtures/samples/100action.wav",
+        content_type: "audio/wav"
+      }
+
+      valid_attrs = %{
+        "name" => "new amazing file",
+        "size" => 42,
+        "file" => file,
+        "media_type" => "audio/wav",
+        "bpm" => 128,
+        "song_id" => song.id
+      }
+
+      assert %AudioFile{} = audio_file = Sounds.create_audio_file_with_associations(valid_attrs)
+      assert audio_file.name === "new amazing file"
+
+      song_audio_files = Vamp.Projects.get_song_by_id!(song.id).audio_files
+      [%{id: song_audio_file_id} | _tail] = song_audio_files
+      assert song_audio_file_id == audio_file.id
     end
 
     test "update_audio_file/2 with valid data updates the audio_file" do
