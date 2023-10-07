@@ -62,7 +62,7 @@ defmodule Vamp.Sounds do
   in the attrs is required.
   """
 
-  def create_audio_file_with_associations(attrs \\ %{}) do
+  def create_pool_audio_file(attrs \\ %{}) do
     {:ok, record} =
       Repo.transaction(fn ->
         with {:ok, audio_file} <- create_audio_file(attrs),

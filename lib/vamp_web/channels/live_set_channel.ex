@@ -125,7 +125,7 @@ defmodule VampWeb.LiveSetChannel do
     audio_file_json
     |> Jason.decode!()
     |> add_file_attr(data)
-    |> Vamp.Sounds.create_audio_file_with_associations()
+    |> Vamp.Sounds.create_pool_audio_file()
     |> broadcast_new_clip_or_pool_item!()
 
     {:noreply, socket}

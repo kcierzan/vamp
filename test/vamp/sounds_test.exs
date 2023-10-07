@@ -48,7 +48,7 @@ defmodule Vamp.SoundsTest do
       assert {:error, %Ecto.Changeset{}} = Sounds.create_audio_file(@invalid_attrs)
     end
 
-    test "create_audio_file_with_associations/1 with valid data creates an audio file and returns the clip" do
+    test "create_pool_audio_file/1 with valid data creates an audio file and returns the clip" do
       song = song_fixture()
       track = track_fixture(%{song_id: song.id})
       clip = audio_clip_fixture(%{track_id: track.id, audio_file_id: nil})
@@ -70,7 +70,7 @@ defmodule Vamp.SoundsTest do
       }
 
       assert %Vamp.Projects.AudioClip{} =
-               audio_clip = Sounds.create_audio_file_with_associations(valid_attrs)
+               audio_clip = Sounds.create_pool_audio_file(valid_attrs)
 
       assert audio_clip.audio_file.name === "new amazing file"
 
@@ -79,7 +79,7 @@ defmodule Vamp.SoundsTest do
       assert song_audio_file_id == audio_clip.audio_file.id
     end
 
-    test " create_audio_file_with_associations/1 without a clip_id returns an audio file" do
+    test " create_pool_audio_file/1 without a clip_id returns an audio file" do
       song = song_fixture()
 
       file = %Plug.Upload{
@@ -97,7 +97,7 @@ defmodule Vamp.SoundsTest do
         "song_id" => song.id
       }
 
-      assert %AudioFile{} = audio_file = Sounds.create_audio_file_with_associations(valid_attrs)
+      assert %AudioFile{} = audio_file = Sounds.create_pool_audio_file(valid_attrs)
       assert audio_file.name === "new amazing file"
 
       song_audio_files = Vamp.Projects.get_song_by_id!(song.id).audio_files

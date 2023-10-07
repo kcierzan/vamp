@@ -73,7 +73,7 @@ create_pool_file = fn ->
     audio_file_attrs
     |> put_in([:song_id], song.id)
     |> Map.new(fn {k, v} -> {to_string(k), v} end)
-    |> Vamp.Sounds.create_audio_file_with_associations()
+    |> Vamp.Sounds.create_pool_audio_file()
 
   Logger.info("Created audio_file ID: #{audio_file.id}")
 end
