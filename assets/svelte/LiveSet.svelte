@@ -61,6 +61,6 @@
   <div class="flex h-5/6 w-10/12 justify-between">
     <Scenes />
     <TrackArea songId={project.id} />
-    <MediaBay />
+    <MediaBay songId={project.id} />
   </div>
 </div>

@@ -35,6 +35,7 @@ function pushCreateClipFromPool(
 async function pushCreateClipFromFile(
   file: File,
   trackId: TrackID,
+  songId: string,
   index: number,
 ): Promise<void> {
   const { bpm } = await guessBPM(file);
@@ -53,6 +54,8 @@ async function pushCreateClipFromFile(
         size: newBuf.byteLength,
         name: file.name,
         description: "a cool file",
+        song_id: songId,
+        bpm,
       },
       newBuf,
     );

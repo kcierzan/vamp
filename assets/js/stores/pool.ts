@@ -4,4 +4,16 @@ import type { AudioFile } from "js/types";
 
 const poolStore: Writable<AudioFile[]> = writable([]);
 
-export default poolStore;
+const { subscribe, set, update } = poolStore;
+
+function createNewPoolFile(audioFile: AudioFile) {
+  update((store) => {
+    return [...store, audioFile];
+  });
+}
+
+export default {
+  subscribe,
+  set,
+  createNewPoolFile,
+};

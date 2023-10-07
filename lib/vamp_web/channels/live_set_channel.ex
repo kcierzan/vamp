@@ -125,10 +125,20 @@ defmodule VampWeb.LiveSetChannel do
     audio_file_json
     |> Jason.decode!()
     |> add_file_attr(data)
-    |> Vamp.Projects.create_file_for_clip!()
-    |> broadcast_to_liveset_channel!("new_clip")
+    |> Vamp.Sounds.create_pool_audio_file()
+    |> broadcast_new_clip_or_pool_item!()
 
     {:noreply, socket}
+  end
+
+  defp broadcast_new_clip_or_pool_item!(data) do
+    case data do
+      %Vamp.Projects.AudioClip{} ->
+        broadcast_to_liveset_channel!(data, "new_clip")
+
+      %Vamp.Sounds.AudioFile{} ->
+        broadcast_to_liveset_channel!(data, "new_pool_file")
+    end
   end
 
   defp broadcast_to_liveset_channel!(data, message) do

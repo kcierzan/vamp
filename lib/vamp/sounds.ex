@@ -7,6 +7,7 @@ defmodule Vamp.Sounds do
   alias Vamp.Repo
 
   alias Vamp.Sounds.AudioFile
+  alias Vamp.Pools.PoolFile
 
   @doc """
   Returns the list of audio_files.
@@ -55,16 +56,44 @@ defmodule Vamp.Sounds do
     |> Repo.insert()
   end
 
-  def create_audio_file_in_pool!(song_id, attrs \\ %{}) do
-    Repo.transaction(fn ->
-      audio_file =
-        %AudioFile{}
-        |> AudioFile.changeset(attrs)
-        |> Repo.insert!()
+  @doc """
+  Creates an audio_file, associating it to the song via `PoolFile`,
+  and optionally associating it to an existing `AudioClip`. A valid `song_id`
+  in the attrs is required.
+  """
 
-      Vamp.Pools.add_file_to_pool!(audio_file.id, song_id)
-      audio_file
-    end)
+  def create_pool_audio_file(attrs \\ %{}) do
+    {:ok, record} =
+      Repo.transaction(fn ->
+        with {:ok, audio_file} <- create_audio_file(attrs),
+             {:ok, _pool_file} <- create_pool_file(audio_file.id, Map.fetch!(attrs, "song_id")) do
+          maybe_associate_clip(audio_file, attrs)
+        else
+          _ -> raise "failed to create audio file in pool"
+        end
+      end)
+
+    record
+  end
+
+  defp maybe_associate_clip(audio_file, attrs) do
+    if attrs["clip_id"] do
+      Vamp.Projects.associate_audio_clip_audio_file!(attrs["clip_id"], audio_file.id)
+    else
+      audio_file |> Repo.preload(:audio_clips) |> add_url_to_audio_file()
+    end
+  end
+
+  def add_url_to_audio_file(nil), do: nil
+
+  def add_url_to_audio_file(audio_file) do
+    put_in(audio_file.file[:url], Vamp.AudioFile.url(audio_file.file[:file_name], audio_file))
+  end
+
+  defp create_pool_file(audio_file_id, song_id) do
+    %PoolFile{}
+    |> PoolFile.changeset(%{"song_id" => song_id, "audio_file_id" => audio_file_id})
+    |> Repo.insert()
   end
 
   @doc """
