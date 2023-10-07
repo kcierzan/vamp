@@ -66,7 +66,8 @@ defmodule Vamp.Sounds do
     {:ok, record} =
       Repo.transaction(fn ->
         with {:ok, audio_file} <- create_audio_file(attrs),
-             {:ok, _pool_file} <- create_pool_file(audio_file.id, Map.fetch!(attrs, "song_id")) do
+             song_id <- Map.fetch!(attrs, "song_id"),
+             {:ok, _pool_file} <- create_pool_file(audio_file.id, song_id) do
           maybe_associate_clip(audio_file, attrs)
         else
           _ -> raise "failed to create audio file in pool"
