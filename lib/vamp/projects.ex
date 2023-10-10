@@ -350,6 +350,7 @@ defmodule Vamp.Projects do
     |> AudioClip.changeset(attrs)
     |> Repo.update!()
     |> Repo.preload(:audio_file)
+    |> Vamp.Projects.add_url_to_audio_clip()
   end
 
   def update_audio_clips!(audio_clips) do

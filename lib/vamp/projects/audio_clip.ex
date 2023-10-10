@@ -13,6 +13,8 @@ defmodule Vamp.Projects.AudioClip do
     field :type, :string
     field :playback_rate, :float
     field :index, :integer
+    field :start_time, :float, default: 0.0
+    field :end_time, :float
     belongs_to :audio_file, Vamp.Sounds.AudioFile
     belongs_to :track, Vamp.Projects.Track
 
@@ -26,7 +28,7 @@ defmodule Vamp.Projects.AudioClip do
 
   defp base_changeset(audio_clip, attrs) do
     audio_clip
-    |> cast(attrs, [:name, :type, :playback_rate, :index])
+    |> cast(attrs, [:name, :type, :playback_rate, :index, :start_time, :end_time])
     |> validate_required([:name, :type, :playback_rate, :index])
     |> assoc_constraint(:track)
     |> assoc_constraint(:audio_file)
