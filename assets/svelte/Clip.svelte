@@ -4,6 +4,7 @@
   import clipMessage from "js/clip";
   import { Transport } from "tone";
   import clipsStore from "js/stores/clips";
+  import selectedStore from "js/stores/selected";
 
   export let clip: Clip;
   let button: HTMLButtonElement;
@@ -58,14 +59,18 @@
       playback_rate: parseFloat(val),
     });
   }
+
+  function clickClip(e: MouseEvent) {
+    if (!!e.shiftKey) {
+      selectedStore.set({ clipId: clip.id, trackId: clip.track_id });
+    } else {
+      clipMessage.push.playClips(clip);
+    }
+  }
 </script>
 
 <div class="flex flex-row">
-  <button
-    on:click={() => clipMessage.push.playClips(clip)}
-    class={clipStyles}
-    bind:this={button}
-  >
+  <button on:click={clickClip} class={clipStyles} bind:this={button}>
     <span class="hero-play ml-2 h-4 w-6 self-center" />
     <span class="w-30 self-center truncate text-left">{clip.name}</span>
   </button>

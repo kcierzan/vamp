@@ -132,20 +132,20 @@ function playTrackClip(clip: Clip, at: Time) {
 
   const queuedEvent = Transport.scheduleOnce((time) => {
     Draw.schedule(() => {
-      loopClip(clip, "+1m", "1m");
+      loopClip(clip, "1m");
     }, time);
     stopCurrentlyPlayingAudio(clip.track_id, time);
   }, launchTime);
   setCurrentlyQueued(clip, queuedEvent);
 }
 
-function loopClip(clip: Clip, endTime: Time, every: Time): void {
+function loopClip(clip: Clip, every: Time): void {
   const playEvent = Transport.scheduleRepeat(
     (audioContextTime: number) => {
-      playerStore.playAudio(clip, audioContextTime, endTime);
+      playerStore.playAudio(clip, audioContextTime);
     },
     every,
-    "+0.005",
+    "+0.001",
   );
   setTrackClipStatesPlay(clip, playEvent);
 }

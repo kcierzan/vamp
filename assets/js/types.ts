@@ -28,6 +28,8 @@ export interface Clip {
   state: PlayState;
   type: string;
   audio_file: AudioFile | null;
+  start_time: number;
+  end_time: number | null;
   isDndShadowItem?: boolean;
 }
 
