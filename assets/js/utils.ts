@@ -1,7 +1,9 @@
-import { QuantizationInterval } from "js/types";
+import { Clip, QuantizationInterval, TrackData } from "js/types";
 import { Time, Transport } from "tone";
 import * as Tone from "tone";
 import { guess } from "web-audio-beat-detector";
+import clipMessage from "js/clip";
+import playerStore from "js/stores/players";
 
 export async function fileToB64(file: File): Promise<string> {
   const bytes = await fileToByteArray(file);
@@ -80,4 +82,23 @@ export function flash(element: HTMLElement) {
       element.style.backgroundColor = "";
     });
   });
+}
+
+export function stretchClipsToBpm(tracks: TrackData[], bpm: number) {
+  const clipsToStretch: Clip[] = [];
+  for (const track of tracks) {
+    for (const clip of track.audio_clips) {
+      if (!!clip.audio_file) {
+        const rate = bpm / clip.audio_file.bpm;
+        // optimistically change rate locally first
+        playerStore.setPlaybackRate(clip, rate);
+        clipsToStretch.push({ ...clip, playback_rate: rate });
+      }
+    }
+  }
+  clipMessage.push.updateClips(...clipsToStretch);
+}
+
+export function round(num: number, place: number) {
+  return Math.round((num + Number.EPSILON) * place) / place;
 }

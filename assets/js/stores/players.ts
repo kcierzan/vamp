@@ -13,7 +13,7 @@ interface PlaybackData {
   endTime: number | null;
 }
 
-interface PlayerStore {
+export interface PlayerStore {
   [key: ClipID]: PlaybackData;
 }
 
@@ -26,16 +26,17 @@ function stopAudio(clip: Clip, time?: Time) {
 
 function playAudio(clip: Clip, startTime: Time) {
   update((store) => {
-    const grainPlayer = store[clip.id]?.grainPlayer
+    const grainPlayer = store[clip.id]?.grainPlayer;
     if (!!grainPlayer) {
       const startOffset = store[clip.id].startTime;
       const endTime = store[clip.id].endTime;
-      const duration = grainPlayer.buffer.duration / grainPlayer.playbackRate;
       const stopTime = !!endTime
-        ? `+${(endTime - startOffset) / grainPlayer.playbackRate}`
-        : `+${duration}`;
+        ? endTime - startOffset
+        : grainPlayer.buffer.duration;
 
-      store[clip.id].grainPlayer?.start(startTime, startOffset).stop(stopTime);
+      store[clip.id].grainPlayer
+        ?.start(startTime, startOffset)
+        .stop(`+${stopTime / grainPlayer.playbackRate}`);
     }
     return store;
   });

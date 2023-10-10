@@ -12,7 +12,7 @@
   import TrackArea from "./TrackArea.svelte";
   import MediaBay from "./MediaBay.svelte";
   import { afterUpdate } from "svelte";
-  import { flash } from "js/utils";
+  import { flash, stretchClipsToBpm } from "js/utils";
   import trackDataStore from "js/stores/track-data";
   import playersStore from "js/stores/players";
   import trackPlaybackStore from "js/stores/tracks";
@@ -37,6 +37,7 @@
     playersStore.setFromProps(props.tracks);
     poolStore.set(props.audio_files);
     clipStore.setFromProps(props.tracks);
+    stretchClipsToBpm($trackDataStore, props.bpm);
   }
 
   onMount(async () => {
@@ -59,10 +60,12 @@
 <SongNav {project} />
 
 <div class="flex w-full flex-row items-center justify-center gap-1">
-  <div class="flex h-5/6 w-10/12 justify-between">
-    <Scenes />
-    <TrackArea songId={project.id} />
-    <MediaBay songId={project.id} />
+  <div class="flex flex-col h-5/6 w-10/12 justify-between">
+    <div class="flex flex-row">
+      <Scenes />
+      <TrackArea songId={project.id} />
+      <MediaBay songId={project.id} />
+    </div>
+    <Editor />
   </div>
 </div>
-  <Editor />
