@@ -18,6 +18,7 @@
   import trackPlaybackStore from "js/stores/tracks";
   import clipStore from "js/stores/clips";
   import SongNav from "./SongNav.svelte";
+  import Editor from "./Editor.svelte";
 
   export let currentUser: User;
   export let token: Token;
@@ -64,3 +65,4 @@
     <MediaBay songId={project.id} />
   </div>
 </div>
+  <Editor />

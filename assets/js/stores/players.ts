@@ -9,22 +9,34 @@ const { subscribe, update, set } = playersStore;
 
 interface PlaybackData {
   grainPlayer: GrainPlayer | null;
+  startTime: number;
+  endTime: number | null;
 }
 
 interface PlayerStore {
   [key: ClipID]: PlaybackData;
 }
 
-function stopAudio(clip: Clip, time: Time | undefined) {
+function stopAudio(clip: Clip, time?: Time) {
   update((store) => {
     store[clip.id].grainPlayer?.stop(time);
     return store;
   });
 }
 
-function playAudio(clip: Clip, startTime: Time, stopTime: Time) {
+function playAudio(clip: Clip, startTime: Time) {
   update((store) => {
-    store[clip.id].grainPlayer?.start(startTime).stop(stopTime);
+    const grainPlayer = store[clip.id]?.grainPlayer
+    if (!!grainPlayer) {
+      const startOffset = store[clip.id].startTime;
+      const endTime = store[clip.id].endTime;
+      const duration = grainPlayer.buffer.duration / grainPlayer.playbackRate;
+      const stopTime = !!endTime
+        ? `+${(endTime - startOffset) / grainPlayer.playbackRate}`
+        : `+${duration}`;
+
+      store[clip.id].grainPlayer?.start(startTime, startOffset).stop(stopTime);
+    }
     return store;
   });
 }
@@ -56,6 +68,8 @@ function setFromProps(tracks: TrackData[]) {
     for (const clip of track.audio_clips) {
       acc[clip.id] = {
         grainPlayer: createGrainPlayer(clip),
+        startTime: clip.start_time,
+        endTime: clip.end_time,
       };
     }
     return acc;
@@ -66,7 +80,11 @@ function setFromProps(tracks: TrackData[]) {
 function initializeGrainPlayers(...clips: Clip[]) {
   update((store) => {
     for (const clip of clips) {
-      store[clip.id] = { grainPlayer: createGrainPlayer(clip) };
+      store[clip.id] = {
+        grainPlayer: createGrainPlayer(clip),
+        startTime: clip.start_time,
+        endTime: clip.end_time,
+      };
     }
     return store;
   });
@@ -77,6 +95,8 @@ function updateGrainPlayers(...clips: Clip[]) {
     for (const clip of clips) {
       if (!!store[clip.id].grainPlayer) {
         store[clip.id].grainPlayer!.playbackRate = clip.playback_rate;
+        store[clip.id].startTime = clip.start_time;
+        store[clip.id].endTime = clip.end_time;
       }
     }
     return store;
