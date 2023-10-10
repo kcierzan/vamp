@@ -16,7 +16,7 @@
   import clipMessage from "js/clip";
 
   let waveformContainer: HTMLElement;
-  let waveform: any;
+  let waveform: WaveSurfer;
 
   afterUpdate(() => {
     flash(waveformContainer);
