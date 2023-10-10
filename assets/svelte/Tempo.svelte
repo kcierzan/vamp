@@ -1,36 +1,22 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import transportStore from "js/stores/transport";
-  import type { HTMLInputEvent, Clip } from "js/types";
-  import clipMessage from "js/clip";
+  import type { HTMLInputEvent } from "js/types";
   import trackDataStore from "js/stores/track-data";
-  import playerStore from "js/stores/players";
-
-  const { setBpm } = transportStore;
-
-  function stretchClipsToBpm(bpm: number) {
-    const clipsToStretch: Clip[] = [];
-    for (const track of $trackDataStore) {
-      for (const clip of track.audio_clips) {
-        if (!!clip.audio_file) {
-          const rate = bpm / clip.audio_file.bpm;
-          // optimistically change rate locally first
-          playerStore.setPlaybackRate(clip, rate);
-          clipsToStretch.push({ ...clip, playback_rate: rate });
-        }
-      }
-    }
-    clipMessage.push.updateClips(...clipsToStretch);
-  }
+  import { stretchClipsToBpm } from "js/utils";
 
   function setTransportBpm(e: HTMLInputEvent) {
     const bpm = parseInt(e.currentTarget.value);
     // TODO: make this e2e reactive
-    setBpm(bpm);
-    stretchClipsToBpm(bpm);
+    setTempoAndStretchClips(bpm);
   }
 
-  onMount(async () => setBpm(120));
+  function setTempoAndStretchClips(bpm: number) {
+    transportStore.setBpm(bpm);
+    stretchClipsToBpm($trackDataStore, bpm);
+  }
+
+  onMount(async () => setTempoAndStretchClips(120));
 </script>
 
 <div class="flex flex-col items-center">
