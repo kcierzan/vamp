@@ -1,7 +1,6 @@
 <script lang="ts">
   import { afterUpdate } from "svelte";
   import { flash } from "js/utils";
-  import { get } from "svelte/store";
   import selectedStore from "js/stores/selected";
   import type { SelectedStore } from "js/stores/selected";
   import trackDataStore from "js/stores/track-data";
@@ -41,7 +40,7 @@
 
   function createPlaybackRegion(currentClip: Clip, waveform: WaveSurfer) {
     const clipDuration =
-      get(playerStore)[currentClip.id].grainPlayer!.buffer.duration;
+      $playerStore[currentClip.id].grainPlayer!.buffer.duration;
     const regions = waveform.registerPlugin(Regions.create());
     const regionParams: RegionParams = {
       start: currentClip.start_time,
