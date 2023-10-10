@@ -98,3 +98,7 @@ export function stretchClipsToBpm(tracks: TrackData[], bpm: number) {
   }
   clipMessage.push.updateClips(...clipsToStretch);
 }
+
+export function round(num: number, place: number) {
+  return Math.round((num + Number.EPSILON) * place) / place;
+}

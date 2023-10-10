@@ -60,10 +60,12 @@
 <SongNav {project} />
 
 <div class="flex w-full flex-row items-center justify-center gap-1">
-  <div class="flex h-5/6 w-10/12 justify-between">
-    <Scenes />
-    <TrackArea songId={project.id} />
-    <MediaBay songId={project.id} />
+  <div class="flex flex-col h-5/6 w-10/12 justify-between">
+    <div class="flex flex-row">
+      <Scenes />
+      <TrackArea songId={project.id} />
+      <MediaBay songId={project.id} />
+    </div>
+    <Editor />
   </div>
 </div>
-<Editor />
