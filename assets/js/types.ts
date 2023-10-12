@@ -146,3 +146,19 @@ interface PlaceHolderDndItem {
 }
 
 export type DndItem = PlaceHolderDndItem | AudioFile | Clip;
+
+export type AudioChannel = Float32Array;
+export type Input = AudioChannel[];
+export type Output = AudioChannel[];
+
+export interface WorkletProcessorOptions {
+  numberOfInputs: number;
+  numberOfOutputs: number;
+  processorOptions: {
+    blockSize: number;
+  };
+}
+
+export interface WorkletParameters {
+  [key: string]: Float32Array;
+}

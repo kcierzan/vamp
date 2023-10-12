@@ -1,6 +1,7 @@
 <script lang="ts">
   import { PlayState } from "js/types";
   import type { Clip, HTMLInputEvent } from "js/types";
+  import * as Tone from "tone";
   import clipMessage from "js/clip";
   import { Transport } from "tone";
   import clipsStore from "js/stores/clips";
@@ -60,7 +61,9 @@
     });
   }
 
-  function clickClip(e: MouseEvent) {
+  async function clickClip(e: MouseEvent) {
+    await Tone.start();
+
     if (!!e.shiftKey) {
       selectedStore.set({ clipId: clip.id, trackId: clip.track_id });
     } else {

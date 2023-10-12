@@ -2,7 +2,7 @@ import { Writable, writable } from "svelte/store";
 import { Clip, PlayState, TrackData, TrackID } from "js/types";
 import { Time } from "tone/build/esm/core/type/Units";
 import { Draw, Transport } from "tone";
-import playerStore from "./players";
+import samplerStore from "js/stores/samplers";
 import clipStore from "js/stores/clips";
 
 export interface TrackState {
@@ -87,7 +87,7 @@ function stopTrack(trackId: TrackID, at: Time) {
     const launchTime = Transport.seconds > (at as number) ? "+0.01" : at;
     Transport.scheduleOnce((time) => {
       const playing = store[trackId].currentlyPlaying;
-      !!playing && playerStore.stopAudio(playing, time);
+      !!playing && samplerStore.stopAudio(playing, time);
       Draw.schedule(() => {
         !!playing && clipStore.setClipState(playing, PlayState.Stopped);
         store[trackId].currentlyPlaying = null;
@@ -101,7 +101,7 @@ function stopTrack(trackId: TrackID, at: Time) {
 function stopCurrentlyPlayingAudio(trackId: TrackID, time: Time | undefined) {
   update((store) => {
     if (!!store[trackId].currentlyPlaying) {
-      playerStore.stopAudio(store[trackId].currentlyPlaying as Clip, time);
+      samplerStore.stopAudio(store[trackId].currentlyPlaying as Clip, time);
     }
     return store;
   });
@@ -111,7 +111,7 @@ function stopAllTracksAudio() {
   update((store) => {
     for (const track of Object.values(store)) {
       !!track.currentlyPlaying &&
-        playerStore.stopAudio(track.currentlyPlaying, undefined);
+        samplerStore.stopAudio(track.currentlyPlaying, undefined);
     }
     return store;
   });
@@ -142,7 +142,7 @@ function playTrackClip(clip: Clip, at: Time) {
 function loopClip(clip: Clip, every: Time): void {
   const playEvent = Transport.scheduleRepeat(
     (audioContextTime: number) => {
-      playerStore.playAudio(clip, audioContextTime);
+      samplerStore.playAudio(clip, audioContextTime);
     },
     every,
     "+0.001",

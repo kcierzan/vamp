@@ -3,7 +3,7 @@ import { Time, Transport } from "tone";
 import * as Tone from "tone";
 import { guess } from "web-audio-beat-detector";
 import clipMessage from "js/clip";
-import playerStore from "js/stores/players";
+import samplerStore from "js/stores/samplers";
 
 export async function fileToB64(file: File): Promise<string> {
   const bytes = await fileToByteArray(file);
@@ -91,7 +91,7 @@ export function stretchClipsToBpm(tracks: TrackData[], bpm: number) {
       if (!!clip.audio_file) {
         const rate = bpm / clip.audio_file.bpm;
         // optimistically change rate locally first
-        playerStore.setPlaybackRate(clip, rate);
+        samplerStore.setPlaybackRate(clip, rate);
         clipsToStretch.push({ ...clip, playback_rate: rate });
       }
     }

@@ -3,13 +3,24 @@
     "strict": true,
     "target": "es2017",
     "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
-    "types": ["node"],
+    "types": [
+      "node",
+      "@types/audioworklet"
+    ],
     "baseUrl": ".",
     "paths": {
-      "$lib": ["svelte"],
-      "$lib/*": ["svelte/*"]
+      "$lib": [
+        "svelte"
+      ],
+      "$lib/*": [
+        "svelte/*"
+      ]
     },
-    "lib": ["es2017", "dom"]
+    "lib": [
+      "es2017",
+      "dom"
+    ]
   }
 }

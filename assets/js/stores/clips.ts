@@ -8,8 +8,8 @@ export interface ClipStore {
   }
 }
 
-const playersStore: Writable<ClipStore> = writable({});
-const { subscribe, update, set } = playersStore;
+const clipStore: Writable<ClipStore> = writable({});
+const { subscribe, update, set } = clipStore;
 
 
 function setClipState(clip: Clip, state: PlayState) {

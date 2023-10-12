@@ -12,7 +12,7 @@ import { fileToArrayBuffer, guessBPM, quantizedTransportTime } from "./utils";
 import { get } from "svelte/store";
 import quantizationStore from "./stores/quantization";
 import transportStore from "./stores/transport";
-import playerStore from "js/stores/players";
+import samplerStore from "js/stores/samplers";
 import trackPlaybackStore from "js/stores/tracks";
 import trackDataStore from "js/stores/track-data";
 import clipStore from "js/stores/clips";
@@ -105,13 +105,13 @@ function receivePlayClips({
 }
 
 function receiveNewClip(clip: Clip) {
-  playerStore.initializeGrainPlayers(clip);
+  samplerStore.initializeSamplers(clip);
   clipStore.initializeClipStates(clip);
   trackDataStore.createClips(clip);
 }
 
 function receiveUpdateClips(...clips: Clip[]) {
-  playerStore.updateGrainPlayers(...clips);
+  samplerStore.updateSamplers(...clips);
   trackDataStore.createClips(...clips);
 }
 

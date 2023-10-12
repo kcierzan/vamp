@@ -29,6 +29,20 @@ let optsClient = {
   ],
 };
 
+let optsWorker = {
+  entryPoints: ["js/sampler/phase-vocoder.ts"],
+  bundle: true,
+  minify: deploy,
+  target: "es2017",
+  conditions: ["browser"],
+  mainFields: ["module", "browser", "main"],
+  outdir: "../priv/static/assets",
+  logLevel: "info",
+  sourcemap: watch ? "inline" : false,
+  watch,
+  tsconfig: "./tsconfig.json",
+}
+
 let optsServer = {
   entryPoints: ["js/server.js"],
   platform: "node",
@@ -53,6 +67,7 @@ let optsServer = {
 
 const client = esbuild.build(optsClient);
 const server = esbuild.build(optsServer);
+const worker = esbuild.build(optsWorker);
 
 if (watch) {
   client.then((_result) => {
@@ -61,6 +76,11 @@ if (watch) {
   });
 
   server.then((_result) => {
+    process.stdin.on("close", () => process.exit(0));
+    process.stdin.resume();
+  });
+
+  worker.then((_result) => {
     process.stdin.on("close", () => process.exit(0));
     process.stdin.resume();
   });

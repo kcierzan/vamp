@@ -12,7 +12,7 @@ import { pushShared } from "./channels";
 import { quantizedTransportTime } from "./utils";
 import quantizationStore from "./stores/quantization";
 import trackDataStore from "js/stores/track-data";
-import playerStore from "js/stores/players";
+import samplerStore from "js/stores/samplers";
 import clipsStore from "js/stores/clips";
 import trackPlaybackStore from "js/stores/tracks";
 
@@ -95,7 +95,7 @@ function receiveRemoveTrack(trackId: TrackID) {
 // TODO: add DB properties to the track store!
 function receiveNewTrack(track: TrackData) {
   trackPlaybackStore.initializeTrackPlaybackState(track);
-  playerStore.initializeGrainPlayers(...track.audio_clips);
+  samplerStore.initializeSamplers(...track.audio_clips);
   clipsStore.initializeClipStates(...track.audio_clips);
   trackDataStore.createTrack(track);
 }
