@@ -12,7 +12,6 @@ export default class Sampler {
   constructor(url: string, bufferBpm?: number, targetBpm?: number) {
     const context = Tone.getContext();
     const gain = new Gain(1).toDestination()
-    console.log("context", context);
     this._phaseVocoderNode = context.createAudioWorkletNode(
       "phase-vocoder-processor",
     );
@@ -27,7 +26,6 @@ export default class Sampler {
     this._pitchFactorParam.value = this._pitchFactor / this._speedFactor;
     this._player.connect(this._phaseVocoderNode);
     this._phaseVocoderNode.connect(gain.input);
-    console.log("vocoder", this._phaseVocoderNode);
   }
 
   get pitchFactor() {
