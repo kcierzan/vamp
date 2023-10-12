@@ -14,7 +14,7 @@
   import { afterUpdate } from "svelte";
   import { flash, stretchClipsToBpm } from "js/utils";
   import trackDataStore from "js/stores/track-data";
-  import playersStore from "js/stores/players";
+  import samplerStore from "js/stores/samplers";
   import trackPlaybackStore from "js/stores/tracks";
   import clipStore from "js/stores/clips";
   import SongNav from "./SongNav.svelte";
@@ -34,14 +34,16 @@
     transportStore.setBpm(props.bpm);
     trackDataStore.setFromProps(props.tracks);
     trackPlaybackStore.setFromProps(props.tracks);
-    playersStore.setFromProps(props.tracks);
+    samplerStore.setFromProps(props.tracks);
     poolStore.set(props.audio_files);
     clipStore.setFromProps(props.tracks);
     stretchClipsToBpm($trackDataStore, props.bpm);
   }
 
   onMount(async () => {
-    Tone.getContext().lookAhead = 0.05;
+    const context = Tone.getContext();
+    context.lookAhead = 0.05;
+    await context.addAudioWorkletModule("/assets/phase-vocoder.js");
 
     joinChannels(token, currentUser);
     setInitialStateFromProps(project);
@@ -60,7 +62,7 @@
 <SongNav {project} />
 
 <div class="flex w-full flex-row items-center justify-center gap-1">
-  <div class="flex flex-col h-5/6 w-10/12 justify-between">
+  <div class="flex h-5/6 w-10/12 flex-col justify-between">
     <div class="flex flex-row">
       <Scenes />
       <TrackArea songId={project.id} />

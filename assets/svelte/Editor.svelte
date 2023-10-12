@@ -1,10 +1,11 @@
+<svelte:options immutable />
+
 <script lang="ts">
-  import { afterUpdate } from "svelte";
-  import { flash, round } from "js/utils";
+  import { round } from "js/utils";
   import selectedStore from "js/stores/selected";
   import type { SelectedStore } from "js/stores/selected";
   import trackDataStore from "js/stores/track-data";
-  import playerStore from "js/stores/players";
+  import samplerStore from "js/stores/samplers";
   import WaveSurfer from "wavesurfer.js";
   import Regions from "wavesurfer.js/dist/plugins/regions.js";
   import type {
@@ -17,14 +18,11 @@
   let waveformContainer: HTMLElement;
   let waveform: WaveSurfer;
 
-  afterUpdate(() => {
-    flash(waveformContainer);
-  });
-
   $: selectedClip = getSelectedClip($selectedStore, $trackDataStore);
   $: selectedClipDuration = !!selectedClip
-    ? $playerStore[selectedClip.id].grainPlayer!.buffer.duration
+    ? $samplerStore[selectedClip.id].sampler!.duration
     : 0;
+
   $: drawWaveform(selectedClip);
 
   function drawWaveform(currentClip?: Clip) {
@@ -83,8 +81,9 @@
     <div class="flex flex-col justify-center">
       <div class="flex flex-row justify-between">
         <div class="font-bold">{selectedClip.name}</div>
-        <button class="rounded bg-red-500 text-white w-16 h-8 font-semibold hover:bg-red-700" on:click={closeEditor}
-          >close</button
+        <button
+          class="h-8 w-16 rounded bg-red-500 font-semibold text-white hover:bg-red-700"
+          on:click={closeEditor}>close</button
         >
       </div>
       <div class="flex flex-row gap-x-2">
