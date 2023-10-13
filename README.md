@@ -4,37 +4,46 @@
 
 Vamp requires the follwing be installed an accessible in `$PATH`:
 
-1. Elixir (>= 1.15.4 / OTP 26)
-2. Node (>= 20.7.0)
-3. PostgreSQL (>= 14.9)
+1. elixir (>= 1.15.4 / OTP 26)
+2. node (>= 20.7.0)
+3. postgreSQL (>= 14.9)
 
-Vamp requires a superuser named "postgres" exist in Postgres. If on macOS, you can run the following to create the postgres user:
+Vamp requires postgres to have a superuser named "postgres". If you have postgres installed, you likely have `createuser` in your `$PATH`.
+Run the following to create the postgres user:
 
-```bash
-createuser --superuser --createdb postgres
+```sh
+$ createuser --superuser --createdb postgres
 ```
 
-Required versions of `Elixir` and `Node` can be installed via [rtx](https://github.com/jdx/rtx). If you have `rtx` installed, simply run:
+Required versions of `elixir` and `node` can be installed via [rtx](https://github.com/jdx/rtx). 
+If you have `rtx` installed, run the following from the project root.
 
-```bash
-$ cd vamp && rtx install
+```sh
+$ rtx install
 ```
 
-This will install required versions of Elixir, Node, and Erlang. Additional dependencies can then be installed via `mix`:
+Once `elixir` is installed, additional dependencies can then be installed via `mix`:
 
-```bash
-$ cd vamp && mix setup
+```sh
+$ mix setup
 ```
 
+To start the Phoenix server:
 
-To start your Phoenix server:
-
-  * Run `mix setup` to install and setup dependencies
   * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
 Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+
+### Development Credentials
+
+To log in to the application in the development environment, use the following credentials:
+
+| Email address    | Password        |
+|------------------|-----------------|
+| test@example.com | testingpassword |
+
 
 ## Learn more
 
