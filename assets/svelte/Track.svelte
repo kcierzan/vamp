@@ -5,8 +5,6 @@
   import ClipSlot from "./ClipSlot.svelte";
   import { afterUpdate } from "svelte";
   import { flash } from "js/utils";
-  let element: HTMLElement;
-  afterUpdate(() => flash(element));
 
   export let track: TrackData;
   const NUMBER_OF_ROWS = 16;
@@ -14,10 +12,14 @@
     id: i * NUMBER_OF_ROWS,
   }));
 
+  let element: HTMLElement;
+  afterUpdate(() => flash(element));
+
   // function uploadClip(e: HTMLInputEvent) {
   //   if (!e.currentTarget.files) return;
   //   pushCreateClipFromFile(e.currentTarget.files[0], track.id);
   // }
+
 </script>
 
 <div class="flex flex-col gap-1 w-30" bind:this={element}>

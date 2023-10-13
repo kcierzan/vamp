@@ -106,7 +106,8 @@ class PhaseVocoderProcessor extends OLAProcessor {
 
   /** Compute squared magnitudes for peak finding **/
   computeMagnitudes() {
-    let i = 0, j = 0;
+    let i = 0,
+      j = 0;
     while (i < this.magnitudes.length) {
       let real = this.freqComplexBuffer[j];
       let imag = this.freqComplexBuffer[j + 1];
