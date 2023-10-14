@@ -1,23 +1,22 @@
 <script lang="ts">
   import trackStore from "js/stores/tracks";
-  // import samplerStore from "js/stores/samplers";
-  import { TrackID } from "js/types";
+  import clipStore from "js/stores/clips"
+  import { PlayState, TrackID } from "js/types";
   import { Transport } from "tone"
 
   export let trackId: TrackID;
   let circle: SVGCircleElement;
   let animation: Animation | null = null;
 
-  $: playingClipId = !!trackId && $trackStore[trackId].currentlyPlaying;
-  // $: sampler = !!playingClipId && $samplerStore[playingClipId.id].sampler;
-  // $: clipDuration = !!sampler && sampler.duration / sampler.speedFactor;
+  $: playingClip = !!trackId && $trackStore[trackId].currentlyPlaying;
+  $: isPlaying = !!playingClip && $clipStore[playingClip.id].state === PlayState.Playing
 
   function oneBarDuration() {
     return 60 / Transport.bpm.value * 4
   }
 
   $: {
-    !!playingClipId ? spin() : stop();
+    isPlaying ? spin() : stop();
   }
 
   function spin() {

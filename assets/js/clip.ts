@@ -70,9 +70,6 @@ function pushPlayClips(...clips: Clip[]) {
   pushShared(PrivateMessages.PlayClip, { clips });
 }
 
-// FIXME: lots of calls to `get` probably makes this slow.
-// Consider moving this to a derived store that derives from
-// quantization, transport, and project.
 function receivePlayClips({
   waitMilliseconds,
   clips,
@@ -80,7 +77,7 @@ function receivePlayClips({
   waitMilliseconds: number;
   clips: Clip[];
 }) {
-  const nowCompensated = `+${waitMilliseconds / 1000 + 0.1}`;
+  const nowCompensated = `+${waitMilliseconds / 1000}`;
   const currentQuantization = get(quantizationStore);
   // FIXME: Either make quantization settings e2e reactive or pass a time w/ the play event
   // (different clients will have different quantization values)
