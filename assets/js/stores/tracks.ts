@@ -123,7 +123,7 @@ function playTrackClip(clip: Clip, at: Time) {
   queueClip(clip);
   // either the next division or 25ms in the future
   const launchTime = tooLate ? "+0.025" : at;
-  // 50ms before the next division or immediately
+  // clear events a bit before launchTime
   const clearTime = tooLate ? "+0.0125" : (at as number) - 0.05;
   Transport.scheduleOnce((time) => {
     Draw.schedule(() => {

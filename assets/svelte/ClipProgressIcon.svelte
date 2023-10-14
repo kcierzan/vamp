@@ -1,22 +1,27 @@
 <script lang="ts">
   import trackStore from "js/stores/tracks";
-  import clipStore from "js/stores/clips"
+  import clipStore from "js/stores/clips";
+  import transportStore from "js/stores/transport";
   import { PlayState, TrackID } from "js/types";
-  import { Transport } from "tone"
+  import { Transport } from "tone";
 
   export let trackId: TrackID;
   let circle: SVGCircleElement;
   let animation: Animation | null = null;
 
   $: playingClip = !!trackId && $trackStore[trackId].currentlyPlaying;
-  $: isPlaying = !!playingClip && $clipStore[playingClip.id].state === PlayState.Playing
+  $: trackIsPlaying =
+    !!playingClip && $clipStore[playingClip.id].state === PlayState.Playing;
+  $: transportIsPlaying = $transportStore.state === PlayState.Playing;
 
-  function oneBarDuration() {
-    return 60 / Transport.bpm.value * 4
+  $: {
+    trackIsPlaying ? spin() : stop();
   }
 
   $: {
-    isPlaying ? spin() : stop();
+    trackIsPlaying && transportIsPlaying
+      ? animation?.play()
+      : animation?.pause();
   }
 
   function spin() {
@@ -35,13 +40,17 @@
         direction: "normal",
         // FIXME: this should be the repeat rate of the clip
         // which is not necessarily its buffer length / speedFactor
-        duration: (oneBarDuration() || 0) * 1000,
+        duration: (oneBarInSeconds() || 0) * 1000,
       },
     );
   }
 
   function stop() {
     !!animation && animation.cancel();
+  }
+
+  function oneBarInSeconds() {
+    return (60 / Transport.bpm.value) * 4;
   }
 </script>
 
