@@ -97,20 +97,28 @@ export enum ChannelName {
   Shared = "shared",
 }
 
-export enum PrivateMessages {
+export enum PrivateMessage {
   PlayClip = "play_clip",
   StopTrack = "stop_track",
   StartTransport = "start_transport",
   StopTransport = "stop_transport",
 }
 
-export enum SharedMessages {
+export enum SharedMessage {
+  PlayClip = "play_clip",
   NewClip = "new_clip",
   UpdateClips = "update_clips",
   NewTrack = "new_track",
   NewTrackFromClip = "new_track_from_clip",
   RemoveTrack = "remove_track",
   NewPoolFile = "new_pool_file",
+  ClearLatency = "clear_latency",
+  GetLatency = "get_latency",
+  Ping = "ping",
+  ReportLatency = "report_latency",
+  StopTrack = "stop_track",
+  StartTransport = "start_transport",
+  StopTransport = "stop_transport",
 }
 
 export enum QuantizationInterval {

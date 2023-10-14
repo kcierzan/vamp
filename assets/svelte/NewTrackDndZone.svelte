@@ -6,10 +6,10 @@
     TRIGGERS,
     dndzone,
   } from "svelte-dnd-action";
-  import trackMessage from "js/track";
+  import trackMessage from "js/messages/track";
   import { DndItem } from "js/types";
-  import { isAudioFile } from "js/audio-file";
-  import { isClip } from "js/clip";
+  import { isAudioFile } from "js/messages/audio-file";
+  import { isClip } from "js/messages/clip";
 
   export let songId: string;
 

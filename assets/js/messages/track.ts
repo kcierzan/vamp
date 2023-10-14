@@ -2,15 +2,15 @@ import { Transport } from "tone";
 import {
   AudioFile,
   Clip,
-  PrivateMessages,
-  SharedMessages,
+  PrivateMessage,
+  SharedMessage,
   TrackData,
   TrackID,
-} from "./types";
+} from "js/types";
 import { get } from "svelte/store";
-import { pushShared } from "./channels";
-import { quantizedTransportTime } from "./utils";
-import quantizationStore from "./stores/quantization";
+import { pushMessage, registerChannelListener } from "js/channels";
+import { quantizedTransportTime } from "js/utils";
+import quantizationStore from "js/stores/quantization";
 import trackDataStore from "js/stores/track-data";
 import samplerStore from "js/stores/samplers";
 import clipsStore from "js/stores/clips";
@@ -35,14 +35,14 @@ function pushCreateTrackFromAudioFile(songId: string, audioFile: AudioFile) {
       },
     ],
   };
-  pushShared(SharedMessages.NewTrack, trackWithClipAttrs);
+  pushMessage(SharedMessage.NewTrack, trackWithClipAttrs);
 }
 
 async function pushCreateEmptyTrack(
   songId: string,
   onOk: (res: any) => any = (_res) => {},
 ): Promise<void> {
-  pushShared(SharedMessages.NewTrack, {
+  pushMessage(SharedMessage.NewTrack, {
     name: "new track",
     gain: 0.0,
     panning: 0.0,
@@ -59,15 +59,15 @@ function pushCreateTrackFromClip(songId: string, clip: Clip) {
     panning: 0.0,
     audio_clips: [clip],
   };
-  pushShared(SharedMessages.NewTrackFromClip, trackWithClipAttrs);
+  pushMessage(SharedMessage.NewTrackFromClip, trackWithClipAttrs);
 }
 
 function pushRemoveTrack(id: TrackID) {
-  pushShared(SharedMessages.RemoveTrack, { id });
+  pushMessage(SharedMessage.RemoveTrack, { id });
 }
 
 function pushStopTracks(trackIds: TrackID[]): void {
-  pushShared(PrivateMessages.StopTrack, { trackIds });
+  pushMessage(SharedMessage.StopTrack, { trackIds });
 }
 
 function pushStopAllTracks(): void {
@@ -75,22 +75,28 @@ function pushStopAllTracks(): void {
   pushStopTracks(trackIds);
 }
 
-function receiveStopTrack({ trackIds }: { trackIds: TrackID[] }): void {
-  const currentQuantization = get(quantizationStore);
-  // FIXME: Either make quantization settings e2e reactive or pass a time w/ the stop event
-  const nextBarTT = quantizedTransportTime(currentQuantization);
-  for (const trackId of trackIds) {
-    trackPlaybackStore.stopTrack(trackId, nextBarTT);
-  }
-}
+registerChannelListener(
+  PrivateMessage.StopTrack,
+  function receiveStopTrack({ trackIds }: { trackIds: TrackID[] }): void {
+    const currentQuantization = get(quantizationStore);
+    // FIXME: Either make quantization settings e2e reactive or pass a time w/ the stop event
+    const nextBarTT = quantizedTransportTime(currentQuantization);
+    for (const trackId of trackIds) {
+      trackPlaybackStore.stopTrack(trackId, nextBarTT);
+    }
+  },
+);
 
-function receiveRemoveTrack(trackId: TrackID) {
-  // TODO: remove clipStates and GrainPlayers
-  trackPlaybackStore.stopCurrentlyPlayingAudio(trackId, undefined);
-  trackPlaybackStore.cancelPlayingEvent(trackId);
-  trackPlaybackStore.cancelQueuedEvent(trackId);
-  trackDataStore.removeTrack(trackId);
-}
+registerChannelListener(
+  SharedMessage.RemoveTrack,
+  function receiveRemoveTrack(trackId: TrackID) {
+    // TODO: remove clipStates and GrainPlayers
+    trackPlaybackStore.stopCurrentlyPlayingAudio(trackId, undefined);
+    trackPlaybackStore.cancelPlayingEvent(trackId);
+    trackPlaybackStore.cancelQueuedEvent(trackId);
+    trackDataStore.removeTrack(trackId);
+  },
+);
 
 // TODO: add DB properties to the track store!
 function receiveNewTrack(track: TrackData) {
@@ -100,6 +106,9 @@ function receiveNewTrack(track: TrackData) {
   trackDataStore.createTrack(track);
 }
 
+registerChannelListener(SharedMessage.NewTrack, receiveNewTrack);
+registerChannelListener(SharedMessage.NewTrackFromClip, receiveNewTrack);
+
 export default {
   push: {
     createFromAudioFile: pushCreateTrackFromAudioFile,
@@ -108,10 +117,5 @@ export default {
     remove: pushRemoveTrack,
     stop: pushStopTracks,
     stopAll: pushStopAllTracks,
-  },
-  receive: {
-    stop: receiveStopTrack,
-    remove: receiveRemoveTrack,
-    new: receiveNewTrack,
   },
 };

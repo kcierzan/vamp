@@ -1,5 +1,5 @@
 <script lang="ts">
-  import scenesStore from "../js/stores/scenes";
+  import scenesStore from "js/stores/scenes";
   import SceneButton from "./SceneButton.svelte";
 
   const NUMBER_OF_ROWS = 16;

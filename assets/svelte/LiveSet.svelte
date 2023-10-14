@@ -2,20 +2,13 @@
 
 <script lang="ts">
   import type { Song, Token, User } from "js/types";
-  import * as Tone from "tone";
   import { onMount } from "svelte";
-  import latency from "../js/stores/latency";
-  import { joinChannels } from "js/channels";
-  import transportStore from "js/stores/transport";
-  import poolStore from "js/stores/pool";
+  import { initialize } from "js/initialization";
+  import trackDataStore from "js/stores/track-data";
+  import latencyStore from "js/stores/latency";
   import Scenes from "./Scenes.svelte";
   import TrackArea from "./TrackArea.svelte";
   import MediaBay from "./MediaBay.svelte";
-  import { stretchClipsToBpm } from "js/utils";
-  import trackDataStore from "js/stores/track-data";
-  import samplerStore from "js/stores/samplers";
-  import trackPlaybackStore from "js/stores/tracks";
-  import clipStore from "js/stores/clips";
   import SongNav from "./SongNav.svelte";
   import Editor from "./Editor.svelte";
 
@@ -23,30 +16,13 @@
   export let token: Token;
   export let project: Song;
 
-  const { calculateLatency } = latency;
   // let element: HTMLElement;
   // afterUpdate(() => flash(element));
 
   const sessionEmpty = project.tracks.length === 0;
 
-  function setInitialStateFromProps(props: Song) {
-    transportStore.setBpm(props.bpm);
-    trackDataStore.setFromProps(props.tracks);
-    trackPlaybackStore.setFromProps(props.tracks);
-    samplerStore.setFromProps(props.tracks);
-    poolStore.set(props.audio_files);
-    clipStore.setFromProps(props.tracks);
-    stretchClipsToBpm($trackDataStore, props.bpm);
-  }
-
   onMount(async () => {
-    const context = Tone.getContext();
-    context.lookAhead = 0.1;
-    await context.addAudioWorkletModule("/assets/phase-vocoder.js");
-
-    joinChannels(token, currentUser);
-    setInitialStateFromProps(project);
-    calculateLatency();
+    await initialize(project, currentUser, token);
   });
 </script>
 
@@ -55,7 +31,7 @@
   <h2 class="text-2xl" class:invisible={!sessionEmpty}>
     Why don't you start by adding some tracks?
   </h2>
-  <h3>Your latency is {$latency} ms!</h3>
+  <h3>Your latency is {$latencyStore} ms!</h3>
 </div>
 
 <SongNav {project} />

@@ -3,7 +3,7 @@
   import transportStore from "js/stores/transport";
   import type { HTMLInputEvent } from "js/types";
   import trackDataStore from "js/stores/track-data";
-  import { stretchClipsToBpm } from "js/utils";
+  import clipMessage from "js/messages/clip"
 
   function setTransportBpm(e: HTMLInputEvent) {
     const bpm = parseInt(e.currentTarget.value);
@@ -13,7 +13,7 @@
 
   function setTempoAndStretchClips(bpm: number) {
     transportStore.setBpm(bpm);
-    stretchClipsToBpm($trackDataStore, bpm);
+    clipMessage.push.stretchClipsToBpm($trackDataStore, bpm);
   }
 
   onMount(async () => setTempoAndStretchClips(120));

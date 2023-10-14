@@ -2,7 +2,7 @@
 
 <script lang="ts">
   import { Song } from "js/types";
-  import trackMessage from "js/track";
+  import trackMessage from "js/messages/track";
   export let project: Song;
 </script>
 

@@ -3,8 +3,7 @@ import type { Writable } from "svelte/store";
 import { writable } from "svelte/store";
 import { Transport, Draw } from "tone";
 import * as Tone from "tone";
-import { PlayState, PrivateMessages, TransportStore } from "js/types";
-import { pushShared } from "js/channels";
+import { PlayState, TransportStore } from "js/types";
 import trackPlaybackStore from "js/stores/tracks";
 import { round } from "js/utils";
 
@@ -21,15 +20,7 @@ const initialState = {
 const transport: Writable<TransportStore> = writable(initialState);
 const { subscribe, update } = transport;
 
-function receiveStartTransport({
-  waitMilliseconds,
-}: {
-  waitMilliseconds: number;
-}) {
-  startLocal(`+${waitMilliseconds / 1000}`);
-}
-
-function receiveStopTransport({
+function stopOrPauseLocal({
   waitMilliseconds,
 }: {
   waitMilliseconds: number;
@@ -43,10 +34,6 @@ function receiveStopTransport({
     trackPlaybackStore.stopAllTracksAudio();
     return store;
   });
-}
-
-function start(): void {
-  pushShared(PrivateMessages.StartTransport, {});
 }
 
 function startLocal(time: Time) {
@@ -134,11 +121,6 @@ function clearSecondsUpdateEvent() {
   })
 }
 
-// TODO: move this to a message module
-function stop(): void {
-  pushShared(PrivateMessages.StopTransport, {});
-}
-
 function setBpm(bpm: number): void {
   update((store) => {
     if (store.transport?.bpm?.value) {
@@ -168,11 +150,8 @@ function setPosition(position: Time): void {
 
 export default {
   subscribe,
-  stop,
-  start,
-  receiveStartTransport,
-  receiveStopTransport,
   startLocal,
+  stopOrPauseLocal,
   setBpm,
   rampToBpm,
   setPosition,

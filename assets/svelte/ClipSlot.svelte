@@ -3,10 +3,10 @@
 <script lang="ts">
   import { dndzone } from "svelte-dnd-action";
   import ClipComponent from "./Clip.svelte";
-  import { DndItem, TrackData } from "js/types";
-  import { isClip } from "js/clip";
-  import clipMessage from "js/clip";
-  import { isAudioFile } from "js/audio-file";
+  import { Clip, DndItem, TrackData } from "js/types";
+  import { isClip } from "js/messages/clip";
+  import clipMessage from "js/messages/clip";
+  import { isAudioFile } from "js/messages/audio-file";
   import trackDataStore from "js/stores/track-data";
   import { flash } from "js/utils";
   import { afterUpdate } from "svelte";
@@ -40,7 +40,7 @@
       clipMessage.push.createFromPool(audioFile, track.id, index);
     } else if (isClip(clip)) {
       // move the clip optimistically
-      trackDataStore.deleteClip(clip);
+      trackDataStore.deleteClip(clip as Clip);
       clipMessage.push.updateClips({ ...clip, index, track_id: track.id });
     }
   }
