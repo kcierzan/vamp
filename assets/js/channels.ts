@@ -23,6 +23,7 @@ interface Listeners {
   };
 }
 
+// TODO: make an API that allows message modules to register listeners themselves
 const listeners: Listeners = {
   private: {
     play_clip: ({

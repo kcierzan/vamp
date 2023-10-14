@@ -53,6 +53,7 @@ export enum PlayState {
   Playing = "PLAYING",
   Stopped = "STOPPED",
   Queued = "QUEUED",
+  Paused = "PAUSED",
 }
 
 export interface ChannelStore {
@@ -76,6 +77,10 @@ export interface TransportStore {
   transport: typeof Transport;
   state: PlayState;
   bpm: number;
+  barsBeatsSixteenths: string;
+  seconds: string;
+  bbsUpdateEvent: number | null;
+  secondsUpdateEvent: number | null;
 }
 
 export interface SceneStates {

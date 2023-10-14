@@ -11,8 +11,7 @@
   import Scenes from "./Scenes.svelte";
   import TrackArea from "./TrackArea.svelte";
   import MediaBay from "./MediaBay.svelte";
-  import { afterUpdate } from "svelte";
-  import { flash, stretchClipsToBpm } from "js/utils";
+  import { stretchClipsToBpm } from "js/utils";
   import trackDataStore from "js/stores/track-data";
   import samplerStore from "js/stores/samplers";
   import trackPlaybackStore from "js/stores/tracks";
@@ -42,7 +41,7 @@
 
   onMount(async () => {
     const context = Tone.getContext();
-    context.lookAhead = 0.05;
+    context.lookAhead = 0.1;
     await context.addAudioWorkletModule("/assets/phase-vocoder.js");
 
     joinChannels(token, currentUser);

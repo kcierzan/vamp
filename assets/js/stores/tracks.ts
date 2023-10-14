@@ -119,22 +119,23 @@ function stopAllTracksAudio() {
 
 function playTrackClip(clip: Clip, at: Time) {
   const tooLate = Transport.seconds > (at as number);
+
   queueClip(clip);
-  // either the next division or 50ms in the future
-  const launchTime = tooLate ? "+0.05" : at;
-  // 50ms before the next division or immediately
-  const clearTime = tooLate ? 0 : (at as number) - 0.05;
+  // either the next division or 25ms in the future
+  const launchTime = tooLate ? "+0.025" : at;
+  // clear events a bit before launchTime
+  const clearTime = tooLate ? "+0.0125" : (at as number) - 0.05;
   Transport.scheduleOnce((time) => {
     Draw.schedule(() => {
       cancelPlayingEvent(clip.track_id);
     }, time);
+    stopCurrentlyPlayingAudio(clip.track_id, time);
   }, clearTime);
 
   const queuedEvent = Transport.scheduleOnce((time) => {
     Draw.schedule(() => {
       loopClip(clip, "1m");
     }, time);
-    stopCurrentlyPlayingAudio(clip.track_id, time);
   }, launchTime);
   setCurrentlyQueued(clip, queuedEvent);
 }
@@ -145,7 +146,7 @@ function loopClip(clip: Clip, every: Time): void {
       samplerStore.playAudio(clip, audioContextTime);
     },
     every,
-    "+0.001",
+    "+0.0001",
   );
   setTrackClipStatesPlay(clip, playEvent);
 }

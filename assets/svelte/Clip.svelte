@@ -29,7 +29,7 @@
           duration: (30 / Transport.bpm.value) * 1000,
         },
       );
-    } else if (state === PlayState.Stopped || state === PlayState.Playing) {
+    } else {
       !!animation && animation.cancel();
       animation = null;
     }

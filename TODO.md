@@ -14,7 +14,8 @@
     - SOMEDAY: write the worker in Rust and compile to WASM
 
 - [x] Create clip progress indicator
-- [ ] Create UI to adjust loop length independent of clip length
+- ~~Create UI to adjust loop length independent of clip length~~
+- [ ] Add ui to adjust clip "length" (repeat frequency)
 - [ ] Add volume faders
 - [ ] Add panning knobs
 - [ ] Make latency cache per-song-session (Registry)
