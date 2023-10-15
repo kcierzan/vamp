@@ -12,8 +12,12 @@ function createNewPoolFile(audioFile: AudioFile) {
   });
 }
 
+function initialize(audioFiles: AudioFile[]) {
+  set(audioFiles);
+}
+
 export default {
   subscribe,
-  set,
+  initialize,
   createNewPoolFile,
 };

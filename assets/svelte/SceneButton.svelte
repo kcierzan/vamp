@@ -1,24 +1,28 @@
 <script lang="ts">
   import { Clip, PlayState, TrackData, TrackID } from "js/types";
   import trackDataStore from "js/stores/track-data";
-  import trackMessage from "js/track";
-  import clipMessage from "js/clip";
+  import trackMessage from "js/messages/track";
+  import clipMessage from "js/messages/clip";
+  import { start } from "tone";
 
   export let index: string;
   export let clips: Clip[];
   export let state: PlayState;
 
-  function playScene(): void {
-    const allTrackIds = $trackDataStore.map((track: TrackData) => track.id)
-    const tracksInScene = clips.map((clip: Clip) => clip.track_id)
-    const tracksToStop = allTrackIds.filter((trackId: TrackID) => !tracksInScene.includes(trackId))
-    clipMessage.push.playClips(...clips);
-    trackMessage.push.stop(tracksToStop);
+  async function playScene(): Promise<void> {
+    await start();
+    const allTrackIds = $trackDataStore.map((track: TrackData) => track.id);
+    const tracksInScene = clips.map((clip: Clip) => clip.track_id);
+    const tracksToStop = allTrackIds.filter(
+      (trackId: TrackID) => !tracksInScene.includes(trackId),
+    );
+    clipMessage.playClips(...clips);
+    trackMessage.stop(tracksToStop);
   }
 
   function stopScene(): void {
-    const tracksInScene = clips.map((clip: Clip) => clip.track_id)
-    trackMessage.push.stop(tracksInScene);
+    const tracksInScene = clips.map((clip: Clip) => clip.track_id);
+    trackMessage.stop(tracksInScene);
   }
 
   function sceneAction() {
@@ -37,11 +41,14 @@
     [PlayState.Playing]: "bg-red-500 hover:bg-red-700",
     [PlayState.Stopped]: "bg-green-500 hover:bg-green-700",
     [PlayState.Queued]: "bg-yellow-500 hover:bg-yellow-700 text-black",
+    [PlayState.Paused]: "",
   };
 
   $: sceneStyles = baseStyles + " " + stateStyles[state];
 </script>
 
 <div>
-  <button class={sceneStyles} on:click={sceneAction}>Scene {parseInt(index) + 1}</button>
+  <button class={sceneStyles} on:click={sceneAction}
+    >Scene {parseInt(index) + 1}</button
+  >
 </div>

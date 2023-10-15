@@ -2,13 +2,13 @@
 
 <script lang="ts">
   import { Song } from "js/types";
-  import trackMessage from "js/track";
+  import trackMessage from "js/messages/track";
   export let project: Song;
 </script>
 
 <button
   class="add-track"
-  on:click={() => trackMessage.push.createEmpty(project.id)}
+  on:click={() => trackMessage.createEmpty(project.id)}
 >
   <span class="hero-plus-circle h-full w-1/4 self-center" />
   <span class="self-center">Add track</span>

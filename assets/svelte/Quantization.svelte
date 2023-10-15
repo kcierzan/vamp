@@ -15,7 +15,7 @@
 </script>
 
 <select
-  class="w-36 h-8 p-0 rounded-lg border-2 pl-2"
+  class="h-8 w-36 rounded border-2 p-0 pl-2"
   bind:value={$quantizationStore}
 >
   {#each Object.entries(options) as [value, label] (value)}

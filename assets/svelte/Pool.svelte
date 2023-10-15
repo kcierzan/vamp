@@ -30,6 +30,7 @@
   on:consider={handleDndConsider}
   on:finalize={handleDndFinalize}
 >
+  <div>Audio Pool</div>
   {#if !!items.length}
     {#each items as audioFile (audioFile.id)}
       <PoolItem {audioFile} />

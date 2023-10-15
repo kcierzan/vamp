@@ -2,7 +2,7 @@
   import { PlayState } from "js/types";
   import type { Clip, HTMLInputEvent } from "js/types";
   import * as Tone from "tone";
-  import clipMessage from "js/clip";
+  import clipMessage from "js/messages/clip";
   import { Transport } from "tone";
   import clipsStore from "js/stores/clips";
   import selectedStore from "js/stores/selected";
@@ -43,6 +43,7 @@
     [PlayState.Playing]: "bg-sky-400",
     [PlayState.Stopped]: "bg-blue-500",
     [PlayState.Queued]: "",
+    [PlayState.Paused]: "",
   };
 
   function computeStyles(state: PlayState) {
@@ -55,7 +56,7 @@
   function changeTempo(e: HTMLInputEvent) {
     const target = e.target;
     const val = (target as HTMLInputElement).value;
-    clipMessage.push.updateClips({
+    clipMessage.updateClips({
       ...clip,
       playback_rate: parseFloat(val),
     });
@@ -67,7 +68,7 @@
     if (!!e.shiftKey) {
       selectedStore.set({ clipId: clip.id, trackId: clip.track_id });
     } else {
-      clipMessage.push.playClips(clip);
+      clipMessage.playClips(clip);
     }
   }
 </script>

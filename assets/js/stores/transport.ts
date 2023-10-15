@@ -3,8 +3,7 @@ import type { Writable } from "svelte/store";
 import { writable } from "svelte/store";
 import { Transport, Draw } from "tone";
 import * as Tone from "tone";
-import { PlayState, PrivateMessages, TransportStore } from "js/types";
-import { pushShared } from "js/channels";
+import { PlayState, TransportStore } from "js/types";
 import trackPlaybackStore from "js/stores/tracks";
 import { round } from "js/utils";
 
@@ -21,19 +20,7 @@ const initialState = {
 const transport: Writable<TransportStore> = writable(initialState);
 const { subscribe, update } = transport;
 
-function receiveStartTransport({
-  waitMilliseconds,
-}: {
-  waitMilliseconds: number;
-}) {
-  startLocal(`+${waitMilliseconds / 1000}`);
-}
-
-function receiveStopTransport({
-  waitMilliseconds,
-}: {
-  waitMilliseconds: number;
-}) {
+function stopOrPauseLocal({ waitMilliseconds }: { waitMilliseconds: number }) {
   const updateTime = `+${waitMilliseconds / 1000}`;
   update((store) => {
     store.state === PlayState.Playing
@@ -43,10 +30,6 @@ function receiveStopTransport({
     trackPlaybackStore.stopAllTracksAudio();
     return store;
   });
-}
-
-function start(): void {
-  pushShared(PrivateMessages.StartTransport, {});
 }
 
 function startLocal(time: Time) {
@@ -107,10 +90,10 @@ function scheduleBarsBeathSixteenthsUpdate() {
 }
 
 function clearBbsUpdateEvent() {
-  update(store => {
+  update((store) => {
     store.bbsUpdateEvent !== null && Transport.clear(store.bbsUpdateEvent);
     return store;
-  })
+  });
 }
 
 function scheduleSecondsUpdate() {
@@ -127,16 +110,11 @@ function scheduleSecondsUpdate() {
 }
 
 function clearSecondsUpdateEvent() {
-  update(store => {
+  update((store) => {
     store.secondsUpdateEvent !== null &&
       Transport.clear(store.secondsUpdateEvent);
     return store;
-  })
-}
-
-// TODO: move this to a message module
-function stop(): void {
-  pushShared(PrivateMessages.StopTransport, {});
+  });
 }
 
 function setBpm(bpm: number): void {
@@ -147,6 +125,10 @@ function setBpm(bpm: number): void {
     }
     return store;
   });
+}
+
+function initialize(bpm: number) {
+  setBpm(bpm);
 }
 
 function rampToBpm(bpm: number): void {
@@ -168,12 +150,10 @@ function setPosition(position: Time): void {
 
 export default {
   subscribe,
-  stop,
-  start,
-  receiveStartTransport,
-  receiveStopTransport,
   startLocal,
+  stopOrPauseLocal,
   setBpm,
   rampToBpm,
   setPosition,
+  initialize,
 };

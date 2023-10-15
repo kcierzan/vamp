@@ -1,17 +1,17 @@
 <script>
   import Pool from "./Pool.svelte";
   import Dropzone from "svelte-file-dropzone/Dropzone.svelte";
-  import audioFileMessage from "js/audio-file";
+  import audioFileMessage from "js/messages/audio-file";
 
   export let songId;
 
   function onDrop(e) {
     const { acceptedFiles } = e.detail;
-    audioFileMessage.push.createPoolItem(acceptedFiles[0], songId);
+    audioFileMessage.createPoolFile(acceptedFiles[0], songId);
   }
 </script>
 
-<div class="flex w-1/4 flex-col justify-between">
+<div class="flex w-1/4 flex-col justify-between gap-y-2">
   <Pool />
-  <Dropzone on:drop={onDrop} accept="audio/*" />
+  <Dropzone class="rounded" on:drop={onDrop} accept="audio/*" />
 </div>

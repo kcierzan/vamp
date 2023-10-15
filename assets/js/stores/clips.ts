@@ -19,7 +19,7 @@ function setClipState(clip: Clip, state: PlayState) {
   });
 }
 
-function setFromProps(tracks: TrackData[]) {
+function initialize(tracks: TrackData[]) {
   const newState = tracks.reduce((acc: ClipStore, track) => {
     for (const clip of track.audio_clips) {
       acc[clip.id] = {
@@ -44,5 +44,5 @@ export default {
   subscribe,
   initializeClipStates,
   setClipState,
-  setFromProps,
+  initialize,
 }

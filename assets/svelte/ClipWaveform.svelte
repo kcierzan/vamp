@@ -2,7 +2,7 @@
   import { onDestroy, onMount } from "svelte";
   import { Clip } from "js/types";
   import Regions from "wavesurfer.js/dist/plugins/regions.js";
-  import clipMessage from "js/clip";
+  import clipMessage from "js/messages/clip";
   import WaveSurfer from "wavesurfer.js";
   import type {
     Region,
@@ -44,7 +44,7 @@
     };
     regions.addRegion(regionParams);
     regions.on("region-updated", (region: Region) => {
-      clipMessage.push.updateClips({
+      clipMessage.updateClips({
         ...currentClip,
         start_time: region.start,
         end_time: region.end,

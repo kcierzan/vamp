@@ -1,9 +1,7 @@
-import { Clip, QuantizationInterval, TrackData } from "js/types";
+import { AudioFile, Clip, QuantizationInterval } from "js/types";
 import { Time, Transport } from "tone";
 import * as Tone from "tone";
 import { guess } from "web-audio-beat-detector";
-import clipMessage from "js/clip";
-import samplerStore from "js/stores/samplers";
 
 export async function fileToB64(file: File): Promise<string> {
   const bytes = await fileToByteArray(file);
@@ -50,7 +48,7 @@ export function debounce(func: (...args: any[]) => any, timeout: number = 300) {
   let timer: ReturnType<typeof setTimeout>;
   return (...args: []) => {
     clearTimeout(timer);
-    timer = setTimeout(function (this: any) {
+    timer = setTimeout(function(this: any) {
       func.apply(this, args);
     }, timeout);
   };
@@ -84,21 +82,23 @@ export function flash(element: HTMLElement) {
   });
 }
 
-export function stretchClipsToBpm(tracks: TrackData[], bpm: number) {
-  const clipsToStretch: Clip[] = [];
-  for (const track of tracks) {
-    for (const clip of track.audio_clips) {
-      if (!!clip.audio_file) {
-        const rate = bpm / clip.audio_file.bpm;
-        // optimistically change rate locally first
-        samplerStore.setPlaybackRate(clip, rate);
-        clipsToStretch.push({ ...clip, playback_rate: rate });
-      }
-    }
-  }
-  clipMessage.push.updateClips(...clipsToStretch);
-}
-
 export function round(num: number, place: number) {
   return Math.round((num + Number.EPSILON) * place) / place;
+}
+
+export function isAudioFile(item: any): item is AudioFile {
+  if (!!!item) return false;
+  return (
+    "id" in item && "file" in item && "bpm" in item && !item.isDndShadowItem
+  );
+}
+
+export function isClip(obj: any): obj is Clip {
+  if (!!!obj) return false;
+  return (
+    "id" in obj &&
+    "track_id" in obj &&
+    "audio_file" in obj &&
+    !obj.isDndShadowItem
+  );
 }
