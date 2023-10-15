@@ -6,10 +6,13 @@
   import { Transport } from "tone";
   import clipsStore from "js/stores/clips";
   import selectedStore from "js/stores/selected";
+  import trackDataStore from "js/stores/track-data";
 
   export let clip: Clip;
   let button: HTMLButtonElement;
   let animation: Animation | null = null;
+
+  $: currentTrack = $trackDataStore.find((track) => track.id === clip.track_id);
 
   function handleQueueAnimation(state: PlayState) {
     if (!!!animation && state === PlayState.Queued) {
@@ -66,7 +69,7 @@
     await Tone.start();
 
     if (!!e.shiftKey) {
-      selectedStore.set({ clipId: clip.id, trackId: clip.track_id });
+      selectedStore.set({ clip: clip, track: currentTrack ?? null });
     } else {
       clipMessage.playClips(clip);
     }
