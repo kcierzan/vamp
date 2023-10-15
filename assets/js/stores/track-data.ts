@@ -16,7 +16,7 @@ function removeTrack(trackId: TrackID) {
   });
 }
 
-function setFromProps(trackProps: TrackData[]) {
+function initialize(trackProps: TrackData[]) {
   set(trackProps);
 }
 
@@ -58,7 +58,7 @@ export default {
   subscribe,
   createTrack,
   removeTrack,
-  setFromProps,
+  initialize,
   createClips,
   deleteClip,
 };

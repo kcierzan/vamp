@@ -20,11 +20,7 @@ const initialState = {
 const transport: Writable<TransportStore> = writable(initialState);
 const { subscribe, update } = transport;
 
-function stopOrPauseLocal({
-  waitMilliseconds,
-}: {
-  waitMilliseconds: number;
-}) {
+function stopOrPauseLocal({ waitMilliseconds }: { waitMilliseconds: number }) {
   const updateTime = `+${waitMilliseconds / 1000}`;
   update((store) => {
     store.state === PlayState.Playing
@@ -94,10 +90,10 @@ function scheduleBarsBeathSixteenthsUpdate() {
 }
 
 function clearBbsUpdateEvent() {
-  update(store => {
+  update((store) => {
     store.bbsUpdateEvent !== null && Transport.clear(store.bbsUpdateEvent);
     return store;
-  })
+  });
 }
 
 function scheduleSecondsUpdate() {
@@ -114,11 +110,11 @@ function scheduleSecondsUpdate() {
 }
 
 function clearSecondsUpdateEvent() {
-  update(store => {
+  update((store) => {
     store.secondsUpdateEvent !== null &&
       Transport.clear(store.secondsUpdateEvent);
     return store;
-  })
+  });
 }
 
 function setBpm(bpm: number): void {
@@ -129,6 +125,10 @@ function setBpm(bpm: number): void {
     }
     return store;
   });
+}
+
+function initialize(bpm: number) {
+  setBpm(bpm);
 }
 
 function rampToBpm(bpm: number): void {
@@ -155,4 +155,5 @@ export default {
   setBpm,
   rampToBpm,
   setPosition,
+  initialize,
 };

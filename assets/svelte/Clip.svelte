@@ -56,7 +56,7 @@
   function changeTempo(e: HTMLInputEvent) {
     const target = e.target;
     const val = (target as HTMLInputElement).value;
-    clipMessage.push.updateClips({
+    clipMessage.updateClips({
       ...clip,
       playback_rate: parseFloat(val),
     });
@@ -68,7 +68,7 @@
     if (!!e.shiftKey) {
       selectedStore.set({ clipId: clip.id, trackId: clip.track_id });
     } else {
-      clipMessage.push.playClips(clip);
+      clipMessage.playClips(clip);
     }
   }
 </script>

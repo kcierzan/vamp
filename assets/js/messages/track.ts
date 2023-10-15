@@ -16,7 +16,7 @@ import samplerStore from "js/stores/samplers";
 import clipsStore from "js/stores/clips";
 import trackPlaybackStore from "js/stores/tracks";
 
-function pushCreateTrackFromAudioFile(songId: string, audioFile: AudioFile) {
+function createFromAudioFile(songId: string, audioFile: AudioFile) {
   const trackCount = get(trackDataStore).length;
   const trackWithClipAttrs = {
     song_id: songId,
@@ -38,7 +38,7 @@ function pushCreateTrackFromAudioFile(songId: string, audioFile: AudioFile) {
   pushMessage(SharedMessage.NewTrack, trackWithClipAttrs);
 }
 
-async function pushCreateEmptyTrack(
+async function createEmpty(
   songId: string,
   onOk: (res: any) => any = (_res) => {},
 ): Promise<void> {
@@ -50,7 +50,7 @@ async function pushCreateEmptyTrack(
   })?.receive("ok", onOk);
 }
 
-function pushCreateTrackFromClip(songId: string, clip: Clip) {
+function createFromClip(songId: string, clip: Clip) {
   const trackCount = get(trackDataStore).length;
   const trackWithClipAttrs = {
     song_id: songId,
@@ -62,17 +62,17 @@ function pushCreateTrackFromClip(songId: string, clip: Clip) {
   pushMessage(SharedMessage.NewTrackFromClip, trackWithClipAttrs);
 }
 
-function pushRemoveTrack(id: TrackID) {
+function remove(id: TrackID) {
   pushMessage(SharedMessage.RemoveTrack, { id });
 }
 
-function pushStopTracks(trackIds: TrackID[]): void {
+function stop(trackIds: TrackID[]): void {
   pushMessage(SharedMessage.StopTrack, { trackIds });
 }
 
-function pushStopAllTracks(): void {
+function stopAll(): void {
   const trackIds = get(trackDataStore).map((track) => track.id);
-  pushStopTracks(trackIds);
+  stop(trackIds);
 }
 
 registerChannelListener(
@@ -110,12 +110,10 @@ registerChannelListener(SharedMessage.NewTrack, receiveNewTrack);
 registerChannelListener(SharedMessage.NewTrackFromClip, receiveNewTrack);
 
 export default {
-  push: {
-    createFromAudioFile: pushCreateTrackFromAudioFile,
-    createFromClip: pushCreateTrackFromClip,
-    createEmpty: pushCreateEmptyTrack,
-    remove: pushRemoveTrack,
-    stop: pushStopTracks,
-    stopAll: pushStopAllTracks,
-  },
+    createFromAudioFile,
+    createFromClip,
+    createEmpty,
+    remove,
+    stop,
+    stopAll,
 };

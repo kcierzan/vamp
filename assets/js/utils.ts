@@ -1,4 +1,4 @@
-import { QuantizationInterval } from "js/types";
+import { AudioFile, Clip, QuantizationInterval } from "js/types";
 import { Time, Transport } from "tone";
 import * as Tone from "tone";
 import { guess } from "web-audio-beat-detector";
@@ -48,7 +48,7 @@ export function debounce(func: (...args: any[]) => any, timeout: number = 300) {
   let timer: ReturnType<typeof setTimeout>;
   return (...args: []) => {
     clearTimeout(timer);
-    timer = setTimeout(function (this: any) {
+    timer = setTimeout(function(this: any) {
       func.apply(this, args);
     }, timeout);
   };
@@ -84,4 +84,21 @@ export function flash(element: HTMLElement) {
 
 export function round(num: number, place: number) {
   return Math.round((num + Number.EPSILON) * place) / place;
+}
+
+export function isAudioFile(item: any): item is AudioFile {
+  if (!!!item) return false;
+  return (
+    "id" in item && "file" in item && "bpm" in item && !item.isDndShadowItem
+  );
+}
+
+export function isClip(obj: any): obj is Clip {
+  if (!!!obj) return false;
+  return (
+    "id" in obj &&
+    "track_id" in obj &&
+    "audio_file" in obj &&
+    !obj.isDndShadowItem
+  );
 }

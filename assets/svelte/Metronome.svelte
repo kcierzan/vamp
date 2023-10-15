@@ -1,14 +1,17 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Transport, Draw, Oscillator, AmplitudeEnvelope } from "tone";
+  import { Transport, Oscillator, AmplitudeEnvelope } from "tone";
+  import transportStore from "js/stores/transport";
 
-  let beat: number = 1;
   let on = false;
   let events: number[] = [];
   let upOsc: Oscillator | undefined;
   let osc: Oscillator | undefined;
   let upEnvelope: AmplitudeEnvelope | undefined;
   let envelope: AmplitudeEnvelope | undefined;
+  $: currentBeat = on
+    ? parseInt($transportStore.barsBeatsSixteenths.split(":")[1]) + 1
+    : 1;
 
   function createOscillators() {
     upOsc = new Oscillator(880, "sine");
@@ -31,22 +34,19 @@
     if (!osc || !envelope || !upEnvelope || !upOsc) return;
     osc.connect(envelope).start();
     upOsc.connect(upEnvelope).start();
-    const scheduled = [0, 1, 2, 3].map((currentBeat) => {
+    const scheduled = [0, 1, 2, 3].map((beat) => {
       return Transport.scheduleRepeat(
         (time) => {
-          if (currentBeat === 0) {
+          if (beat === 0) {
             upOsc?.restart(time);
             upEnvelope?.triggerAttackRelease(0.2, time);
           } else {
             osc?.restart(time);
             envelope?.triggerAttackRelease(0.2, time);
           }
-          Draw.schedule(() => {
-            beat = currentBeat + 1;
-          }, time);
         },
         "1m",
-        `0:${currentBeat}`,
+        `0:${beat}`,
       );
     });
     events = [...events, ...scheduled];
@@ -63,17 +63,18 @@
     if (on) {
       clearEvents();
       on = false;
-      beat = 1;
+      // currentBeat = 1;
     } else {
       on = true;
       scheduleBeats();
     }
   }
+
   onMount(async () => createOscillators());
 </script>
 
 <button
-  class="text-base bg-gray-400 w-16 h-8 text-black rounded-lg"
+  class="h-8 w-16 rounded bg-gray-400 text-base text-black"
   class:bg-yellow-500={on}
-  on:click={toggle}>{beat}</button
+  on:click={toggle}>{currentBeat}</button
 >

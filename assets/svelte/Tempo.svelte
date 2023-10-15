@@ -13,7 +13,7 @@
 
   function setTempoAndStretchClips(bpm: number) {
     transportStore.setBpm(bpm);
-    clipMessage.push.stretchClipsToBpm($trackDataStore, bpm);
+    clipMessage.stretchClipsToBpm($trackDataStore, bpm);
   }
 
   onMount(async () => setTempoAndStretchClips(120));
@@ -21,7 +21,7 @@
 
 <div class="flex flex-col items-center">
   <input
-    class="h-8 w-24 rounded-lg border-2 text-lg"
+    class="h-8 w-24 rounded border-2 text-lg"
     id="tempo"
     value={$transportStore.bpm}
     type="number"

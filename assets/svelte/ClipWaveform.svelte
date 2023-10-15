@@ -44,7 +44,7 @@
     };
     regions.addRegion(regionParams);
     regions.on("region-updated", (region: Region) => {
-      clipMessage.push.updateClips({
+      clipMessage.updateClips({
         ...currentClip,
         start_time: region.start,
         end_time: region.end,

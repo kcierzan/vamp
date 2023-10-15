@@ -11,13 +11,13 @@ import clipMessage from "js/messages/clip";
 import { Song, Token, User } from "js/types";
 import { get } from "svelte/store"
 
-function setInitialStateFromProps(props: Song) {
-  transportStore.setBpm(props.bpm);
-  trackDataStore.setFromProps(props.tracks);
-  trackPlaybackStore.setFromProps(props.tracks);
-  samplerStore.setFromProps(props.tracks);
-  poolStore.set(props.audio_files);
-  clipStore.setFromProps(props.tracks);
+function initializeStores(props: Song) {
+  trackDataStore.initialize(props.tracks);
+  transportStore.initialize(props.bpm);
+  samplerStore.initialize(props.tracks);
+  trackPlaybackStore.initialize(props.tracks);
+  clipStore.initialize(props.tracks);
+  poolStore.initialize(props.audio_files);
 }
 
 async function configureAudioContext() {
@@ -32,8 +32,8 @@ export async function initialize(
   token: Token,
 ) {
   await configureAudioContext();
-  setInitialStateFromProps(props);
+  initializeStores(props);
   joinChannels(token, user);
-  clipMessage.push.stretchClipsToBpm(get(trackDataStore), props.bpm);
+  clipMessage.stretchClipsToBpm(get(trackDataStore), props.bpm);
   latencyMessage.calculateLatency();
 }

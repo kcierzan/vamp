@@ -3,7 +3,7 @@ import { AudioFile, SharedMessage } from "js/types";
 import { fileToArrayBuffer, guessBPM } from "js/utils";
 import poolStore from "js/stores/pool";
 
-async function pushCreatePoolItem(file: File, songId: string) {
+async function createPoolFile(file: File, songId: string) {
   const { bpm } = await guessBPM(file);
   const buffer = await fileToArrayBuffer(file);
   pushFile(
@@ -33,7 +33,5 @@ export function isAudioFile(item: any): item is AudioFile {
 }
 
 export default {
-  push: {
-    createPoolItem: pushCreatePoolItem,
-  },
+  createPoolFile,
 };

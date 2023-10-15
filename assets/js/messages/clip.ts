@@ -18,11 +18,7 @@ import trackPlaybackStore from "js/stores/tracks";
 import trackDataStore from "js/stores/track-data";
 import clipStore from "js/stores/clips";
 
-function pushCreateClipFromPool(
-  audio: AudioFile,
-  trackId: TrackID,
-  index: number,
-) {
+function createFromPool(audio: AudioFile, trackId: TrackID, index: number) {
   pushMessage(SharedMessage.NewClip, {
     name: audio.file.file_name,
     type: audio.media_type,
@@ -33,7 +29,7 @@ function pushCreateClipFromPool(
   });
 }
 
-async function pushCreateClipFromFile(
+async function createFromFile(
   file: File,
   trackId: TrackID,
   songId: string,
@@ -63,7 +59,7 @@ async function pushCreateClipFromFile(
   });
 }
 
-function pushStretchClipsToBpm(tracks: TrackData[], bpm: number) {
+function stretchClipsToBpm(tracks: TrackData[], bpm: number) {
   const clipsToStretch: Clip[] = [];
   for (const track of tracks) {
     for (const clip of track.audio_clips) {
@@ -75,14 +71,14 @@ function pushStretchClipsToBpm(tracks: TrackData[], bpm: number) {
       }
     }
   }
-  pushUpdateClips(...clipsToStretch);
+  updateClips(...clipsToStretch);
 }
 
-function pushUpdateClips(...clips: Clip[]): void {
+function updateClips(...clips: Clip[]): void {
   pushMessage(SharedMessage.UpdateClips, { clips });
 }
 
-function pushPlayClips(...clips: Clip[]) {
+function playClips(...clips: Clip[]) {
   pushMessage(SharedMessage.PlayClip, { clips });
 }
 
@@ -95,7 +91,6 @@ registerChannelListener(
     waitMilliseconds: number;
     clips: Clip[];
   }) {
-    console.log("clips")
     const nowCompensated = `+${waitMilliseconds / 1000}`;
     const currentQuantization = get(quantizationStore);
     // FIXME: Either make quantization settings e2e reactive or pass a time w/ the play event
@@ -132,28 +127,16 @@ registerChannelListener(
 
 registerChannelListener(
   SharedMessage.UpdateClips,
-  function receiveUpdateClips({ clips }: { clips: Clip []}) {
+  function receiveUpdateClips({ clips }: { clips: Clip[] }) {
     samplerStore.updateSamplers(...clips);
     trackDataStore.createClips(...clips);
   },
 );
 
-export function isClip(obj: any): obj is Clip {
-  if (!!!obj) return false;
-  return (
-    "id" in obj &&
-    "track_id" in obj &&
-    "audio_file" in obj &&
-    !obj.isDndShadowItem
-  );
-}
-
 export default {
-  push: {
-    createFromPool: pushCreateClipFromPool,
-    createFromFile: pushCreateClipFromFile,
-    playClips: pushPlayClips,
-    updateClips: pushUpdateClips,
-    stretchClipsToBpm: pushStretchClipsToBpm,
-  },
+  createFromPool,
+  createFromFile,
+  playClips,
+  updateClips,
+  stretchClipsToBpm,
 };

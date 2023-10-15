@@ -2,12 +2,18 @@
   import transportStore from "js/stores/transport";
   import transportMessage from "js/messages/transport";
   import { PlayState } from "js/types";
+  import { start } from "tone";
 
   let stopHeldStyle = "";
 
   $: playing = $transportStore.state === PlayState.Playing;
 
-  const buttonStyles = "text-base bg-gray-400 w-16 h-8 text-black rounded-lg";
+  const buttonStyles = "text-base bg-gray-400 w-16 h-8 text-black rounded";
+
+  async function startTransport() {
+    await start();
+    transportMessage.start();
+  }
 
   function holdStop() {
     stopHeldStyle = "text-white bg-red-500";
@@ -23,7 +29,7 @@
     class={buttonStyles}
     class:bg-green-500={playing}
     class:text-white={playing}
-    on:click={() => transportMessage.start()}>Play</button
+    on:click={startTransport}>Play</button
   >
   <button
     class={buttonStyles + " " + stopHeldStyle}

@@ -4,11 +4,9 @@
   import { dndzone } from "svelte-dnd-action";
   import ClipComponent from "./Clip.svelte";
   import { Clip, DndItem, TrackData } from "js/types";
-  import { isClip } from "js/messages/clip";
   import clipMessage from "js/messages/clip";
-  import { isAudioFile } from "js/messages/audio-file";
   import trackDataStore from "js/stores/track-data";
-  import { flash } from "js/utils";
+  import { flash, isClip, isAudioFile } from "js/utils";
   import { afterUpdate } from "svelte";
 
   export let index: number;
@@ -37,11 +35,11 @@
 
     if (isAudioFile(audioFile)) {
       // create a new clip from the pool
-      clipMessage.push.createFromPool(audioFile, track.id, index);
+      clipMessage.createFromPool(audioFile, track.id, index);
     } else if (isClip(clip)) {
       // move the clip optimistically
       trackDataStore.deleteClip(clip as Clip);
-      clipMessage.push.updateClips({ ...clip, index, track_id: track.id });
+      clipMessage.updateClips({ ...(clip as Clip), index, track_id: track.id });
     }
   }
 

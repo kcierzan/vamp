@@ -151,7 +151,7 @@ function loopClip(clip: Clip, every: Time): void {
   setTrackClipStatesPlay(clip, playEvent);
 }
 
-function setFromProps(tracks: TrackData[]) {
+function initialize(tracks: TrackData[]) {
   const state = tracks.reduce((acc: TrackStateStore, track: TrackData) => {
     acc[track.id] = {
       ...INIT_TRACK_STATE,
@@ -180,6 +180,6 @@ export default {
   stopCurrentlyPlayingAudio,
   cancelPlayingEvent,
   cancelQueuedEvent,
-  setFromProps,
+  initialize,
   initializeTrackPlaybackState,
 };

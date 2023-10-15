@@ -9,7 +9,12 @@
 </script>
 
 {#if $scenesStore.scenes}
-  <div class="mr-2 mt-0.5 flex flex-col items-start gap-1 rounded pt-9">
+  <div
+    class="flex flex-col items-start gap-1 rounded border-2 border-slate-200 px-1 pt-2"
+  >
+    <div class="flex h-6 w-full flex-row justify-center">
+      <div>Scenes</div>
+    </div>
     {#each slots as slot, index (slot.id)}
       {#if Object.keys($scenesStore.scenes).includes(index.toString())}
         <div class="box-content rounded border-2 border-white">

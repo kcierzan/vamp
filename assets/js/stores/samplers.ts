@@ -60,7 +60,7 @@ function createSampler(clip: Clip): Sampler | null {
   return null;
 }
 
-function setFromProps(tracks: TrackData[]) {
+function initialize(tracks: TrackData[]) {
   const newState = tracks.reduce((acc: SamplerStore, track) => {
     for (const clip of track.audio_clips) {
       acc[clip.id] = {
@@ -105,7 +105,7 @@ export default {
   playAudio,
   stopAudio,
   setPlaybackRate,
-  setFromProps,
+  initialize,
   initializeSamplers,
   updateSamplers,
 };

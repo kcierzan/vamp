@@ -4,7 +4,6 @@
   import type { Song, Token, User } from "js/types";
   import { onMount } from "svelte";
   import { initialize } from "js/initialization";
-  import trackDataStore from "js/stores/track-data";
   import latencyStore from "js/stores/latency";
   import Scenes from "./Scenes.svelte";
   import TrackArea from "./TrackArea.svelte";
@@ -38,7 +37,7 @@
 
 <div class="flex w-full flex-row items-center justify-center gap-1">
   <div class="flex h-5/6 w-10/12 flex-col justify-between">
-    <div class="flex flex-row">
+    <div class="flex flex-row gap-x-2">
       <Scenes />
       <TrackArea songId={project.id} />
       <MediaBay songId={project.id} />

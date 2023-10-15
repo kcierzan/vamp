@@ -1,9 +1,7 @@
 <svelte:options immutable />
 
 <script lang="ts">
-  import { afterUpdate } from "svelte";
   import { Song } from "js/types";
-  import { flash } from "js/utils";
   import AddTrackButton from "./AddTrackButton.svelte";
   import Tempo from "./Tempo.svelte";
   import Transport from "./Transport.svelte";
@@ -12,7 +10,8 @@
   export let project: Song;
   let element: HTMLElement;
 
-  afterUpdate(() => flash(element));
+  // afterUpdate(() => flash(element));
+
 </script>
 
 <div
@@ -23,5 +22,5 @@
   <Transport />
   <Tempo />
   <Quantization />
-  <Metronome />
+  <Metronome  />
 </div>
