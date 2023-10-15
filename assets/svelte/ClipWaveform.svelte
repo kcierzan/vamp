@@ -19,6 +19,7 @@
     !!waveformContainer && drawWaveform(clip);
   }
 
+
   function drawWaveform(currentClip?: Clip) {
     !!waveform && waveform.destroy();
     if (!!currentClip?.audio_file) {
@@ -57,4 +58,4 @@
   });
 </script>
 
-<div bind:this={waveformContainer} class="mt-2 placeholder" />
+<div bind:this={waveformContainer} class="placeholder mt-2" />

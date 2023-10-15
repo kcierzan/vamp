@@ -2,7 +2,7 @@
 
 <script lang="ts">
   import { slide } from "svelte/transition";
-  import { cubicInOut } from "svelte/easing"
+  import { quintIn, quintOut } from "svelte/easing";
   import selectedStore from "js/stores/selected";
   import type { SelectedStore } from "js/stores/selected";
   import trackDataStore from "js/stores/track-data";
@@ -29,7 +29,8 @@
 
 {#if !!clip}
   <section
-    transition:slide={{ axis: "y", duration: 200, easing: cubicInOut }}
+    in:slide={{ axis: "y", duration: 250, easing: quintIn }}
+    out:slide={{ axis: "y", duration: 300, easing: quintOut }}
     class="mt-2 flex-col gap-y-2 rounded border-2 border-slate-200 p-4"
   >
     <div class="flex flex-row items-center justify-between">
