@@ -2,7 +2,7 @@ import type { Channel } from "phoenix";
 import type { Transport } from "tone";
 
 export interface Song {
-  id: string;
+  readonly id: string;
   title: string;
   description: string;
   time_signature: string;
@@ -59,18 +59,6 @@ export enum PlayState {
 export interface ChannelStore {
   shared: Channel | null;
   private: Channel | null;
-}
-
-export interface Track {
-  id: TrackID;
-  name: string;
-  gain: number;
-  panning: number;
-  currentlyPlaying: Clip | null;
-  currentlyQueued: Clip | null;
-  playingEvent: number | null;
-  queuedEvent: number | null;
-  audio_clips: Clip[];
 }
 
 export interface TransportStore {
@@ -144,7 +132,7 @@ export type TrackID = string;
 export type Token = string;
 
 export interface User {
-  id: number;
+  readonly id: number;
   email: string;
   display_name: string;
   confirmed_at: string;

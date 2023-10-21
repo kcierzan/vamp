@@ -1,14 +1,14 @@
-import { ClipID, TrackID } from "js/types";
+import { Clip, TrackData } from "js/types";
 import { writable, Writable } from "svelte/store";
 
 export interface SelectedStore {
-  trackId: TrackID | null;
-  clipId: ClipID | null;
+  track: TrackData | null;
+  clip: Clip | null;
 }
 
 const selectedStore: Writable<SelectedStore> = writable({
-  trackId: null,
-  clipId: null,
+  track: null,
+  clip: null,
 });
 
 const { subscribe, set } = selectedStore;

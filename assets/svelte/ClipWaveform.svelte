@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy } from "svelte";
   import { Clip } from "js/types";
   import Regions from "wavesurfer.js/dist/plugins/regions.js";
   import clipMessage from "js/messages/clip";
