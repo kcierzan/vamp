@@ -3,8 +3,7 @@
 <script lang="ts">
   import { slide } from "svelte/transition";
   import { quintIn, quintOut } from "svelte/easing";
-  import selectedStore from "js/stores/selected";
-  import samplerStore from "js/stores/samplers";
+  import { selectedStore, samplerStore } from "js/stores/index";
   import ClipProperties from "./ClipProperties.svelte";
   import ClipWaveform from "./ClipWaveform.svelte";
 

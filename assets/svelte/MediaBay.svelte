@@ -1,7 +1,7 @@
 <script>
   import Pool from "./Pool.svelte";
   import Dropzone from "svelte-file-dropzone/Dropzone.svelte";
-  import audioFileMessage from "js/messages/audio-file";
+  import { audioFileMessage } from "js/messages/index";
 
   export let songId;
 

@@ -1,8 +1,7 @@
 <script lang="ts">
   import { Clip, PlayState, TrackData, TrackID } from "js/types";
-  import trackDataStore from "js/stores/track-data";
-  import trackMessage from "js/messages/track";
-  import clipMessage from "js/messages/clip";
+  import { trackDataStore } from "js/stores/index";
+  import { trackMessage, clipMessage } from "js/messages/index";
   import { start } from "tone";
 
   export let index: string;

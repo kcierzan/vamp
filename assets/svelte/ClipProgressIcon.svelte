@@ -1,7 +1,9 @@
 <script lang="ts">
-  import trackStore from "js/stores/tracks";
-  import clipStore from "js/stores/clips";
-  import transportStore from "js/stores/transport";
+  import {
+    clipStore,
+    trackPlaybackStore,
+    transportStore,
+  } from "js/stores/index";
   import { PlayState, TrackID } from "js/types";
   import { Transport } from "tone";
 
@@ -9,7 +11,7 @@
   let circle: SVGCircleElement;
   let animation: Animation | null = null;
 
-  $: playingClip = !!trackId && $trackStore[trackId].currentlyPlaying;
+  $: playingClip = !!trackId && $trackPlaybackStore[trackId].currentlyPlaying;
   $: trackIsPlaying =
     !!playingClip && $clipStore[playingClip.id].state === PlayState.Playing;
   $: transportIsPlaying = $transportStore.state === PlayState.Playing;

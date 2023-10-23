@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Transport, Oscillator, AmplitudeEnvelope } from "tone";
-  import transportStore from "js/stores/transport";
+  import { transportStore } from "js/stores/index";
 
   let on = false;
   let events: number[] = [];

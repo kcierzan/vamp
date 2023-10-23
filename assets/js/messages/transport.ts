@@ -1,17 +1,17 @@
-import { pushMessage, registerChannelListener } from "js/channels";
-import { PrivateMessage, SharedMessage } from "js/types";
-import transportStore from "js/stores/transport";
+import { transportStore } from "js/stores/index";
+import { playbackChannel, userChannel } from "js/channels/index";
+import { SongPlaybackMessage } from "js/types";
 
 function start(): void {
-  pushMessage(SharedMessage.StartTransport, {});
+  playbackChannel.push(SongPlaybackMessage.StartTransport, {});
 }
 
 function stop(): void {
-  pushMessage(SharedMessage.StopTransport, {});
+  playbackChannel.push(SongPlaybackMessage.StopTransport, {});
 }
 
-registerChannelListener(
-  PrivateMessage.StartTransport,
+userChannel.registerListener(
+  SongPlaybackMessage.StartTransport,
   function receiveStartTransport({
     waitMilliseconds,
   }: {
@@ -21,8 +21,8 @@ registerChannelListener(
   },
 );
 
-registerChannelListener(
-  PrivateMessage.StopTransport,
+userChannel.registerListener(
+  SongPlaybackMessage.StopTransport,
   function receiveStopTransport({
     waitMilliseconds,
   }: {

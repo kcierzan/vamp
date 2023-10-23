@@ -1,12 +1,12 @@
-import { pushFile, registerChannelListener } from "js/channels";
-import { AudioFile, SharedMessage } from "js/types";
+import { dataChannel, fileChannel } from "js/channels/index";
+import { AudioFile, SongDataMessage } from "js/types";
 import { fileToArrayBuffer, guessBPM } from "js/utils";
 import poolStore from "js/stores/pool";
 
 async function createPoolFile(file: File, songId: string) {
   const { bpm } = await guessBPM(file);
   const buffer = await fileToArrayBuffer(file);
-  pushFile(
+  fileChannel.push(
     {
       name: file.name,
       song_id: songId,
@@ -18,11 +18,9 @@ async function createPoolFile(file: File, songId: string) {
   );
 }
 
-registerChannelListener(
-  SharedMessage.NewPoolFile,
-  function receiveCreatePoolItem(audioFile: AudioFile) {
-    poolStore.createNewPoolFile(audioFile);
-  },
+dataChannel.registerListener(
+  SongDataMessage.NewPoolFile,
+  (audioFile: AudioFile) => poolStore.createNewPoolFile(audioFile),
 );
 
 export function isAudioFile(item: any): item is AudioFile {

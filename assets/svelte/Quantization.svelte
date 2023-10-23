@@ -1,5 +1,5 @@
 <script>
-  import quantizationStore from "js/stores/quantization";
+  import { quantizationStore } from "js/stores/index";
   import { QuantizationInterval } from "js/types";
 
   const options = {

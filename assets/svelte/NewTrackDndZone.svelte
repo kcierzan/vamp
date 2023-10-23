@@ -6,7 +6,7 @@
     TRIGGERS,
     dndzone,
   } from "svelte-dnd-action";
-  import trackMessage from "js/messages/track";
+  import { trackMessage } from "js/messages/index";
   import { AudioFile, Clip, DndItem } from "js/types";
   import { isAudioFile, isClip } from "js/utils";
 

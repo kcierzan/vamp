@@ -1,7 +1,6 @@
 <script lang="ts">
   import { round } from "js/utils";
-  import samplerStore from "js/stores/samplers";
-  import selectedStore from "js/stores/selected";
+  import { samplerStore, selectedStore } from "js/stores/index"
 
   $: clipDuration = !!$selectedStore.clip ? $samplerStore[$selectedStore.clip.id].sampler!.duration : 0;
 </script>

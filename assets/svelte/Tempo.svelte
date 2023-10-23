@@ -1,9 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import transportStore from "js/stores/transport";
+  import { clipMessage } from "js/messages/index";
+  import { transportStore, trackDataStore } from "js/stores/index";
   import type { HTMLInputEvent } from "js/types";
-  import trackDataStore from "js/stores/track-data";
-  import clipMessage from "js/messages/clip"
 
   function setTransportBpm(e: HTMLInputEvent) {
     const bpm = parseInt(e.currentTarget.value);

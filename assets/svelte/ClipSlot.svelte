@@ -1,13 +1,13 @@
 <svelte:options immutable />
 
 <script lang="ts">
+  import { afterUpdate } from "svelte";
   import { dndzone } from "svelte-dnd-action";
   import ClipComponent from "./Clip.svelte";
   import { Clip, DndItem, TrackData } from "js/types";
-  import clipMessage from "js/messages/clip";
-  import trackDataStore from "js/stores/track-data";
+  import { trackDataStore } from "js/stores/index";
+  import { clipMessage } from "js/messages/index";
   import { flash, isClip, isAudioFile } from "js/utils";
-  import { afterUpdate } from "svelte";
 
   export let index: number;
   export let track: TrackData;

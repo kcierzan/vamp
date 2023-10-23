@@ -1,12 +1,10 @@
 <script lang="ts">
-  import { PlayState } from "js/types";
-  import type { Clip, HTMLInputEvent } from "js/types";
   import * as Tone from "tone";
-  import clipMessage from "js/messages/clip";
   import { Transport } from "tone";
-  import clipsStore from "js/stores/clips";
-  import selectedStore from "js/stores/selected";
-  import trackDataStore from "js/stores/track-data";
+  import { PlayState } from "js/types";
+  import { clipMessage } from "js/messages/index";
+  import { clipStore, selectedStore, trackDataStore } from "js/stores/index";
+  import type { Clip, HTMLInputEvent } from "js/types";
 
   export let clip: Clip;
   let button: HTMLButtonElement;
@@ -38,7 +36,7 @@
     }
   }
 
-  $: handleQueueAnimation($clipsStore[clip.id].state);
+  $: handleQueueAnimation($clipStore[clip.id].state);
 
   // TODO: extract this to PlayableButton or something
   const baseStyles = "flex text-base w-full h-8 text-white rounded";
@@ -54,7 +52,7 @@
     return base + stateStyles[state];
   }
 
-  $: clipStyles = computeStyles($clipsStore[clip.id].state);
+  $: clipStyles = computeStyles($clipStore[clip.id].state);
 
   function changeTempo(e: HTMLInputEvent) {
     const target = e.target;

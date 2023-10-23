@@ -3,23 +3,25 @@ import {
   AudioFile,
   Clip,
   PlayState,
-  PrivateMessage,
-  SharedMessage,
+  SongPlaybackMessage,
+  SongDataMessage,
   TrackData,
   TrackID,
 } from "js/types";
-import { pushFile, pushMessage, registerChannelListener } from "js/channels";
-import { fileToArrayBuffer, guessBPM, quantizedTransportTime } from "js/utils";
+import {
+  clipStore,
+  trackPlaybackStore,
+  trackDataStore,
+  transportStore,
+  quantizationStore,
+  samplerStore,
+} from "js/stores/index";
+import { dataChannel, playbackChannel, userChannel } from "js/channels/index";
+import { quantizedTransportTime } from "js/utils";
 import { get } from "svelte/store";
-import quantizationStore from "js/stores/quantization";
-import transportStore from "js/stores/transport";
-import samplerStore from "js/stores/samplers";
-import trackPlaybackStore from "js/stores/tracks";
-import trackDataStore from "js/stores/track-data";
-import clipStore from "js/stores/clips";
 
 function createFromPool(audio: AudioFile, trackId: TrackID, index: number) {
-  pushMessage(SharedMessage.NewClip, {
+  dataChannel.push(SongDataMessage.NewClip, {
     name: audio.file.file_name,
     type: audio.media_type,
     index: index,
@@ -29,35 +31,35 @@ function createFromPool(audio: AudioFile, trackId: TrackID, index: number) {
   });
 }
 
-async function createFromFile(
-  file: File,
-  trackId: TrackID,
-  songId: string,
-  index: number,
-): Promise<void> {
-  const { bpm } = await guessBPM(file);
-  pushMessage(SharedMessage.NewClip, {
-    name: file.name,
-    type: file.type,
-    track_id: trackId,
-    playback_rate: Transport.bpm.value / bpm,
-    index: index,
-  })?.receive("ok", async (id) => {
-    const newBuf = await fileToArrayBuffer(file);
-    pushFile(
-      {
-        clip_id: id,
-        media_type: file.type,
-        size: newBuf.byteLength,
-        name: file.name,
-        description: "a cool file",
-        song_id: songId,
-        bpm,
-      },
-      newBuf,
-    );
-  });
-}
+// async function createFromFile(
+//   file: File,
+//   trackId: TrackID,
+//   songId: string,
+//   index: number,
+// ): Promise<void> {
+//   const { bpm } = await guessBPM(file);
+//   pushMessage(SharedMessage.NewClip, {
+//     name: file.name,
+//     type: file.type,
+//     track_id: trackId,
+//     playback_rate: Transport.bpm.value / bpm,
+//     index: index,
+//   })?.receive("ok", async (id) => {
+//     const newBuf = await fileToArrayBuffer(file);
+//     pushFile(
+//       {
+//         clip_id: id,
+//         media_type: file.type,
+//         size: newBuf.byteLength,
+//         name: file.name,
+//         description: "a cool file",
+//         song_id: songId,
+//         bpm,
+//       },
+//       newBuf,
+//     );
+//   });
+// }
 
 function stretchClipsToBpm(tracks: TrackData[], bpm: number) {
   const clipsToStretch: Clip[] = [];
@@ -75,15 +77,15 @@ function stretchClipsToBpm(tracks: TrackData[], bpm: number) {
 }
 
 function updateClips(...clips: Clip[]): void {
-  pushMessage(SharedMessage.UpdateClips, { clips });
+  dataChannel.push(SongDataMessage.UpdateClips, { clips });
 }
 
 function playClips(...clips: Clip[]) {
-  pushMessage(SharedMessage.PlayClip, { clips });
+  playbackChannel.push(SongPlaybackMessage.PlayClip, { clips });
 }
 
-registerChannelListener(
-  PrivateMessage.PlayClip,
+userChannel.registerListener(
+  SongPlaybackMessage.PlayClip,
   function receivePlayClips({
     waitMilliseconds,
     clips,
@@ -116,8 +118,8 @@ registerChannelListener(
   },
 );
 
-registerChannelListener(
-  SharedMessage.NewClip,
+dataChannel.registerListener(
+  SongDataMessage.NewClip,
   function receiveNewClip(clip: Clip) {
     samplerStore.initializeSamplers(clip);
     clipStore.initializeClipStates(clip);
@@ -125,8 +127,8 @@ registerChannelListener(
   },
 );
 
-registerChannelListener(
-  SharedMessage.UpdateClips,
+dataChannel.registerListener(
+  SongDataMessage.UpdateClips,
   function receiveUpdateClips({ clips }: { clips: Clip[] }) {
     samplerStore.updateSamplers(...clips);
     trackDataStore.createClips(...clips);
@@ -135,7 +137,7 @@ registerChannelListener(
 
 export default {
   createFromPool,
-  createFromFile,
+  // createFromFile,
   playClips,
   updateClips,
   stretchClipsToBpm,

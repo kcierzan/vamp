@@ -1,8 +1,8 @@
 <script lang="ts">
-  import transportStore from "js/stores/transport";
-  import transportMessage from "js/messages/transport";
-  import { PlayState } from "js/types";
   import { start } from "tone";
+  import { transportStore } from "js/stores/index";
+  import { transportMessage } from "js/messages/index";
+  import { PlayState } from "js/types";
 
   let stopHeldStyle = "";
 
