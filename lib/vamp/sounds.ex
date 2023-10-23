@@ -62,27 +62,20 @@ defmodule Vamp.Sounds do
   in the attrs is required.
   """
 
+  # FIXME: This should only return an audio file
   def create_pool_audio_file(attrs \\ %{}) do
-    {:ok, record} =
+    {:ok, audio_file} =
       Repo.transaction(fn ->
         with {:ok, audio_file} <- create_audio_file(attrs),
              song_id <- Map.fetch!(attrs, "song_id"),
              {:ok, _pool_file} <- create_pool_file(audio_file.id, song_id) do
-          maybe_associate_clip(audio_file, attrs)
+          add_url_to_audio_file(audio_file)
         else
           _ -> raise "failed to create audio file in pool"
         end
       end)
 
-    record
-  end
-
-  defp maybe_associate_clip(audio_file, attrs) do
-    if attrs["clip_id"] do
-      Vamp.Projects.associate_audio_clip_audio_file!(attrs["clip_id"], audio_file.id)
-    else
-      audio_file |> Repo.preload(:audio_clips) |> add_url_to_audio_file()
-    end
+    audio_file
   end
 
   def add_url_to_audio_file(nil), do: nil

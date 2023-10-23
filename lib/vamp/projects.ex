@@ -362,14 +362,6 @@ defmodule Vamp.Projects do
     end)
   end
 
-  def associate_audio_clip_audio_file!(audio_clip_id, audio_file_id) do
-    %Vamp.Projects.AudioClip{id: audio_clip_id}
-    |> Ecto.Changeset.cast(%{"audio_file_id" => audio_file_id}, [:audio_file_id])
-    |> Repo.update!(returning: true)
-    |> Repo.preload(:audio_file)
-    |> Vamp.Projects.add_url_to_audio_clip()
-  end
-
   @doc """
   Deletes a audio_clip.
 
