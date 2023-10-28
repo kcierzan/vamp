@@ -214,20 +214,23 @@ defmodule Vamp.Projects do
 
   def create_track_and_associate_clip!(attrs \\ %{}) do
     with {[audio_clip], attrs} <- Map.pop(attrs, "audio_clips", []),
-         {:ok, track} <-
-           Repo.transaction(fn ->
-             track = create_track!(attrs)
-
-             new_clip =
-               update_audio_clip!(
-                 %Vamp.Projects.AudioClip{id: audio_clip["id"]},
-                 Map.merge(audio_clip, %{"track_id" => track.id})
-               )
-
-             %{track | audio_clips: [new_clip | track.audio_clips]}
-           end) do
+         {:ok, track} <- create_track_with_clip(audio_clip, attrs) do
       add_urls_to_clips(track)
     end
+  end
+
+  defp create_track_with_clip(audio_clip, attrs) do
+    Repo.transaction(fn ->
+      track = create_track!(attrs)
+
+      new_clip =
+        update_audio_clip!(
+          %Vamp.Projects.AudioClip{id: audio_clip["id"]},
+          Map.merge(audio_clip, %{"track_id" => track.id})
+        )
+
+      %{track | audio_clips: [new_clip | track.audio_clips]}
+    end)
   end
 
   defp add_urls_to_clips(track) do
