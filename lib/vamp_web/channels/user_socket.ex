@@ -52,17 +52,22 @@ defmodule VampWeb.UserSocket do
   # performing token verification on connect.
   @impl true
   def connect(%{"token" => token, "song_id" => song_id}, socket, _connect_info) do
-    case Phoenix.Token.verify(socket, "user auth", token, max_age: 86400) do
-      {:ok, user_id} ->
-        socket =
-          socket
-          |> assign(:current_user, Repo.get!(User, user_id))
-          |> assign(:song_id, Vamp.Projects.get_project!(user_id, song_id))
+    with {:ok, user_id} <- Phoenix.Token.verify(socket, "user auth", token, max_age: 86400),
+         %User{songs: songs} <- Repo.get!(User, user_id) |> Repo.preload(:songs),
+         true <- song_id_in_songs?(songs, song_id) do
+      socket =
+        socket
+        |> assign(:song_id, song_id)
+        |> assign(:current_user, Repo.get!(User, user_id))
 
-        {:ok, socket}
-
+      {:ok, socket}
+    else
       {:error, err} ->
         Logger.error("#{__MODULE__} connect error: #{inspect(err)}")
+        :error
+
+      _ ->
+        Logger.error("#{__MODULE__} connect error")
         :error
     end
   end
@@ -71,6 +76,10 @@ defmodule VampWeb.UserSocket do
   def connect(_params, _socket, _connect_info) do
     Logger.error("#{__MODULE__} connect error: missing params")
     :error
+  end
+
+  defp song_id_in_songs?(songs, song_id) do
+    Enum.reduce(songs, [], fn song, acc -> [song.id | acc] end) |> Enum.member?(song_id)
   end
 
   # Socket id's are topics that allow you to identify all sockets for a given user:

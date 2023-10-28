@@ -2,10 +2,10 @@ defmodule VampWeb.ChannelAuth do
   require Logger
 
   def validate_topic_matches_socket(song_id, socket, channel) do
-    if song_id == to_string(socket.assigns.song.id) do
+    if song_id == socket.assigns.song_id do
       {:ok, socket}
     else
-      Logger.error("Join #{channel} failed #{song_id} != #{socket.assigns.song.id}")
+      Logger.error("Join #{channel} failed #{song_id} != #{socket.assigns.song_id}")
       {:error, %{"reason" => "unauthorized"}}
     end
   end
