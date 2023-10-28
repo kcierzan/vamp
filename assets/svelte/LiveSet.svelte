@@ -30,7 +30,7 @@
   <h3>Your latency is {$latencyStore} ms!</h3>
 </div>
 
-<SongNav project={song} />
+<SongNav {song} />
 
 <div class="flex w-full flex-row items-center justify-center gap-1">
   <div class="flex h-5/6 w-10/12 flex-col justify-between">
