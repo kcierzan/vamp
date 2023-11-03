@@ -28,6 +28,7 @@ userChannel.registerListener(
   }: {
     waitMilliseconds: number;
   }) {
+    // TODO: hoist the "stop or pause" conditional here and cancel all playback events on `stop`
     transportStore.stopOrPauseLocal({ waitMilliseconds });
   },
 );

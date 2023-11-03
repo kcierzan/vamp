@@ -1,4 +1,4 @@
-import { Draw, Transport } from "tone";
+import { Draw, Transport, now } from "tone";
 import {
   AudioFile,
   Clip,
@@ -17,8 +17,9 @@ import {
   samplerStore,
 } from "js/stores/index";
 import { dataChannel, playbackChannel, userChannel } from "js/channels/index";
-import { quantizedTransportTime } from "js/utils";
+import { quantizedTransportTime, transportNow } from "js/utils";
 import { get } from "svelte/store";
+import { Time } from "tone/build/esm/core/type/Units";
 
 function createFromPool(audio: AudioFile, trackId: TrackID, index: number) {
   dataChannel.push(SongDataMessage.NewClip, {
@@ -30,36 +31,6 @@ function createFromPool(audio: AudioFile, trackId: TrackID, index: number) {
     playback_rate: Transport.bpm.value / audio.bpm,
   });
 }
-
-// async function createFromFile(
-//   file: File,
-//   trackId: TrackID,
-//   songId: string,
-//   index: number,
-// ): Promise<void> {
-//   const { bpm } = await guessBPM(file);
-//   pushMessage(SharedMessage.NewClip, {
-//     name: file.name,
-//     type: file.type,
-//     track_id: trackId,
-//     playback_rate: Transport.bpm.value / bpm,
-//     index: index,
-//   })?.receive("ok", async (id) => {
-//     const newBuf = await fileToArrayBuffer(file);
-//     pushFile(
-//       {
-//         clip_id: id,
-//         media_type: file.type,
-//         size: newBuf.byteLength,
-//         name: file.name,
-//         description: "a cool file",
-//         song_id: songId,
-//         bpm,
-//       },
-//       newBuf,
-//     );
-//   });
-// }
 
 function stretchClipsToBpm(tracks: TrackData[], bpm: number) {
   const clipsToStretch: Clip[] = [];
@@ -101,22 +72,24 @@ userChannel.registerListener(
     const transport = get(transportStore);
 
     if (transport.state === PlayState.Stopped) {
-      for (const clip of clips) {
-        trackPlaybackStore.playTrackClip(clip, 0);
-      }
+      beginTrackClipLoop(clips, 0, transportNow())
       transportStore.startLocal(nowCompensated);
     } else {
       // fire the event with delay compensation
-      Transport.scheduleOnce((time) => {
-        for (const clip of clips) {
-          Draw.schedule(() => {
-            trackPlaybackStore.playTrackClip(clip, nextDivision);
-          }, time);
-        }
-      }, nowCompensated);
+      beginTrackClipLoop(clips, nextDivision, nowCompensated)
     }
   },
 );
+
+function beginTrackClipLoop(clips: Clip[], division: Time, at: Time) {
+  Transport.scheduleOnce((time) => {
+    for (const clip of clips) {
+      Draw.schedule(() => {
+        trackPlaybackStore.playTrackClip(clip, division);
+      }, time);
+    }
+  }, at);
+}
 
 dataChannel.registerListener(
   SongDataMessage.NewClip,
@@ -137,7 +110,6 @@ dataChannel.registerListener(
 
 export default {
   createFromPool,
-  // createFromFile,
   playClips,
   updateClips,
   stretchClipsToBpm,

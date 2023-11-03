@@ -38,7 +38,7 @@ defmodule VampWeb.DataChannel do
 
   def handle_in("update_clips", attrs, socket) do
     %{"clips" => clips} = attrs
-    {:ok, updated} = update_audio_clips!(clips)
+    {:ok, updated} = update_audio_clips(clips)
     broadcast!(socket, "update_clips", %{"clips" => updated})
 
     {:noreply, socket}

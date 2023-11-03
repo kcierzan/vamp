@@ -62,7 +62,7 @@ function pauseLocal(at: Time) {
 function scheduleTransportUpdates() {
   update((store) => {
     store.secondsUpdateEvent = scheduleSecondsUpdate();
-    store.bbsUpdateEvent = scheduleBarsBeathSixteenthsUpdate();
+    store.bbsUpdateEvent = scheduleBarsBeatsSixteenthsUpdate();
     return store;
   });
 }
@@ -72,7 +72,7 @@ function clearTransportUpdates() {
   clearSecondsUpdateEvent();
 }
 
-function scheduleBarsBeathSixteenthsUpdate() {
+function scheduleBarsBeatsSixteenthsUpdate() {
   clearBbsUpdateEvent();
   return Transport.scheduleRepeat((time: Time) => {
     Draw.schedule(() => {

@@ -31,6 +31,11 @@ export function quantizedTransportTime(
   return nextBarAC - drift;
 }
 
+export function transportNow() {
+  const drift = Tone.now() - Transport.seconds
+  return Tone.now() - drift
+}
+
 export async function fileToByteArray(file: File): Promise<Uint8Array> {
   return new Uint8Array(await fileToArrayBuffer(file));
 }
@@ -48,7 +53,7 @@ export function debounce(func: (...args: any[]) => any, timeout: number = 300) {
   let timer: ReturnType<typeof setTimeout>;
   return (...args: []) => {
     clearTimeout(timer);
-    timer = setTimeout(function(this: any) {
+    timer = setTimeout(function (this: any) {
       func.apply(this, args);
     }, timeout);
   };

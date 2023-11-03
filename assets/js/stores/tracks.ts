@@ -4,6 +4,7 @@ import { Time } from "tone/build/esm/core/type/Units";
 import { Draw, Transport } from "tone";
 import samplerStore from "js/stores/samplers";
 import clipStore from "js/stores/clips";
+import { transportNow } from "js/utils";
 
 export interface TrackState {
   id: TrackID;
@@ -84,7 +85,7 @@ function stopTrack(trackId: TrackID, at: Time) {
   update((store) => {
     store[trackId].playingEvent !== null &&
       Transport.clear(store[trackId].playingEvent as number);
-    const launchTime = Transport.seconds > (at as number) ? "+0.01" : at;
+    const launchTime = Transport.seconds > (at as number) ? transportNow() : at;
     Transport.scheduleOnce((time) => {
       const playing = store[trackId].currentlyPlaying;
       !!playing && samplerStore.stopAudio(playing, time);
@@ -119,18 +120,16 @@ function stopAllTracksAudio() {
 
 function playTrackClip(clip: Clip, at: Time) {
   const tooLate = Transport.seconds > (at as number);
-
   queueClip(clip);
   // either the next division or 25ms in the future
-  const launchTime = tooLate ? "+0.025" : at;
+  const launchTime = tooLate ? transportNow() : at;
   // clear events a bit before launchTime
-  const clearTime = tooLate ? "+0.0125" : (at as number) - 0.05;
   Transport.scheduleOnce((time) => {
     Draw.schedule(() => {
       cancelPlayingEvent(clip.track_id);
     }, time);
     stopCurrentlyPlayingAudio(clip.track_id, time);
-  }, clearTime);
+  }, (launchTime as number) - 0.05);
 
   const queuedEvent = Transport.scheduleOnce((time) => {
     Draw.schedule(() => {
@@ -146,7 +145,7 @@ function loopClip(clip: Clip, every: Time): void {
       samplerStore.playAudio(clip, audioContextTime);
     },
     every,
-    "+0.0001",
+    transportNow(),
   );
   setTrackClipStatesPlay(clip, playEvent);
 }
