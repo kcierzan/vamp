@@ -1,22 +1,9 @@
 import { get } from "svelte/store";
+import instruments from "js/instruments";
 import { Transport } from "tone";
-import {
-  AudioFile,
-  Clip,
-  SongDataMessage,
-  SongPlaybackMessage,
-  TrackData,
-  TrackID,
-} from "js/types";
-import {
-  quantizationStore,
-  trackDataStore,
-  clipStore,
-  trackPlaybackStore,
-  samplerStore,
-} from "js/stores/index";
-import { dataChannel, playbackChannel, userChannel } from "js/channels/index";
-import { quantizedTransportTime } from "js/utils";
+import { AudioFile, Clip, SongDataMessage, TrackData, TrackID } from "js/types";
+import { trackDataStore, clipStore, trackPlaybackStore } from "js/stores";
+import { dataChannel } from "js/channels";
 
 function createFromAudioFile(songId: string, audioFile: AudioFile) {
   const trackCount = get(trackDataStore).length;
@@ -42,7 +29,7 @@ function createFromAudioFile(songId: string, audioFile: AudioFile) {
 
 async function createEmpty(
   songId: string,
-  onOk: (res: any) => any = (_res) => { },
+  onOk: (res: any) => any = (_res) => {},
 ): Promise<void> {
   dataChannel
     .push(SongDataMessage.NewTrack, {
@@ -70,27 +57,6 @@ function remove(id: TrackID) {
   dataChannel.push(SongDataMessage.RemoveTrack, { id });
 }
 
-function stop(trackIds: TrackID[]): void {
-  playbackChannel.push(SongPlaybackMessage.StopTrack, { trackIds });
-}
-
-function stopAll(): void {
-  const trackIds = get(trackDataStore).map((track) => track.id);
-  stop(trackIds);
-}
-
-userChannel.registerListener(
-  SongPlaybackMessage.StopTrack,
-  function receiveStopTrack({ trackIds }: { trackIds: TrackID[] }): void {
-    const currentQuantization = get(quantizationStore);
-    // FIXME: Either make quantization settings e2e reactive or pass a time w/ the stop event
-    const nextBarTT = quantizedTransportTime(currentQuantization);
-    for (const trackId of trackIds) {
-      trackPlaybackStore.stopTrack(trackId, nextBarTT);
-    }
-  },
-);
-
 dataChannel.registerListener(
   SongDataMessage.RemoveTrack,
   function receiveRemoveTrack(trackId: TrackID) {
@@ -105,7 +71,7 @@ dataChannel.registerListener(
 // TODO: add DB properties to the track store!
 function receiveNewTrack(track: TrackData) {
   trackPlaybackStore.initializeTrackPlaybackState(track);
-  samplerStore.initializeSamplers(...track.audio_clips);
+  instruments.createSamplers(...track.audio_clips);
   clipStore.initializeClipStates(...track.audio_clips);
   trackDataStore.createTrack(track);
 }
@@ -118,6 +84,4 @@ export default {
   createFromClip,
   createEmpty,
   remove,
-  stop,
-  stopAll,
 };

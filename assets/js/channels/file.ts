@@ -1,6 +1,6 @@
 import { Channel } from "phoenix";
 import { Token, ChannelPrefix } from "js/types";
-import { joinChannel } from "js/channels";
+import { joinChannel } from "js/channel";
 
 let channel: Channel | undefined;
 

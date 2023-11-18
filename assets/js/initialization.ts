@@ -1,20 +1,20 @@
 import { getContext } from "tone";
+import instruments from "js/instruments";
 import {
   clipStore,
   trackPlaybackStore,
-  samplerStore,
   trackDataStore,
   poolStore,
   transportStore,
-} from "js/stores/index";
+} from "js/stores";
 import {
   dataChannel,
   userChannel,
   fileChannel,
   playbackChannel,
   latencyChannel,
-} from "js/channels/index";
-import { clipMessage, latencyMessage } from "js/messages/index";
+} from "js/channels";
+import { clips, latency } from "js/messages";
 import { Song, Token, User } from "js/types";
 import { get } from "svelte/store";
 
@@ -27,9 +27,9 @@ const songChannels = [
 
 const trackInitializedStores = [
   trackDataStore,
-  samplerStore,
   trackPlaybackStore,
   clipStore,
+  instruments,
 ];
 
 function initializeStores(song: Song) {
@@ -40,7 +40,7 @@ function initializeStores(song: Song) {
 
 async function configureAudioContext() {
   const context = getContext();
-  context.lookAhead = 0.1;
+  context.lookAhead = 0.05;
   await context.addAudioWorkletModule("/assets/phase-vocoder.js");
 }
 
@@ -49,6 +49,6 @@ export async function initialize(song: Song, user: User, token: Token) {
   initializeStores(song);
   songChannels.forEach((channel) => channel.join(song.id, token));
   userChannel.join(user, song.id, token);
-  clipMessage.stretchClipsToBpm(get(trackDataStore), song.bpm);
-  latencyMessage.calculateLatency();
+  clips.stretchClipsToBpm(get(trackDataStore), song.bpm);
+  latency.calculateLatency();
 }

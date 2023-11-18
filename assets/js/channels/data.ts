@@ -1,6 +1,6 @@
 import { Channel } from "phoenix";
 import { Token, Listener, SongDataMessage, ChannelPrefix } from "js/types";
-import { joinChannel, setChannelListeners } from "js/channels";
+import { joinChannel, setChannelListeners } from "js/channel";
 
 let channel: Channel | undefined;
 const listeners: Listener[] = [];

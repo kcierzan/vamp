@@ -1,3 +1,4 @@
+import { get } from "svelte/store";
 import type { Time } from "tone/build/esm/core/type/Units";
 import type { Writable } from "svelte/store";
 import { writable } from "svelte/store";
@@ -42,6 +43,10 @@ function startLocal(time: Time) {
 }
 
 function stopLocal(at: Time) {
+  const trackIds = Object.keys(get(trackPlaybackStore));
+  for (const trackId of trackIds) {
+    trackPlaybackStore.stopTrack(trackId, "+0.001");
+  }
   update((store) => {
     store.transport.stop(at);
     store.state = PlayState.Stopped;

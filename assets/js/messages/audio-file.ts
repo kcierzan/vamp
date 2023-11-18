@@ -1,4 +1,4 @@
-import { dataChannel, fileChannel } from "js/channels/index";
+import { dataChannel, fileChannel } from "js/channels";
 import { AudioFile, SongDataMessage } from "js/types";
 import { fileToArrayBuffer, guessBPM } from "js/utils";
 import poolStore from "js/stores/pool";

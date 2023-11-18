@@ -1,11 +1,7 @@
 <script lang="ts">
-  import {
-    clipStore,
-    trackPlaybackStore,
-    transportStore,
-  } from "js/stores/index";
-  import { PlayState, TrackID } from "js/types";
   import { Transport } from "tone";
+  import { clipStore, trackPlaybackStore, transportStore } from "js/stores";
+  import { PlayState, TrackID } from "js/types";
 
   export let trackId: TrackID;
   let circle: SVGCircleElement;

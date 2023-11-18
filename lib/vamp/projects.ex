@@ -34,7 +34,7 @@ defmodule Vamp.Projects do
     |> add_audio_file_urls()
   end
 
-  @spec project_query(Strin.t(), String.t()) :: %Ecto.Query{}
+  @spec project_query(String.t(), String.t()) :: %Ecto.Query{}
   defp project_query(user_id, song_id) do
     from(song in Song, as: :song)
     |> join(:left, [song: song], t in assoc(song, :tracks), as: :track)

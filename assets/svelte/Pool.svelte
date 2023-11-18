@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { poolStore } from "js/stores/index";
+  import { poolStore } from "js/stores";
   import { dndzone } from "svelte-dnd-action";
   import PoolItem from "./PoolItem.svelte";
   import { AudioFile } from "js/types";

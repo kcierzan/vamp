@@ -1,5 +1,4 @@
-import * as Tone from "tone";
-import { Gain, Player } from "tone";
+import { getContext, Gain, Player } from "tone";
 import { Time } from "tone/build/esm/core/type/Units";
 
 export default class Sampler {
@@ -10,8 +9,8 @@ export default class Sampler {
   private _phaseVocoderNode: AudioWorkletNode;
 
   constructor(url: string, bufferBpm?: number, targetBpm?: number) {
-    const context = Tone.getContext();
-    const gain = new Gain(1).toDestination()
+    const context = getContext();
+    const gain = new Gain(1).toDestination();
     this._phaseVocoderNode = context.createAudioWorkletNode(
       "phase-vocoder-processor",
     );

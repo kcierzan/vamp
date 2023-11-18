@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Clip, PlayState, TrackData, TrackID } from "js/types";
-  import { trackDataStore } from "js/stores/index";
-  import { trackMessage, clipMessage } from "js/messages/index";
+  import { trackDataStore } from "js/stores";
+  import { playback } from "js/messages";
   import { start } from "tone";
 
   export let index: string;
@@ -15,13 +15,13 @@
     const tracksToStop = allTrackIds.filter(
       (trackId: TrackID) => !tracksInScene.includes(trackId),
     );
-    clipMessage.playClips(...clips);
-    trackMessage.stop(tracksToStop);
+    playback.playClips(...clips);
+    playback.stopTracks(...tracksToStop);
   }
 
   function stopScene(): void {
     const tracksInScene = clips.map((clip: Clip) => clip.track_id);
-    trackMessage.stop(tracksInScene);
+    playback.stopTracks(...tracksInScene);
   }
 
   function sceneAction() {

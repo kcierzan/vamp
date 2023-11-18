@@ -1,9 +1,8 @@
 <script lang="ts">
-  import * as Tone from "tone";
-  import { Transport } from "tone";
+  import { Transport, start } from "tone";
   import { PlayState } from "js/types";
-  import { clipMessage } from "js/messages/index";
-  import { clipStore, selectedStore, trackDataStore } from "js/stores/index";
+  import { clips, playback } from "js/messages";
+  import { clipStore, selectedStore, trackDataStore } from "js/stores";
   import type { Clip, HTMLInputEvent } from "js/types";
 
   export let clip: Clip;
@@ -57,19 +56,19 @@
   function changeTempo(e: HTMLInputEvent) {
     const target = e.target;
     const val = (target as HTMLInputElement).value;
-    clipMessage.updateClips({
+    clips.updateClips({
       ...clip,
       playback_rate: parseFloat(val),
     });
   }
 
   async function clickClip(e: MouseEvent) {
-    await Tone.start();
+    await start();
 
     if (!!e.shiftKey) {
       selectedStore.set({ clip: clip, track: currentTrack ?? null });
     } else {
-      clipMessage.playClips(clip);
+      playback.playClips(clip);
     }
   }
 </script>

@@ -4,7 +4,7 @@
   import type { Song, Token, User } from "js/types";
   import { onMount } from "svelte";
   import { initialize } from "js/initialization";
-  import { latencyStore } from "js/stores/index";
+  import { latencyStore } from "js/stores";
   import Scenes from "./Scenes.svelte";
   import TrackArea from "./TrackArea.svelte";
   import MediaBay from "./MediaBay.svelte";

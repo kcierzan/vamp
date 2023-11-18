@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { trackDataStore } from "js/stores/index";
+  import { trackDataStore } from "js/stores";
   import TrackComponent from "./Track.svelte";
   import NewTrackDndZone from "./NewTrackDndZone.svelte";
   import ClipProgressIcon from "./ClipProgressIcon.svelte";

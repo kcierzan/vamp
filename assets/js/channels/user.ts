@@ -6,7 +6,7 @@ import {
   User,
   SongPlaybackMessage,
 } from "js/types";
-import { joinChannel, setChannelListeners } from "js/channels";
+import { joinChannel, setChannelListeners } from "js/channel";
 
 let channel: Channel | undefined;
 const listeners: Listener[] = [];

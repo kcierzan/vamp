@@ -1,5 +1,5 @@
-import { transportStore } from "js/stores/index";
-import { playbackChannel, userChannel } from "js/channels/index";
+import { transportStore } from "js/stores";
+import { playbackChannel, userChannel } from "js/channels";
 import { SongPlaybackMessage } from "js/types";
 
 function start(): void {
