@@ -4,6 +4,7 @@ defmodule Vamp.Sounds do
   """
 
   import Ecto.Query, warn: false
+  alias Vamp.AudioFile
   alias Vamp.Repo
 
   alias Vamp.Sounds.AudioFile
@@ -61,8 +62,6 @@ defmodule Vamp.Sounds do
   and optionally associating it to an existing `AudioClip`. A valid `song_id`
   in the attrs is required.
   """
-
-  # FIXME: This should only return an audio file
   def create_pool_audio_file(attrs \\ %{}) do
     {:ok, audio_file} =
       Repo.transaction(fn ->
@@ -78,6 +77,7 @@ defmodule Vamp.Sounds do
     audio_file
   end
 
+  @spec add_url_to_audio_file(nil | %AudioFile{}) :: nil | %AudioFile{}
   def add_url_to_audio_file(nil), do: nil
 
   def add_url_to_audio_file(audio_file) do

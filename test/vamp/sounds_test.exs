@@ -69,14 +69,14 @@ defmodule Vamp.SoundsTest do
         "clip_id" => clip.id
       }
 
-      assert %Vamp.Projects.AudioClip{} =
-               audio_clip = Sounds.create_pool_audio_file(valid_attrs)
+      assert %Vamp.Sounds.AudioFile{} =
+               audio_file = Sounds.create_pool_audio_file(valid_attrs)
 
-      assert audio_clip.audio_file.name === "new amazing file"
+      assert audio_file.name === "new amazing file"
 
       song_audio_files = Vamp.Projects.get_song_by_id!(song.id).audio_files
       [%{id: song_audio_file_id} | _tail] = song_audio_files
-      assert song_audio_file_id == audio_clip.audio_file.id
+      assert song_audio_file_id == audio_file.id
     end
 
     test " create_pool_audio_file/1 without a clip_id returns an audio file" do

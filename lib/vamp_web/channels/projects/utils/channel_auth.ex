@@ -1,21 +1,35 @@
 defmodule VampWeb.ChannelAuth do
   require Logger
 
+  @unauthorized_response {:error, %{"reason" => "unauthorized"}}
+
   def validate_topic_matches_socket(song_id, socket, channel) do
-    if song_id == socket.assigns.song_id do
-      {:ok, socket}
-    else
-      Logger.error("Join #{channel} failed #{song_id} != #{socket.assigns.song_id}")
-      {:error, %{"reason" => "unauthorized"}}
+    cond do
+      !Map.has_key?(socket.assigns, :song_id) ->
+        Logger.error("Attempted to join #{channel} but socket was missing song_id key")
+        @unauthorized_response
+
+      socket.assigns.song_id != song_id ->
+        Logger.error("Join #{channel} failed #{song_id} != #{socket.assigns.song_id}")
+        @unauthorized_response
+
+      true ->
+        {:ok, socket}
     end
   end
 
   def validate_user_topic_matches_socket(user_id, socket, channel) do
-    if user_id == to_string(socket.assigns.current_user.id) do
-      {:ok, socket}
-    else
-      Logger.error("Join #{channel} failed #{user_id} != #{socket.assigns.current_user.id}")
-      {:error, %{"reason" => "unauthorized"}}
+    cond do
+      !Map.has_key?(socket.assigns, :current_user) ->
+        Logger.error("Attempted to join #{channel} but socket was missing current_user key")
+        @unauthorized_response
+
+      socket.assigns.current_user.id != user_id ->
+        Logger.error("Join #{channel} failed #{user_id} != #{socket.assigns.current_user.id}")
+        @unauthorized_response
+
+      true ->
+        {:ok, socket}
     end
   end
 end
