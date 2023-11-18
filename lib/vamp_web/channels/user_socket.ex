@@ -3,6 +3,16 @@ defmodule VampWeb.UserSocket do
   alias Vamp.Accounts.User
   alias Vamp.Repo
 
+  alias VampWeb.{
+    DataChannel,
+    UserChannel,
+    FilesChannel,
+    PlaybackChannel,
+    LatencyChannel
+  }
+
+  require Logger
+
   # A Socket handler
   #
   # It's possible to control the websocket connection and
@@ -12,9 +22,12 @@ defmodule VampWeb.UserSocket do
   # Uncomment the following line to define a "room:*" topic
   # pointing to the `VampWeb.RoomChannel`:
   #
-  channel "liveset:*", VampWeb.LiveSetChannel
-  channel "private:*", VampWeb.LiveSetChannel
-  channel "files:*", VampWeb.LiveSetChannel
+  channel DataChannel.wildcard_prefix(), DataChannel
+  channel UserChannel.wildcard_prefix(), UserChannel
+  channel FilesChannel.wildcard_prefix(), FilesChannel
+  channel PlaybackChannel.wildcard_prefix(), PlaybackChannel
+
+  channel LatencyChannel.wildcard_prefix(), LatencyChannel
 
   # To create a channel file, use the mix task:
   #
@@ -38,19 +51,36 @@ defmodule VampWeb.UserSocket do
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
   @impl true
-  def connect(%{"token" => token}, socket, _connect_info) do
-    case Phoenix.Token.verify(socket, "user auth", token, max_age: 86400) do
-      {:ok, user_id} ->
-        socket = assign(socket, :current_user, Repo.get!(User, user_id))
-        {:ok, socket}
+  def connect(%{"token" => token, "song_id" => song_id}, socket, _connect_info) do
+    with {:ok, user_id} <- Phoenix.Token.verify(socket, "user auth", token, max_age: 86400),
+         %User{songs: songs} <- Repo.get!(User, user_id) |> Repo.preload(:songs),
+         true <- song_id_in_songs?(songs, song_id) do
+      socket =
+        socket
+        |> assign(:song_id, song_id)
+        |> assign(:current_user, Repo.get!(User, user_id))
 
-      {:error, _} ->
+      {:ok, socket}
+    else
+      {:error, err} ->
+        Logger.error("#{__MODULE__} connect error: #{inspect(err)}")
+        :error
+
+      _ ->
+        Logger.error("#{__MODULE__} connect error")
         :error
     end
   end
 
   @impl true
-  def connect(_params, _socket, _connect_info), do: :error
+  def connect(_params, _socket, _connect_info) do
+    Logger.error("#{__MODULE__} connect error: missing params")
+    :error
+  end
+
+  defp song_id_in_songs?(songs, song_id) do
+    Enum.reduce(songs, [], fn song, acc -> [song.id | acc] end) |> Enum.member?(song_id)
+  end
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
   #
@@ -63,5 +93,7 @@ defmodule VampWeb.UserSocket do
   #
   # Returning `nil` makes this socket anonymous.
   @impl true
-  def id(_socket), do: nil
+  def id(%{assigns: %{current_user: user}}) do
+    "user_socket:#{user.id}"
+  end
 end

@@ -2,7 +2,7 @@
 
 ## Development Environment
 
-Vamp requires the follwing be installed an accessible in `$PATH`:
+Vamp requires the follwing be installed and accessible in `$PATH`:
 
 1. elixir (>= 1.15.4 / OTP 26)
 2. node (>= 20.7.0)

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import transportStore from "js/stores/transport";
-  import transportMessage from "js/messages/transport";
-  import { PlayState } from "js/types";
   import { start } from "tone";
+  import { transportStore } from "js/stores";
+  import { transport } from "js/messages";
+  import { PlayState } from "js/types";
 
   let stopHeldStyle = "";
 
@@ -12,7 +12,7 @@
 
   async function startTransport() {
     await start();
-    transportMessage.start();
+    transport.start();
   }
 
   function holdStop() {
@@ -33,7 +33,7 @@
   >
   <button
     class={buttonStyles + " " + stopHeldStyle}
-    on:click={() => transportMessage.stop()}
+    on:click={() => transport.stop()}
     on:mousedown={holdStop}
     on:mouseup={releaseStop}>Stop</button
   >

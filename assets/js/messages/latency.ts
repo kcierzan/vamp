@@ -1,15 +1,15 @@
-import { pushMessage } from "js/channels";
-import { SharedMessage } from "js/types";
 import latencyStore from "js/stores/latency";
+import latencyChannel from "js/channels/latency";
+import { LatencyMessage } from "js/types";
 
 function clearLatency(): void {
-  pushMessage(SharedMessage.ClearLatency, {});
+  latencyChannel.push(LatencyMessage.ClearLatency, {});
 }
 
 function getLatency(): void {
-  pushMessage(SharedMessage.GetLatency, {})?.receive("ok", (response) =>
-    latencyStore.set(response),
-  );
+  latencyChannel
+    .push(LatencyMessage.GetLatency, {})
+    ?.receive("ok", (response: number) => latencyStore.set(response));
 }
 
 function measureLatency(count = 20): void {
@@ -17,11 +17,11 @@ function measureLatency(count = 20): void {
     getLatency();
     return;
   }
-  pushMessage(SharedMessage.Ping, { client_time: Date.now() })?.receive(
+  latencyChannel.push(LatencyMessage.Ping, { client_time: Date.now() })?.receive(
     "ok",
     ({ up, server_time }) => {
       const down = Date.now() - server_time;
-      pushMessage(SharedMessage.ReportLatency, {
+      latencyChannel.push(LatencyMessage.ReportLatency, {
         latency: (up + down) / 2,
       });
     },

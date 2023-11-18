@@ -1,20 +1,9 @@
-import { Transport } from "tone";
-import {
-  AudioFile,
-  Clip,
-  PrivateMessage,
-  SharedMessage,
-  TrackData,
-  TrackID,
-} from "js/types";
 import { get } from "svelte/store";
-import { pushMessage, registerChannelListener } from "js/channels";
-import { quantizedTransportTime } from "js/utils";
-import quantizationStore from "js/stores/quantization";
-import trackDataStore from "js/stores/track-data";
-import samplerStore from "js/stores/samplers";
-import clipsStore from "js/stores/clips";
-import trackPlaybackStore from "js/stores/tracks";
+import instruments from "js/instruments";
+import { Transport } from "tone";
+import { AudioFile, Clip, SongDataMessage, TrackData, TrackID } from "js/types";
+import { trackDataStore, clipStore, trackPlaybackStore } from "js/stores";
+import { dataChannel } from "js/channels";
 
 function createFromAudioFile(songId: string, audioFile: AudioFile) {
   const trackCount = get(trackDataStore).length;
@@ -35,19 +24,21 @@ function createFromAudioFile(songId: string, audioFile: AudioFile) {
       },
     ],
   };
-  pushMessage(SharedMessage.NewTrack, trackWithClipAttrs);
+  dataChannel.push(SongDataMessage.NewTrack, trackWithClipAttrs);
 }
 
 async function createEmpty(
   songId: string,
   onOk: (res: any) => any = (_res) => {},
 ): Promise<void> {
-  pushMessage(SharedMessage.NewTrack, {
-    name: "new track",
-    gain: 0.0,
-    panning: 0.0,
-    song_id: songId,
-  })?.receive("ok", onOk);
+  dataChannel
+    .push(SongDataMessage.NewTrack, {
+      name: "new track",
+      gain: 0.0,
+      panning: 0.0,
+      song_id: songId,
+    })
+    ?.receive("ok", onOk);
 }
 
 function createFromClip(songId: string, clip: Clip) {
@@ -59,36 +50,15 @@ function createFromClip(songId: string, clip: Clip) {
     panning: 0.0,
     audio_clips: [clip],
   };
-  pushMessage(SharedMessage.NewTrackFromClip, trackWithClipAttrs);
+  dataChannel.push(SongDataMessage.NewTrackFromClip, trackWithClipAttrs);
 }
 
 function remove(id: TrackID) {
-  pushMessage(SharedMessage.RemoveTrack, { id });
+  dataChannel.push(SongDataMessage.RemoveTrack, { id });
 }
 
-function stop(trackIds: TrackID[]): void {
-  pushMessage(SharedMessage.StopTrack, { trackIds });
-}
-
-function stopAll(): void {
-  const trackIds = get(trackDataStore).map((track) => track.id);
-  stop(trackIds);
-}
-
-registerChannelListener(
-  PrivateMessage.StopTrack,
-  function receiveStopTrack({ trackIds }: { trackIds: TrackID[] }): void {
-    const currentQuantization = get(quantizationStore);
-    // FIXME: Either make quantization settings e2e reactive or pass a time w/ the stop event
-    const nextBarTT = quantizedTransportTime(currentQuantization);
-    for (const trackId of trackIds) {
-      trackPlaybackStore.stopTrack(trackId, nextBarTT);
-    }
-  },
-);
-
-registerChannelListener(
-  SharedMessage.RemoveTrack,
+dataChannel.registerListener(
+  SongDataMessage.RemoveTrack,
   function receiveRemoveTrack(trackId: TrackID) {
     // TODO: remove clipStates and GrainPlayers
     trackPlaybackStore.stopCurrentlyPlayingAudio(trackId, undefined);
@@ -101,19 +71,17 @@ registerChannelListener(
 // TODO: add DB properties to the track store!
 function receiveNewTrack(track: TrackData) {
   trackPlaybackStore.initializeTrackPlaybackState(track);
-  samplerStore.initializeSamplers(...track.audio_clips);
-  clipsStore.initializeClipStates(...track.audio_clips);
+  instruments.createSamplers(...track.audio_clips);
+  clipStore.initializeClipStates(...track.audio_clips);
   trackDataStore.createTrack(track);
 }
 
-registerChannelListener(SharedMessage.NewTrack, receiveNewTrack);
-registerChannelListener(SharedMessage.NewTrackFromClip, receiveNewTrack);
+dataChannel.registerListener(SongDataMessage.NewTrack, receiveNewTrack);
+dataChannel.registerListener(SongDataMessage.NewTrackFromClip, receiveNewTrack);
 
 export default {
-    createFromAudioFile,
-    createFromClip,
-    createEmpty,
-    remove,
-    stop,
-    stopAll,
+  createFromAudioFile,
+  createFromClip,
+  createEmpty,
+  remove,
 };

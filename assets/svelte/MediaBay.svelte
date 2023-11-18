@@ -1,13 +1,13 @@
 <script>
   import Pool from "./Pool.svelte";
   import Dropzone from "svelte-file-dropzone/Dropzone.svelte";
-  import audioFileMessage from "js/messages/audio-file";
+  import { audioFiles } from "js/messages";
 
   export let songId;
 
   function onDrop(e) {
     const { acceptedFiles } = e.detail;
-    audioFileMessage.createPoolFile(acceptedFiles[0], songId);
+    audioFiles.createPoolFile(acceptedFiles[0], songId);
   }
 </script>
 

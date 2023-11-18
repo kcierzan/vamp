@@ -142,7 +142,7 @@ class PhaseVocoderProcessor extends OLAProcessor {
     }
   }
 
-  /** Shift peaks and regions of influence by pitchFactor into new specturm */
+  /** Shift peaks and regions of influence by pitchFactor into new spectrum */
   shiftPeaks(pitchFactor: number) {
     // zero-fill new spectrum
     this.freqComplexBufferShifted.fill(0);

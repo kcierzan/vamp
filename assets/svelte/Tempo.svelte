@@ -1,9 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import transportStore from "js/stores/transport";
+  import { clips } from "js/messages";
+  import { transportStore, trackDataStore } from "js/stores";
   import type { HTMLInputEvent } from "js/types";
-  import trackDataStore from "js/stores/track-data";
-  import clipMessage from "js/messages/clip"
 
   function setTransportBpm(e: HTMLInputEvent) {
     const bpm = parseInt(e.currentTarget.value);
@@ -13,7 +12,7 @@
 
   function setTempoAndStretchClips(bpm: number) {
     transportStore.setBpm(bpm);
-    clipMessage.stretchClipsToBpm($trackDataStore, bpm);
+    clips.stretchClipsToBpm($trackDataStore, bpm);
   }
 
   onMount(async () => setTempoAndStretchClips(120));

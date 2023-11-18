@@ -80,34 +80,39 @@ export interface SceneStore {
   scenes: Scenes;
 }
 
-export enum ChannelName {
-  Private = "private",
-  Shared = "shared",
+export enum ChannelPrefix {
+  Data = "song_data:",
+  Playback = "song_playback:",
+  User = "song_user:",
+  Files = "song_files:",
+  Latency = "latency_tracking:"
 }
 
-export enum PrivateMessage {
-  PlayClip = "play_clip",
+export enum LatencyMessage {
+  Ping = "ping",
+  ReportLatency = "report_latency",
   StopTrack = "stop_track",
-  StartTransport = "start_transport",
-  StopTransport = "stop_transport",
+  ClearLatency = "clear_latency",
+  GetLatency = "get_latency",
 }
 
-export enum SharedMessage {
-  PlayClip = "play_clip",
+export enum SongDataMessage {
   NewClip = "new_clip",
   UpdateClips = "update_clips",
   NewTrack = "new_track",
   NewTrackFromClip = "new_track_from_clip",
   RemoveTrack = "remove_track",
   NewPoolFile = "new_pool_file",
-  ClearLatency = "clear_latency",
-  GetLatency = "get_latency",
-  Ping = "ping",
-  ReportLatency = "report_latency",
+}
+
+export enum SongPlaybackMessage {
+  PlayClip = "play_clip",
   StopTrack = "stop_track",
   StartTransport = "start_transport",
   StopTransport = "stop_transport",
 }
+
+export type Message = LatencyMessage | SongDataMessage | SongPlaybackMessage;
 
 export enum QuantizationInterval {
   None = "+0.01",
@@ -163,3 +168,5 @@ export interface WorkletProcessorOptions {
 export interface WorkletParameters {
   [key: string]: Float32Array;
 }
+
+export type Listener = [Message, (response?: any) => void];

@@ -1,13 +1,13 @@
 <svelte:options immutable />
 
 <script lang="ts">
+  import { afterUpdate } from "svelte";
   import { dndzone } from "svelte-dnd-action";
   import ClipComponent from "./Clip.svelte";
   import { Clip, DndItem, TrackData } from "js/types";
-  import clipMessage from "js/messages/clip";
-  import trackDataStore from "js/stores/track-data";
+  import { trackDataStore } from "js/stores";
+  import { clips } from "js/messages";
   import { flash, isClip, isAudioFile } from "js/utils";
-  import { afterUpdate } from "svelte";
 
   export let index: number;
   export let track: TrackData;
@@ -35,11 +35,11 @@
 
     if (isAudioFile(audioFile)) {
       // create a new clip from the pool
-      clipMessage.createFromPool(audioFile, track.id, index);
+      clips.createFromPool(audioFile, track.id, index);
     } else if (isClip(clip)) {
       // move the clip optimistically
       trackDataStore.deleteClip(clip as Clip);
-      clipMessage.updateClips({ ...(clip as Clip), index, track_id: track.id });
+      clips.updateClips({ ...(clip as Clip), index, track_id: track.id });
     }
   }
 

@@ -1,12 +1,9 @@
 <script lang="ts">
+  import { Transport, start } from "tone";
   import { PlayState } from "js/types";
+  import { clips, playback } from "js/messages";
+  import { clipStore, selectedStore, trackDataStore } from "js/stores";
   import type { Clip, HTMLInputEvent } from "js/types";
-  import * as Tone from "tone";
-  import clipMessage from "js/messages/clip";
-  import { Transport } from "tone";
-  import clipsStore from "js/stores/clips";
-  import selectedStore from "js/stores/selected";
-  import trackDataStore from "js/stores/track-data";
 
   export let clip: Clip;
   let button: HTMLButtonElement;
@@ -38,7 +35,7 @@
     }
   }
 
-  $: handleQueueAnimation($clipsStore[clip.id].state);
+  $: handleQueueAnimation($clipStore[clip.id].state);
 
   // TODO: extract this to PlayableButton or something
   const baseStyles = "flex text-base w-full h-8 text-white rounded";
@@ -54,24 +51,24 @@
     return base + stateStyles[state];
   }
 
-  $: clipStyles = computeStyles($clipsStore[clip.id].state);
+  $: clipStyles = computeStyles($clipStore[clip.id].state);
 
   function changeTempo(e: HTMLInputEvent) {
     const target = e.target;
     const val = (target as HTMLInputElement).value;
-    clipMessage.updateClips({
+    clips.updateClips({
       ...clip,
       playback_rate: parseFloat(val),
     });
   }
 
   async function clickClip(e: MouseEvent) {
-    await Tone.start();
+    await start();
 
     if (!!e.shiftKey) {
       selectedStore.set({ clip: clip, track: currentTrack ?? null });
     } else {
-      clipMessage.playClips(clip);
+      playback.playClips(clip);
     }
   }
 </script>

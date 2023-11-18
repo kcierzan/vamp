@@ -3,13 +3,13 @@
 <script lang="ts">
   import { slide } from "svelte/transition";
   import { quintIn, quintOut } from "svelte/easing";
-  import selectedStore from "js/stores/selected";
-  import samplerStore from "js/stores/samplers";
+  import { selectedStore } from "js/stores";
+  import instruments from "js/instruments";
   import ClipProperties from "./ClipProperties.svelte";
   import ClipWaveform from "./ClipWaveform.svelte";
 
   $: clipDuration = !!$selectedStore.clip
-    ? $samplerStore[$selectedStore.clip.id].sampler!.duration
+    ? instruments.getClipDuration($selectedStore.clip.id)
     : 0;
 
   function closeEditor() {

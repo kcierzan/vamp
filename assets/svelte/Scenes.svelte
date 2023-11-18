@@ -1,5 +1,5 @@
 <script lang="ts">
-  import scenesStore from "js/stores/scenes";
+  import { sceneStore } from "js/stores";
   import SceneButton from "./SceneButton.svelte";
 
   const NUMBER_OF_ROWS = 16;
@@ -8,7 +8,7 @@
   }));
 </script>
 
-{#if $scenesStore.scenes}
+{#if $sceneStore.scenes}
   <div
     class="flex flex-col items-start gap-1 rounded border-2 border-slate-200 px-1 pt-2"
   >
@@ -16,12 +16,12 @@
       <div>Scenes</div>
     </div>
     {#each slots as slot, index (slot.id)}
-      {#if Object.keys($scenesStore.scenes).includes(index.toString())}
+      {#if Object.keys($sceneStore.scenes).includes(index.toString())}
         <div class="box-content rounded border-2 border-white">
           <SceneButton
             index={index.toString()}
-            clips={$scenesStore.scenes[index.toString()]}
-            state={$scenesStore.states[index.toString()]}
+            clips={$sceneStore.scenes[index.toString()]}
+            state={$sceneStore.states[index.toString()]}
           />
         </div>
       {:else}

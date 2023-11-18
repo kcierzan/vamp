@@ -1,58 +1,19 @@
-defmodule VampWeb.LiveSetChannelTest do
+defmodule VampWeb.Projects.DataChannelTest do
   use VampWeb.ChannelCase, async: true
 
   setup do
-    song = Vamp.ProjectsFixtures.song_fixture() |> Vamp.Repo.preload(:created_by)
+    user = Vamp.AccountsFixtures.user_fixture()
+    song = Vamp.ProjectsFixtures.song_fixture(%{created_by_id: user.id})
 
     {:ok, _, socket} =
       VampWeb.UserSocket
-      |> socket("user_id", %{current_user: song.created_by})
-      |> subscribe_and_join(VampWeb.LiveSetChannel, "liveset:shared")
+      |> socket("user_id", %{current_user: user, song_id: song.id})
+      |> subscribe_and_join(VampWeb.DataChannel, "song_data:" <> song.id)
 
-    %{socket: socket, song: song}
-  end
-
-  describe "ping" do
-    test "ping calculates upstream latency and responds with server time", %{socket: socket} do
-      client_time = DateTime.utc_now(:millisecond) |> DateTime.to_unix(:millisecond)
-      ref = push(socket, "ping", %{"client_time" => client_time})
-      assert_reply ref, :ok, %{"up" => _upstream, "server_time" => _server_time}
-    end
-  end
-
-  describe "latency" do
-    test "report latency stores a user latency in the cache", %{socket: socket} do
-      push(socket, "report_latency", %{"latency" => 442})
-      ref = push(socket, "get_latency", %{})
-      assert_reply ref, :ok, 442.0
-    end
-
-    test "clear_latency clears latency for a user", %{socket: socket} do
-      push(socket, "report_latency", %{"latency" => 123})
-      get_ref = push(socket, "get_latency", %{})
-      assert_reply get_ref, :ok, 123.0
-      push(socket, "clear_latency", %{})
-      cleared_ref = push(socket, "get_latency", %{})
-      assert_reply cleared_ref, :ok, nil
-    end
+    %{user: user, song: song, socket: socket}
   end
 
   describe "new_clip" do
-    test "new_clip creates a clip for a track", %{socket: socket, song: song} do
-      track = Vamp.ProjectsFixtures.track_fixture(%{song_id: song.id})
-
-      ref =
-        push(socket, "new_clip", %{
-          "name" => "my new clip",
-          "type" => "audio/wav",
-          "index" => 0,
-          "playback_rate" => 1.0,
-          "track_id" => track.id
-        })
-
-      assert_reply ref, :ok, _id
-    end
-
     test "new_clip with audio_file broadcasts the clip", %{socket: socket, song: song} do
       track = Vamp.ProjectsFixtures.track_fixture(%{song_id: song.id})
       audio_file = Vamp.SoundsFixtures.audio_file_fixture()

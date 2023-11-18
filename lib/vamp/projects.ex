@@ -9,10 +9,15 @@ defmodule Vamp.Projects do
 
   alias Vamp.Projects.{Song, Track, AudioClip}
 
+  @type ok(t) :: {:ok, t}
+  @type error() :: {:error, String.t()}
+
+  @spec get_fixture_song() :: %Song{}
   def get_fixture_song() do
     Song |> first() |> Repo.one!()
   end
 
+  @spec get_song_by_id!(String.t()) :: %Song{}
   def get_song_by_id!(song_id) do
     Song
     |> Repo.get!(song_id)
@@ -22,12 +27,14 @@ defmodule Vamp.Projects do
   @doc """
   Returns a full project for a user
   """
+  @spec get_project!(String.t(), String.t()) :: %Song{}
   def get_project!(user_id, song_id) do
     project_query(user_id, song_id)
     |> Repo.one!()
     |> add_audio_file_urls()
   end
 
+  @spec project_query(String.t(), String.t()) :: %Ecto.Query{}
   defp project_query(user_id, song_id) do
     from(song in Song, as: :song)
     |> join(:left, [song: song], t in assoc(song, :tracks), as: :track)
@@ -41,6 +48,7 @@ defmodule Vamp.Projects do
     |> where([song: song], song.id == ^song_id and song.created_by_id == ^user_id)
   end
 
+  @spec add_audio_file_urls(%Song{}) :: %Song{}
   defp add_audio_file_urls(project) do
     update_in(
       project,
@@ -204,6 +212,7 @@ defmodule Vamp.Projects do
       {:error, %Ecto.Changeset{}}
 
   """
+  @spec create_track!(map()) :: %Track{}
   def create_track!(attrs \\ %{}) do
     %Track{}
     |> Track.changeset(attrs)
@@ -212,24 +221,30 @@ defmodule Vamp.Projects do
     |> add_urls_to_clips()
   end
 
+  @spec create_track_and_associate_clip!(map()) :: %Track{}
   def create_track_and_associate_clip!(attrs \\ %{}) do
     with {[audio_clip], attrs} <- Map.pop(attrs, "audio_clips", []),
-         {:ok, track} <-
-           Repo.transaction(fn ->
-             track = create_track!(attrs)
-
-             new_clip =
-               update_audio_clip!(
-                 %Vamp.Projects.AudioClip{id: audio_clip["id"]},
-                 Map.merge(audio_clip, %{"track_id" => track.id})
-               )
-
-             %{track | audio_clips: [new_clip | track.audio_clips]}
-           end) do
+         {:ok, track} <- create_track_with_clip(audio_clip, attrs) do
       add_urls_to_clips(track)
     end
   end
 
+  @spec create_track_with_clip(%AudioClip{}, map()) :: ok(%Track{}) | error()
+  defp create_track_with_clip(audio_clip, attrs) do
+    Repo.transaction(fn ->
+      track = create_track!(attrs)
+
+      new_clip =
+        update_audio_clip!(
+          %Vamp.Projects.AudioClip{id: audio_clip["id"]},
+          Map.merge(audio_clip, %{"track_id" => track.id})
+        )
+
+      %{track | audio_clips: [new_clip | track.audio_clips]}
+    end)
+  end
+
+  @spec add_urls_to_clips(%Track{}) :: %Track{}
   defp add_urls_to_clips(track) do
     clips = Enum.map(track.audio_clips, &add_url_to_audio_clip/1)
     put_in(track.audio_clips, clips)
@@ -311,6 +326,7 @@ defmodule Vamp.Projects do
       ** (Ecto.NoResultsError)
 
   """
+  @spec get_audio_clip!(String.t()) :: %AudioClip{}
   def get_audio_clip!(id) do
     from(ac in AudioClip, as: :audio_clip)
     |> preload(:audio_file)
@@ -321,6 +337,7 @@ defmodule Vamp.Projects do
   @doc """
   Creates a audio_clip.
   """
+  @spec create_audio_clip!(map()) :: %AudioClip{}
   def create_audio_clip!(attrs \\ %{}) do
     %AudioClip{}
     |> AudioClip.changeset(attrs)
@@ -329,6 +346,7 @@ defmodule Vamp.Projects do
     |> add_url_to_audio_clip()
   end
 
+  @spec add_url_to_audio_clip(%AudioClip{}) :: %AudioClip{}
   def add_url_to_audio_clip(audio_clip) do
     put_in(audio_clip.audio_file, Vamp.Sounds.add_url_to_audio_file(audio_clip.audio_file))
   end
@@ -345,6 +363,7 @@ defmodule Vamp.Projects do
       {:error, %Ecto.Changeset{}}
 
   """
+  @spec update_audio_clip!(%AudioClip{}, map()) :: %AudioClip{}
   def update_audio_clip!(%AudioClip{} = audio_clip, attrs) do
     audio_clip
     |> AudioClip.changeset(attrs)
@@ -353,21 +372,14 @@ defmodule Vamp.Projects do
     |> Vamp.Projects.add_url_to_audio_clip()
   end
 
-  def update_audio_clips!(audio_clips) do
+  @spec update_audio_clips([%AudioClip{}]) :: ok([%AudioClip{}]) | error()
+  def update_audio_clips(audio_clips) do
     Repo.transaction(fn ->
       for clip <- audio_clips do
         %{"id" => id} = clip
         update_audio_clip!(%AudioClip{id: id}, clip)
       end
     end)
-  end
-
-  def associate_audio_clip_audio_file!(audio_clip_id, audio_file_id) do
-    %Vamp.Projects.AudioClip{id: audio_clip_id}
-    |> Ecto.Changeset.cast(%{"audio_file_id" => audio_file_id}, [:audio_file_id])
-    |> Repo.update!(returning: true)
-    |> Repo.preload(:audio_file)
-    |> Vamp.Projects.add_url_to_audio_clip()
   end
 
   @doc """

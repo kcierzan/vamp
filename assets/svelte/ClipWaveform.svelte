@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { onDestroy } from "svelte";
-  import { Clip } from "js/types";
   import Regions from "wavesurfer.js/dist/plugins/regions.js";
-  import clipMessage from "js/messages/clip";
   import WaveSurfer from "wavesurfer.js";
   import type {
     Region,
     RegionParams,
   } from "wavesurfer.js/dist/plugins/regions.js";
+  import { onDestroy } from "svelte";
+  import { Clip } from "js/types";
+  import { clips } from "js/messages";
 
   export let clip: Clip | undefined;
   export let clipDuration: number;
@@ -18,7 +18,6 @@
   $: {
     !!waveformContainer && drawWaveform(clip);
   }
-
 
   function drawWaveform(currentClip?: Clip) {
     !!waveform && waveform.destroy();
@@ -45,7 +44,7 @@
     };
     regions.addRegion(regionParams);
     regions.on("region-updated", (region: Region) => {
-      clipMessage.updateClips({
+      clips.updateClips({
         ...currentClip,
         start_time: region.start,
         end_time: region.end,

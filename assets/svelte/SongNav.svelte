@@ -7,20 +7,18 @@
   import Transport from "./Transport.svelte";
   import Quantization from "./Quantization.svelte";
   import Metronome from "./Metronome.svelte";
-  export let project: Song;
+
+  export let song: Song;
   let element: HTMLElement;
-
-  // afterUpdate(() => flash(element));
-
 </script>
 
 <div
   class="my-4 flex flex-row items-center justify-center space-x-4"
   bind:this={element}
 >
-  <AddTrackButton {project} />
+  <AddTrackButton {song} />
   <Transport />
   <Tempo />
   <Quantization />
-  <Metronome  />
+  <Metronome />
 </div>

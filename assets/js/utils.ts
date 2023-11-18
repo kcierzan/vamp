@@ -1,7 +1,8 @@
 import { AudioFile, Clip, QuantizationInterval } from "js/types";
-import { Time, Transport } from "tone";
+import { Draw, Time, Transport } from "tone";
 import * as Tone from "tone";
 import { guess } from "web-audio-beat-detector";
+import type { Time as TimeType } from "tone/build/esm/core/type/Units";
 
 export async function fileToB64(file: File): Promise<string> {
   const bytes = await fileToByteArray(file);
@@ -31,6 +32,11 @@ export function quantizedTransportTime(
   return nextBarAC - drift;
 }
 
+export function transportNow() {
+  const drift = Tone.now() - Transport.seconds;
+  return Tone.now() - drift;
+}
+
 export async function fileToByteArray(file: File): Promise<Uint8Array> {
   return new Uint8Array(await fileToArrayBuffer(file));
 }
@@ -48,7 +54,7 @@ export function debounce(func: (...args: any[]) => any, timeout: number = 300) {
   let timer: ReturnType<typeof setTimeout>;
   return (...args: []) => {
     clearTimeout(timer);
-    timer = setTimeout(function(this: any) {
+    timer = setTimeout(function (this: any) {
       func.apply(this, args);
     }, timeout);
   };
@@ -101,4 +107,8 @@ export function isClip(obj: any): obj is Clip {
     "audio_file" in obj &&
     !obj.isDndShadowItem
   );
+}
+
+export function transportAtOrNow(at: TimeType) {
+  return Transport.seconds > (at as number) ? transportNow() : at;
 }

@@ -1,10 +1,10 @@
 <svelte:options immutable />
 
 <script lang="ts">
-  import type { TrackData } from "js/types";
-  import ClipSlot from "./ClipSlot.svelte";
   import { afterUpdate } from "svelte";
   import { flash } from "js/utils";
+  import type { TrackData } from "js/types";
+  import ClipSlot from "./ClipSlot.svelte";
 
   export let track: TrackData;
   const NUMBER_OF_ROWS = 16;

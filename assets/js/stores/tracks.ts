@@ -1,9 +1,11 @@
+import { get } from "svelte/store";
 import { Writable, writable } from "svelte/store";
 import { Clip, PlayState, TrackData, TrackID } from "js/types";
 import { Time } from "tone/build/esm/core/type/Units";
 import { Draw, Transport } from "tone";
-import samplerStore from "js/stores/samplers";
+import instruments from "js/instruments";
 import clipStore from "js/stores/clips";
+import { transportNow, transportAtOrNow } from "js/utils";
 
 export interface TrackState {
   id: TrackID;
@@ -64,30 +66,15 @@ function queueClip(clip: Clip) {
   });
 }
 
-function setTrackClipStatesPlay(clip: Clip, event: number) {
-  clipStore.setClipState(clip, PlayState.Playing);
-  update((store) => {
-    const playing = store[clip.track_id].currentlyPlaying;
-    if (!!playing && playing?.id !== clip.id) {
-      clipStore.setClipState(playing, PlayState.Stopped);
-    }
-    store[clip.track_id].playingEvent = event;
-    store[clip.track_id].currentlyPlaying = clip;
-    if (store[clip.track_id].currentlyQueued === clip) {
-      store[clip.track_id].currentlyQueued = null;
-    }
-    return store;
-  });
-}
-
 function stopTrack(trackId: TrackID, at: Time) {
   update((store) => {
     store[trackId].playingEvent !== null &&
       Transport.clear(store[trackId].playingEvent as number);
-    const launchTime = Transport.seconds > (at as number) ? "+0.01" : at;
+    const launchTime = Transport.seconds > (at as number) ? transportNow() : at;
+
     Transport.scheduleOnce((time) => {
       const playing = store[trackId].currentlyPlaying;
-      !!playing && samplerStore.stopAudio(playing, time);
+      !!playing && instruments.stop(playing, time);
       Draw.schedule(() => {
         !!playing && clipStore.setClipState(playing, PlayState.Stopped);
         store[trackId].currentlyPlaying = null;
@@ -98,57 +85,57 @@ function stopTrack(trackId: TrackID, at: Time) {
   });
 }
 
-function stopCurrentlyPlayingAudio(trackId: TrackID, time: Time | undefined) {
-  update((store) => {
-    if (!!store[trackId].currentlyPlaying) {
-      samplerStore.stopAudio(store[trackId].currentlyPlaying as Clip, time);
-    }
-    return store;
-  });
+function stopCurrentAudio(trackId: TrackID, time: Time | undefined) {
+  const currentlyPlaying = get(trackPlaybackStore)[trackId]?.currentlyPlaying;
+  !!currentlyPlaying && instruments.stop(currentlyPlaying, time);
 }
 
 function stopAllTracksAudio() {
   update((store) => {
     for (const track of Object.values(store)) {
       !!track.currentlyPlaying &&
-        samplerStore.stopAudio(track.currentlyPlaying, undefined);
+        instruments.stop(track.currentlyPlaying, undefined);
     }
     return store;
   });
 }
 
 function playTrackClip(clip: Clip, at: Time) {
-  const tooLate = Transport.seconds > (at as number);
-
+  const launchTime = transportAtOrNow(at);
+  const playEvent = startClipLoop(clip, launchTime);
   queueClip(clip);
-  // either the next division or 25ms in the future
-  const launchTime = tooLate ? "+0.025" : at;
-  // clear events a bit before launchTime
-  const clearTime = tooLate ? "+0.0125" : (at as number) - 0.05;
-  Transport.scheduleOnce((time) => {
+  const queuedEvent = Transport.scheduleOnce((time: number) => {
+    stopCurrentAudio(clip.track_id, time);
     Draw.schedule(() => {
       cancelPlayingEvent(clip.track_id);
+      clipStore.setClipState(clip, PlayState.Playing);
+      update((store) => setPlaying(store, clip, playEvent));
     }, time);
-    stopCurrentlyPlayingAudio(clip.track_id, time);
-  }, clearTime);
-
-  const queuedEvent = Transport.scheduleOnce((time) => {
-    Draw.schedule(() => {
-      loopClip(clip, "1m");
-    }, time);
-  }, launchTime);
+  }, launchTime as number);
   setCurrentlyQueued(clip, queuedEvent);
 }
 
-function loopClip(clip: Clip, every: Time): void {
-  const playEvent = Transport.scheduleRepeat(
-    (audioContextTime: number) => {
-      samplerStore.playAudio(clip, audioContextTime);
+function startClipLoop(clip: Clip, at: Time) {
+  return Transport.scheduleRepeat(
+    (acTime: number) => {
+      instruments.play(clip, acTime);
     },
-    every,
-    "+0.0001",
+    "1m",
+    at,
   );
-  setTrackClipStatesPlay(clip, playEvent);
+}
+
+function setPlaying(store: TrackStateStore, clip: Clip, playEvent: number) {
+  const playing = store[clip.track_id].currentlyPlaying;
+  if (!!playing && playing?.id !== clip.id) {
+    clipStore.setClipState(playing, PlayState.Stopped);
+  }
+  store[clip.track_id].currentlyPlaying = clip;
+  if (store[clip.track_id].currentlyQueued === clip) {
+    store[clip.track_id].currentlyQueued = null;
+  }
+  store[clip.track_id].playingEvent = playEvent;
+  return store;
 }
 
 function initialize(tracks: TrackData[]) {
@@ -177,7 +164,7 @@ export default {
   playTrackClip,
   stopTrack,
   stopAllTracksAudio,
-  stopCurrentlyPlayingAudio,
+  stopCurrentlyPlayingAudio: stopCurrentAudio,
   cancelPlayingEvent,
   cancelQueuedEvent,
   initialize,

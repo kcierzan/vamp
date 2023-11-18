@@ -4,6 +4,7 @@ defmodule Vamp.Sounds do
   """
 
   import Ecto.Query, warn: false
+  alias Vamp.AudioFile
   alias Vamp.Repo
 
   alias Vamp.Sounds.AudioFile
@@ -61,30 +62,22 @@ defmodule Vamp.Sounds do
   and optionally associating it to an existing `AudioClip`. A valid `song_id`
   in the attrs is required.
   """
-
   def create_pool_audio_file(attrs \\ %{}) do
-    {:ok, record} =
+    {:ok, audio_file} =
       Repo.transaction(fn ->
         with {:ok, audio_file} <- create_audio_file(attrs),
              song_id <- Map.fetch!(attrs, "song_id"),
              {:ok, _pool_file} <- create_pool_file(audio_file.id, song_id) do
-          maybe_associate_clip(audio_file, attrs)
+          add_url_to_audio_file(audio_file)
         else
           _ -> raise "failed to create audio file in pool"
         end
       end)
 
-    record
+    audio_file
   end
 
-  defp maybe_associate_clip(audio_file, attrs) do
-    if attrs["clip_id"] do
-      Vamp.Projects.associate_audio_clip_audio_file!(attrs["clip_id"], audio_file.id)
-    else
-      audio_file |> Repo.preload(:audio_clips) |> add_url_to_audio_file()
-    end
-  end
-
+  @spec add_url_to_audio_file(nil | %AudioFile{}) :: nil | %AudioFile{}
   def add_url_to_audio_file(nil), do: nil
 
   def add_url_to_audio_file(audio_file) do
