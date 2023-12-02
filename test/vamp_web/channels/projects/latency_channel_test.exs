@@ -2,14 +2,14 @@ defmodule VampWeb.Projects.LatencyChannelTest do
   use VampWeb.ChannelCase, async: true
 
   describe "join" do
-    test "join succeeds when the user and song match the channel" do
+    test "succeeds when the user and song match the channel" do
       user = Vamp.AccountsFixtures.user_fixture()
       song = Vamp.ProjectsFixtures.song_fixture(%{created_by_id: user.id})
 
       assert {:ok, _, _socket} =
                VampWeb.UserSocket
                |> socket("user_id", %{current_user: user, song_id: song.id})
-               |> subscribe_and_join(VampWeb.LatencyChannel, "latency_tracking:" <> song.id)
+               |> subscribe_and_join(VampWeb.LatencyChannel, "latency_tracking:#{song.id}")
     end
   end
 
@@ -21,12 +21,12 @@ defmodule VampWeb.Projects.LatencyChannelTest do
       {:ok, _, socket} =
         VampWeb.UserSocket
         |> socket("user_id", %{current_user: user, song_id: song.id})
-        |> subscribe_and_join(VampWeb.LatencyChannel, "latency_tracking:" <> song.id)
+        |> subscribe_and_join(VampWeb.LatencyChannel, "latency_tracking:#{song.id}")
 
       %{user: user, song: song, socket: socket}
     end
 
-    test "ping calculates upstream latency and respond with server time", %{socket: socket} do
+    test "calculates upstream latency and respond with server time", %{socket: socket} do
       client_time = DateTime.utc_now(:millisecond) |> DateTime.to_unix(:millisecond)
       ref = push(socket, "ping", %{"client_time" => client_time})
       assert_reply ref, :ok, %{"up" => _upstream, "server_time" => _server_time}
@@ -41,12 +41,12 @@ defmodule VampWeb.Projects.LatencyChannelTest do
       {:ok, _, socket} =
         VampWeb.UserSocket
         |> socket("user_id", %{current_user: user, song_id: song.id})
-        |> subscribe_and_join(VampWeb.LatencyChannel, "latency_tracking:" <> song.id)
+        |> subscribe_and_join(VampWeb.LatencyChannel, "latency_tracking:#{song.id}")
 
       %{user: user, song: song, socket: socket}
     end
 
-    test "report latency stores a user latency in the cache", %{socket: socket} do
+    test "report_latency stores a user latency in the cache", %{socket: socket} do
       push(socket, "report_latency", %{"latency" => 442})
       ref = push(socket, "get_latency", %{})
       assert_reply ref, :ok, 442.0

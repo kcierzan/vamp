@@ -15,7 +15,7 @@ defmodule VampWeb.Projects.UserChannelTest do
                |> socket("user_id", %{current_user: user, song_id: song.id})
                |> subscribe_and_join(
                  VampWeb.UserChannel,
-                 "song_user:" <> song.id <> ":" <> user.id
+                 "song_user:#{song.id}:#{user.id}"
                )
     end
 
@@ -27,7 +27,7 @@ defmodule VampWeb.Projects.UserChannelTest do
                |> socket("user_id", %{current_user: user, song_id: song.id})
                |> subscribe_and_join(
                  VampWeb.UserChannel,
-                 "song_user:" <> song.id <> other_user.id
+                 "song_user:#{song.id}:#{other_user.id}"
                )
     end
 
@@ -39,7 +39,7 @@ defmodule VampWeb.Projects.UserChannelTest do
                |> socket("user_id", %{current_user: user, song_id: song.id})
                |> subscribe_and_join(
                  VampWeb.UserChannel,
-                 "song_user:" <> other_song.id <> user.id
+                 "song_user:#{other_song.id}:#{user.id}"
                )
     end
   end

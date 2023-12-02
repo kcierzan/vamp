@@ -15,7 +15,7 @@ defmodule VampWeb.Projects.FilesChannelTest do
                |> socket("user_id", %{current_user: user, song_id: song.id})
                |> subscribe_and_join(
                  VampWeb.FilesChannel,
-                 "song_files:" <> song.id
+                 "song_files:#{song.id}"
                )
     end
 
@@ -40,10 +40,8 @@ defmodule VampWeb.Projects.FilesChannelTest do
         |> socket("user_id", %{current_user: user, song_id: song.id})
         |> subscribe_and_join(
           VampWeb.FilesChannel,
-          "song_files:" <> song.id
+          "song_files:#{song.id}"
         )
-
-      {:ok}
 
       %{user: user, song: song, socket: socket}
     end
@@ -52,7 +50,7 @@ defmodule VampWeb.Projects.FilesChannelTest do
       song: song,
       socket: socket
     } do
-      song_data_topic = "song_data:" <> song.id
+      song_data_topic = "song_data:#{song.id}"
       VampWeb.Endpoint.subscribe(song_data_topic)
 
       {:ok, audio_bytes} = File.read("test/support/fixtures/samples/100action.wav")
@@ -71,7 +69,7 @@ defmodule VampWeb.Projects.FilesChannelTest do
       assert_receive %Phoenix.Socket.Broadcast{
         topic: ^song_data_topic,
         event: "new_pool_file",
-        payload: %Vamp.Sounds.AudioFile{}
+        payload: %Vamp.Sounds.AudioFile{name: "action.wav", description: "test file"}
       }
 
       VampWeb.Endpoint.unsubscribe(song_data_topic)
