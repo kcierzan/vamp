@@ -63,18 +63,18 @@ defmodule VampWeb.UserSocket do
       {:ok, socket}
     else
       {:error, err} ->
-        Logger.error("#{__MODULE__} connect error: #{inspect(err)}")
+        Logger.warning("#{__MODULE__} connect error: #{inspect(err)}")
         :error
 
       _ ->
-        Logger.error("#{__MODULE__} connect error")
+        Logger.warning("#{__MODULE__} connect error")
         :error
     end
   end
 
   @impl true
   def connect(_params, _socket, _connect_info) do
-    Logger.error("#{__MODULE__} connect error: missing params")
+    Logger.warning("#{__MODULE__} connect error: missing params")
     :error
   end
 

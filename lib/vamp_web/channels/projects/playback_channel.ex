@@ -63,6 +63,7 @@ defmodule VampWeb.PlaybackChannel do
     "song_user:#{socket.assigns.song_id}:"
   end
 
+  # TODO: Filter out the current user
   defp channel_user_ids(socket) do
     Presence.list(socket) |> Map.keys()
   end
