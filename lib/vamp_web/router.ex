@@ -60,7 +60,7 @@ defmodule VampWeb.Router do
     pipe_through [:browser, :require_authenticated_user]
 
     live_session :require_authenticated_user,
-      on_mount: [{VampWeb.UserAuth, :ensure_authenticated}] do
+      on_mount: [{VampWeb.UserAuth, :ensure_authenticated}, VampWeb.AllowEctoSandbox] do
       live "/dashboard", DashboardLive, :index
       # TODO: this should probably be a separate live view
       live "/liveset", LiveSetLive, :new

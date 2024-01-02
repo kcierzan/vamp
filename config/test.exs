@@ -44,5 +44,5 @@ config :waffle, storage: Waffle.Storage.Local, asset_host: "http://localhost:400
 config :vamp, serve_local_files: true
 
 config :vamp, :sandbox, Ecto.Adapters.SQL.Sandbox
-config :wallaby, driver: Wallaby.Selenium
+config :wallaby, driver: Wallaby.Chrome
 config :wallaby, otp_app: :vamp

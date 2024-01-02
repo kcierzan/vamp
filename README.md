@@ -12,7 +12,7 @@ Vamp requires postgres to have a superuser named "postgres". If you have postgre
 Run the following to create the postgres user:
 
 ```sh
-$ createuser --superuser --createdb postgres
+$ mix db.user
 ```
 
 Required versions of `elixir` and `node` can be installed via [rtx](https://github.com/jdx/rtx). 

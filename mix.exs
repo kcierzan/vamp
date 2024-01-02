@@ -72,9 +72,15 @@ defmodule Vamp.MixProject do
   defp aliases do
     [
       setup: ["deps.get", "ecto.setup", "cmd --cd assets npm install"],
+      "db.user": ["cmd createuser --superuser --createdb postgres"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      test: [
+        "assets.build > /dev/null 2>&1",
+        "ecto.create --quiet",
+        "ecto.migrate --quiet",
+        "test"
+      ],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["tailwind default", "cmd --cd assets node build.js"],
       "assets.deploy": [
